@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Markdown Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .container {
+            display: flex;
+            flex-grow: 1;
+        }
+        textarea, .output {
+            width: 50%;
+            height: 100%;
+            padding: 20px;
+            border: none;
+            box-sizing: border-box;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        textarea {
+            background: #ffffff;
+            border-right: 1px solid #ddd;
+            resize: none;
+            outline: none;
+        }
+        .output {
+            background: #ffffff;
+            overflow-y: auto;
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <textarea id="markdownInput" placeholder="Napiš to sem..."></textarea>
+        <div class="output" id="htmlOutput">Čum sem...</div>
+    </div>
+    <button id="saveButton">Save Markdown</button>
+
+    <script>
+        const markdownInput = document.getElementById('markdownInput');
+        const htmlOutput = document.getElementById('htmlOutput');
+        const saveButton = document.getElementById('saveButton');
+
+        markdownInput.addEventListener('input', () => {
+            const markdownText = markdownInput.value;
+            htmlOutput.innerHTML = marked.parse(markdownText);
+        });
+
+        saveButton.addEventListener('click', function() {
+            const markdownText = markdownInput.value;
+            const blob = new Blob([markdownText], { type: 'text/markdown' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'markdown_file.md';
+            link.click();
+        });
+
+    </script>
+</body>
+</html>

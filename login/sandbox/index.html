@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Webový Sandbox pro Markdown Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        iframe {
+            width: 80%;
+            height: 80%;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <iframe src="editor.html"
+            sandbox="allow-popups
+                    allow-modals
+                    allow-scripts
+                    allow-same-origin
+                    allow-forms
+                    allow-downloads">
+    </iframe>
+</body>
+</html>
