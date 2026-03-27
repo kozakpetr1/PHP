@@ -28,7 +28,7 @@ echo "<h2>1. For loop</h2>";
 
 for ($i = 1; $i <= 5; $i++) {
 
-    echo "Iterace číslo: $i <br>";
+    echo $i * $i . "<br>";
 }
 
 

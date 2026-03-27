@@ -132,6 +132,9 @@ echo "Server software: " . $_SERVER["SERVER_SOFTWARE"] . "<br>";
 echo "Metoda požadavku: " . $_SERVER["REQUEST_METHOD"] . "<br>";
 echo "IP adresa klienta: " . $_SERVER["REMOTE_ADDR"] . "<br>";
 
+echo "<pre>";
+print_r($GLOBALS);
+echo "</pre>";
 
 
 /*

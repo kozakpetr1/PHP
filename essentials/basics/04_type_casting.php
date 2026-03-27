@@ -16,7 +16,7 @@ echo "<h1>PHP Tutorial 04 - Přetypování</h1>";
 
 /*
 -------------------------------------------
-1. IMPLICITNÍ PŘETYPování
+1. IMPLICITNÍ Přetypování
 -------------------------------------------
 
 PHP často automaticky převádí typy hodnot.
@@ -45,7 +45,7 @@ echo "<br>";
 
 /*
 -------------------------------------------
-2. EXPLICITNÍ PŘETYPování
+2. EXPLICITNÍ Přetypování
 -------------------------------------------
 
 Explicitní přetypování provádí programátor.
@@ -116,7 +116,7 @@ echo "<br>";
 
 /*
 -------------------------------------------
-4. PŘETYPování STRING → NUMBER
+4. Přetypování STRING → NUMBER
 -------------------------------------------
 
 Pokud string obsahuje číslo,
@@ -160,7 +160,7 @@ echo "<br>";
 
 /*
 -------------------------------------------
-5. PŘETYPování NA BOOL
+5. Přetypování na BOOL
 -------------------------------------------
 
 Při převodu na bool platí:
@@ -214,7 +214,7 @@ echo "</pre>";
 
 /*
 -------------------------------------------
-7. PŘETYPování NA OBJEKT
+7. Přetypování na OBJEKT
 -------------------------------------------
 
 Pole lze převést na objekt.
@@ -236,7 +236,7 @@ echo "Role: " . $object->role . "<br>";
 
 /*
 -------------------------------------------
-8. FUNKCE PRO PŘEVOD TYPOV
+8. FUNKCE PRO PŘEVOD TYPŮ
 -------------------------------------------
 
 PHP obsahuje také speciální funkce:
