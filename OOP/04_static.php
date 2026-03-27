@@ -31,6 +31,12 @@ class Counter
         self::$count++;
     }
 
+    // Destruktor
+    public function __destruct()
+    {
+        // Každé zrušení objektu sníží počítadlo
+        self::$count--;
+    }
 
     // Statická metoda
     public static function getCount()
@@ -56,8 +62,11 @@ $obj3 = new Counter();
 // Statická metoda se volá přes název třídy
 echo Counter::getCount();
 
-echo "<br>";
+unset($obj2); // Zrušení jednoho objektu
 
+echo Counter::getCount();
+
+echo "<br>";
 
 // Přístup ke statické vlastnosti
 echo Counter::$count;
