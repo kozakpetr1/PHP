@@ -123,4 +123,3 @@ echo "<br>";
 // Výpis celé informace
 echo $person->introduce();
 
-?>

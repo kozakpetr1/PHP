@@ -28,20 +28,20 @@ class Counter
     public function __construct()
     {
         // Každé vytvoření objektu zvýší počítadlo
-        self::$count++;
+        self::$count++; // inkrementace statické vlastnosti, self:: odkazuje na aktuální třídu
     }
 
     // Destruktor
     public function __destruct()
     {
         // Každé zrušení objektu sníží počítadlo
-        self::$count--;
+        self::$count--; // dekrementace statické vlastnosti, self:: odkazuje na aktuální třídu
     }
 
     // Statická metoda
     public static function getCount()
     {
-        return "Počet vytvořených objektů: " . self::$count;
+        return "Počet existujících objektů: " . self::$count;
     }
 }
 
