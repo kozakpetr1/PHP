@@ -17,10 +17,10 @@ print("Python Tutorial 18 - Práce s databází\n")
 
 try:
     conn = mysql.connector.connect( # připojení k databázi
-        host="localhost",
-        user="root",
-        password="",
-        database="store"
+        host="localhost", # adresa serveru, kde běží databáze (localhost znamená, že je na stejném počítači)
+        user="root", # uživatelské jméno pro přístup k databázi
+        password="", # heslo pro přístup k databázi (v tomto případě prázdné)
+        database="store" # název databáze, ke které se chceme připojit
     )
 
     if conn.is_connected(): # kontrola, zda je připojení úspěšné
@@ -33,6 +33,7 @@ except mysql.connector.Error as e: # zachycení chyby připojení a výpis chybo
  # vytvoření kurzoru pro provádění SQL dotazů, dictionary=True umožňuje přístup k výsledkům jako k slovníku
 cursor = conn.cursor(dictionary=True)
 
+# SQL dotaz pro výběr všech záznamů z tabulky warehouse
 sql_select = "SELECT * FROM warehouse;"
 # provedení SQL dotazu, výsledky jsou nyní v kurzoru
 cursor.execute(sql_select) 
