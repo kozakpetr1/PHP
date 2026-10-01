@@ -22,13 +22,17 @@ class Person
 {
     private $name;
     private $age;
-
-
+    private $sex;
+    private $email;
+    private $cell_phone;
     // Konstruktor
-    public function __construct($name, $age)
+    public function __construct($name, $age, $sex = null, $email = null, $cell_phone = null)
     {
         $this->name = $name;
         $this->age = $age;
+        $this->sex = $sex;
+        $this->email = $email;
+        $this->cell_phone = $cell_phone;
     }
 
 
@@ -50,7 +54,7 @@ class Person
 
     public function __get($property)
     {
-        echo "Čtu nepřístupnou vlastnost: $property<br>";
+        echo "Čtu nepřístupnou vlastnost: $property\n";
 
         if ($property === "name") {
             return $this->name;
@@ -58,6 +62,17 @@ class Person
 
         if ($property === "age") {
             return $this->age;
+        }
+
+        if ($property === "sex") {
+            return $this->sex;
+        }
+
+        if ($property === "email") {
+            return $this->email;
+        }
+        if ($property === "cell_phone") {
+            return $this->cell_phone;
         }
 
         return null;
@@ -71,10 +86,23 @@ class Person
 
     public function __set($property, $value)
     {
-        echo "Zapisuji do nepřístupné vlastnosti: $property<br>";
+        echo "Zapisuji do nepřístupné vlastnosti: $property\n";
 
         if ($property === "age" && $value >= 0) {
             $this->age = $value;
+        }
+
+        if ($property === "sex" && ($value === "M" || $value === "F")) {
+            $this->sex = $value;
+        }
+
+        if ($property === 'email') {
+            $this->email = filter_var($value, FILTER_VALIDATE_EMAIL) ?: null;
+        }
+
+        if ($property === 'cell_phone') {
+            $normalized = preg_replace('/[\s\-]/', '', $value);
+            $this->cell_phone = preg_match('/^\+?[1-9]\d{6,14}$/', $normalized) ? $normalized : null;
         }
     }
 }
@@ -84,7 +112,7 @@ class Person
 // Vytvoření objektu
 // --------------------------------------------------
 
-$person = new Person("Jan", 18);
+$person = new Person("Jan", 18, "M");
 
 
 // --------------------------------------------------
@@ -94,7 +122,7 @@ $person = new Person("Jan", 18);
 // Automatický převod objektu na text
 echo $person;
 
-echo "<br><br>";
+echo "\n\n";
 
 
 // --------------------------------------------------
@@ -104,8 +132,11 @@ echo "<br><br>";
 // Přístup k private vlastnosti → spustí __get()
 echo $person->name;
 
-echo "<br>";
+echo "\n";
 
+echo $person->sex;
+
+echo "\n";
 
 // --------------------------------------------------
 // __set()
@@ -113,6 +144,12 @@ echo "<br>";
 
 // Zápis do private vlastnosti → spustí __set()
 $person->age = 25;
+$person->age = -5; // neplatná hodnota, nebude změněna
+$person->sex = "M";
+$person->email = "jan@seznam.cz";
+$person->cell_phone = "+420 123 456 789";
 
-echo $person;
+echo $person . "\n";
+echo "Email: " . $person->email . "\n";
+echo "Telefon: " . $person->cell_phone . "\n";
 

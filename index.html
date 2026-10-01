@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Úvod do PHP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: přehled kapitol PHP (dashboard) → jedna kapitola na obrazovku, mřížka 12 sloupců s průsvitnými panely.
+   Design: vizuální systém VOŠ, SPŠ a SOŠ Varnsdorf — jeden tmavý svět (záměrně bez světlého režimu). */
+:root{
+  color-scheme:dark;
+  --bg1:#003b4b;--bg2:#006783;--panel:rgba(0,27,34,.48);--panel-2:rgba(0,0,0,.2);
+  --cyan:#41d7ff;--blue:#00c0f3;--yellow:#ffd400;--green:#a6ce39;--red:#ff7a6b;
+  --muted:rgba(255,255,255,.62);--white:#fff;--line:rgba(255,255,255,.1);
+  --code-bg:#001820;--code-fg:#eaffff;--code-hl:#ffea80;
+  --font:Raleway,"Segoe UI",system-ui,sans-serif;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;font-family:var(--font);color:var(--white);background:var(--bg1);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;line-height:1.45;font-size:15px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 85% 10%,rgba(65,215,255,.12),transparent 30%),
+  radial-gradient(circle at 10% 90%,rgba(166,206,57,.08),transparent 30%)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* horní lišta */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(0,30,38,.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+.bar-in{max-width:1450px;margin:auto;padding:.55rem 5vw;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{color:#fff;text-decoration:none;font-weight:800;letter-spacing:.04em;font-size:.82rem;text-transform:uppercase}
+.brand span{color:var(--cyan)}
+.bar-ch{color:var(--muted);font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-nav{display:flex;gap:.35rem}
+.btn{display:inline-flex;align-items:center;gap:.35rem;color:#fff;text-decoration:none;background:rgba(0,20,26,.55);
+  padding:.42rem .7rem;font-size:.75rem;font-weight:600;letter-spacing:.04em;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(65,215,255,.15);color:var(--cyan)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.btn[aria-disabled="true"]{opacity:.35;pointer-events:none}
+
+/* společné */
+.wrap{position:relative;z-index:1;max-width:1450px;margin:auto;padding-inline:5vw}
+header.hero{padding-block:3rem 1.5rem}
+.kicker{color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(2.2rem,5vw,4.5rem);line-height:1.05;margin:.35rem 0 .7rem;letter-spacing:-.03em;text-wrap:balance;font-weight:800}
+.lead{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:200;max-width:62ch;color:rgba(255,255,255,.9);margin:0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1rem}
+.card{background:var(--panel);backdrop-filter:blur(12px);padding:1.25rem 1.35rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+h2{font-size:1.1rem;margin:0 0 .85rem;color:var(--cyan);text-wrap:balance}
+h3{font-size:.82rem;margin:.9rem 0 .35rem;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase}
+h3:first-child{margin-top:0}
+p{margin:.35rem 0 .65rem;overflow-wrap:anywhere}
+.muted{color:var(--muted);font-size:.82rem}
+ul,ol{margin:.4rem 0 0;padding-left:1.15rem} li{margin:.25rem 0}
+.tag{display:inline-block;padding:.18rem .45rem;margin:.12rem;background:rgba(65,215,255,.1);color:var(--cyan);font-size:.72rem;font-family:var(--mono)}
+.tag.g{background:rgba(166,206,57,.12);color:var(--green)}
+.tag.y{background:rgba(255,212,0,.1);color:var(--yellow)}
+pre{margin:.5rem 0 0;padding:.75rem .85rem;background:var(--code-bg);color:var(--code-fg);overflow:auto;font:.78rem/1.55 var(--mono);tab-size:4}
+pre .pr{color:var(--green);user-select:none}
+pre .cm{color:#7fb3c2;font-style:italic}
+pre .out{color:rgba(234,255,255,.62)}
+code{font-family:var(--mono);color:var(--code-hl);font-size:.92em}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;color:var(--cyan);padding:.45rem;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:.45rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;overflow-wrap:anywhere}
+.perms{font-family:var(--mono);font-size:1rem;color:var(--yellow)}
+.callout{border-left:4px solid var(--yellow);background:rgba(255,212,0,.07);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.callout.warn{border-color:var(--red);background:rgba(255,122,107,.08)}
+.callout.ok{border-color:var(--green);background:rgba(166,206,57,.08)}
+.syntax{font-family:var(--mono);font-size:1rem;background:var(--panel-2);padding:.7rem .85rem;border-left:3px solid var(--cyan);overflow-x:auto;white-space:nowrap}
+.syntax b{color:#fff}.syntax i{color:var(--cyan);font-style:normal}.syntax em{color:var(--yellow);font-style:normal}
+.arch{display:grid;gap:.35rem}.layer{padding:.55rem .75rem;background:var(--panel-2);border-left:3px solid var(--cyan)}
+.layer:nth-child(2){border-color:var(--blue)}.layer:nth-child(3){border-color:var(--green)}.layer:nth-child(4){border-color:var(--yellow)}.layer:nth-child(5){border-color:var(--muted)}
+.layer b{display:block;font-size:.82rem}.layer span{font-size:.74rem;color:var(--muted)}
+.timeline{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}.time{background:var(--panel-2);padding:.65rem}.time b{color:var(--yellow);font-size:.78rem}.time div{font-size:.78rem;margin-top:.25rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:.45rem;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:.6rem;align-items:start;margin:0;background:var(--panel-2);padding:.55rem .65rem;font-size:.84rem}
+.steps li:before{content:counter(s);font-weight:800;color:var(--bg1);background:var(--cyan);width:1.6rem;height:1.6rem;display:grid;place-items:center;font-size:.8rem}
+.kbd{font-family:var(--mono);font-size:.78rem;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(255,255,255,.25);padding:.05rem .35rem;color:#fff;white-space:nowrap}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.mode{background:var(--panel-2);padding:.65rem;border-top:3px solid var(--cyan)}
+.mode:nth-child(2){border-color:var(--green)}.mode:nth-child(3){border-color:var(--yellow)}.mode:nth-child(4){border-color:var(--blue)}
+.mode b{display:block;font-size:.85rem}.mode span{font-size:.76rem;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.8rem;margin:.4rem 0}
+.flow span{background:var(--panel-2);padding:.35rem .55rem;border:1px solid var(--line)}
+.flow i{color:var(--yellow);font-style:normal;font-weight:700}
+
+/* dashboard */
+.dash-meta{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+.dash-meta b{display:block;color:#fff;font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.part{margin-top:1.6rem}
+.part-h{display:flex;align-items:baseline;gap:.8rem;margin:0 0 .7rem;flex-wrap:wrap}
+.part-h h2{margin:0;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow)}
+.part-h span{color:var(--muted);font-size:.8rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.tile{display:flex;flex-direction:column;gap:.45rem;text-decoration:none;color:#fff;background:var(--panel);backdrop-filter:blur(12px);
+  padding:1.1rem 1.2rem 1rem;border-bottom:3px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.tile:hover{background:rgba(0,27,34,.7);border-color:var(--cyan);transform:translateY(-2px)}
+.tile .n{font-size:2.2rem;font-weight:200;color:var(--cyan);line-height:1;font-variant-numeric:tabular-nums}
+.tile .t{font-weight:700;font-size:1rem;line-height:1.25;text-wrap:balance}
+.tile .d{font-size:.8rem;color:var(--muted);flex:1}
+.tile .k{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.2rem}
+.tile .k span{font-family:var(--mono);font-size:.68rem;color:var(--code-hl);background:rgba(0,0,0,.25);padding:.12rem .38rem}
+.p2 .tile .n{color:var(--green)} .p2 .tile:hover{border-color:var(--green)}
+.p3 .tile .n{color:var(--yellow)} .p3 .tile:hover{border-color:var(--yellow)}
+.hint{margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+
+/* kapitola */
+.ch-head{padding-block:2.4rem 1.3rem}
+.ch-head h1{font-size:clamp(2rem,4.4vw,3.8rem)}
+.pager{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;padding-block:.6rem 2.5rem}
+.pager a{max-width:48%}
+.pager .next{margin-left:auto;text-align:right}
+.pager small{display:block;color:var(--muted);font-weight:400;letter-spacing:0;font-size:.7rem}
+footer{position:relative;z-index:1;max-width:1450px;margin:auto;padding:0 5vw 2rem;color:var(--muted);font-size:.7rem}
+
+@media(max-width:950px){
+  .c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 6}
+}
+@media(max-width:720px){
+  .c3,.c4,.c5,.c6,.c7,.c8,.c12{grid-column:span 12}
+  .modes,.timeline{grid-template-columns:1fr}
+  .grid{gap:.75rem}.card{padding:1rem}
+  .bar-ch{display:none}
+  .pager a{max-width:100%;flex:1 1 100%}.pager .next{text-align:left}
+}
+@media print{.bar,.pager{display:none}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#prehled">Úvod do <span>PHP</span></a>
+  <div class="bar-ch" id="barTitle">Přehled kapitol</div>
+  <div class="bar-nav">
+    <a class="btn" id="barPrev" href="#prehled" aria-label="Předchozí kapitola">←</a>
+    <a class="btn" href="#prehled">Přehled</a>
+    <a class="btn" id="barNext" href="#k1" aria-label="Další kapitola">→</a>
+  </div>
+</div></div>
+
+<!-- ============ DASHBOARD ============ -->
+<section id="prehled" class="view wrap" data-title="Přehled kapitol">
+  <header class="hero">
+    <div class="kicker">Programování webových aplikací</div>
+    <h1>Úvod do PHP</h1>
+    <p class="lead">Jak PHP nainstalovat samostatně i jako součást balíčku typu XAMPP, kde a jak ho konfigurovat, jak přidat rozšíření a jak spouštět skripty v shellu i přes webový server.</p>
+    <div class="dash-meta">
+      <div><b>7</b>kapitol</div>
+      <div><b>PHP 8.5</b>nejnovější větev</div>
+      <div><b>4 roky</b>podpora jedné větve</div>
+    </div>
+  </header>
+
+  <div class="part p1">
+    <div class="part-h"><h2>Základy a instalace</h2><span>co PHP je a jak ho dostat do počítače</span></div>
+    <div class="tiles">
+      <a class="tile" href="#k1"><span class="n">01</span><span class="t">Co je PHP a jak funguje</span><span class="d">Skriptování na straně serveru, cesta HTTP požadavku, verze a režimy běhu (SAPI).</span><span class="k"><span>server-side</span><span>SAPI</span><span>8.x</span></span></a>
+      <a class="tile" href="#k2"><span class="n">02</span><span class="t">Samostatná instalace</span><span class="d">Windows ze ZIP archivu, Debian přes apt, macOS přes Homebrew, Docker.</span><span class="k"><span>php.exe</span><span>PATH</span><span>apt</span></span></a>
+      <a class="tile" href="#k3"><span class="n">03</span><span class="t">Balíčky XAMPP, WAMP a další</span><span class="d">Hotové sady web server + PHP + databáze. Srovnání, struktura XAMPP a časté problémy.</span><span class="k"><span>XAMPP</span><span>WampServer</span><span>Docker</span></span></a>
+    </div>
+  </div>
+
+  <div class="part p2">
+    <div class="part-h"><h2>Konfigurace</h2><span>nastavení interpretu a rozšíření</span></div>
+    <div class="tiles">
+      <a class="tile" href="#k4"><span class="n">04</span><span class="t">Konfigurační soubory</span><span class="d">Kde je php.ini, důležité direktivy, vývojové a produkční nastavení, přepisování hodnot.</span><span class="k"><span>php.ini</span><span>php --ini</span><span>phpinfo()</span></span></a>
+      <a class="tile" href="#k5"><span class="n">05</span><span class="t">Rozšíření (extensions)</span><span class="d">Zapnutí rozšíření ve Windows a v Debianu, Xdebug, OPcache, PECL.</span><span class="k"><span>php -m</span><span>extension=</span><span>phpenmod</span></span></a>
+    </div>
+  </div>
+
+  <div class="part p3">
+    <div class="part-h"><h2>Způsob použití</h2><span>dvě cesty, jak PHP spustit</span></div>
+    <div class="tiles">
+      <a class="tile" href="#k6"><span class="n">06</span><span class="t">PHP v shellu (CLI)</span><span class="d">Spuštění skriptu, interaktivní režim, argumenty, vstup z klávesnice, cron.</span><span class="k"><span>php script.php</span><span>$argv</span><span>-a</span></span></a>
+      <a class="tile" href="#k7"><span class="n">07</span><span class="t">PHP přes HTTP server</span><span class="d">Vestavěný server, Apache s mod_php, Nginx s PHP-FPM a řešení častých chyb.</span><span class="k"><span>php -S</span><span>Apache</span><span>PHP-FPM</span></span></a>
+    </div>
+  </div>
+  <p class="hint">Při promítání se mezi kapitolami posouváte šipkami <span class="kbd">←</span> <span class="kbd">→</span>, klávesa <span class="kbd">Esc</span> vrací na přehled.</p>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="k1" class="view wrap chapter" data-title="Co je PHP a jak funguje">
+<header class="ch-head">
+  <div class="kicker">Kapitola 1 / 7 · Základy</div>
+  <h1>Co je PHP a jak funguje</h1>
+  <p class="lead">PHP je skriptovací jazyk, který běží na serveru. Prohlížeč nikdy nedostane PHP kód, dostane jen jeho výsledek, typicky HTML.</p>
+</header>
+<div class="grid">
+  <article class="card c7"><h2>Cesta jednoho požadavku</h2>
+    <div class="arch">
+      <div class="layer"><b>1 · PROHLÍŽEČ</b><span>uživatel otevře <code>http://localhost/index.php</code> a odešle HTTP požadavek GET</span></div>
+      <div class="layer"><b>2 · WEBOVÝ SERVER</b><span>Apache nebo Nginx podle přípony <code>.php</code> pozná, že soubor nemá poslat, ale nechat zpracovat</span></div>
+      <div class="layer"><b>3 · INTERPRET PHP</b><span>přeloží skript na bytecode, spustí ho, případně se dotáže databáze</span></div>
+      <div class="layer"><b>4 · DATABÁZE (volitelně)</b><span>MySQL / MariaDB, PostgreSQL, SQLite</span></div>
+      <div class="layer"><b>5 · ODPOVĚĎ</b><span>server pošle prohlížeči vygenerované HTML; PHP kód zůstává na serveru</span></div>
+    </div>
+  </article>
+  <article class="card c5"><h2>Kód × co vidí prohlížeč</h2>
+    <h3>index.php na serveru</h3>
+<pre>&lt;!doctype html&gt;
+&lt;p&gt;Dnes je &lt;?= date('j. n. Y') ?&gt;&lt;/p&gt;
+&lt;?php
+  $zaci = ['Anna', 'Jan', 'Petra'];
+  echo '&lt;p&gt;Ve třídě je ' . count($zaci) . ' žáků.&lt;/p&gt;';
+?&gt;</pre>
+    <h3>Zdrojový kód stránky v prohlížeči</h3>
+<pre>&lt;!doctype html&gt;
+&lt;p&gt;Dnes je 1. 10. 2026&lt;/p&gt;
+&lt;p&gt;Ve třídě je 3 žáků.&lt;/p&gt;</pre>
+    <p class="muted"><code>&lt;?php … ?&gt;</code> ohraničuje PHP kód, <code>&lt;?= … ?&gt;</code> je zkratka pro <code>echo</code>.</p>
+  </article>
+
+  <article class="card c7"><h2>Podporované verze</h2>
+    <p>Každá větev PHP má 2 roky aktivní podpory a 2 roky jen bezpečnostních oprav. Stav k 1. 10. 2026:</p>
+    <div class="tbl"><table>
+      <tr><th>Větev</th><th>Vydána</th><th>Aktivní podpora do</th><th>Bezpečnostní opravy do</th></tr>
+      <tr><td><b>8.5</b></td><td>20. 11. 2025</td><td>31. 12. 2027</td><td>31. 12. 2029</td></tr>
+      <tr><td><b>8.4</b></td><td>21. 11. 2024</td><td>31. 12. 2026</td><td>31. 12. 2028</td></tr>
+      <tr><td><b>8.3</b></td><td>23. 11. 2023</td><td>skončila</td><td>31. 12. 2027</td></tr>
+      <tr><td><b>8.2</b></td><td>8. 12. 2022</td><td>skončila</td><td>31. 12. 2026</td></tr>
+      <tr><td class="muted">7.x a starší</td><td colspan="3" class="muted">bez podpory, nepoužívat</td></tr>
+    </table></div>
+  </article>
+  <article class="card c5"><h2>Kde se PHP používá</h2>
+    <p>Redakční systémy <span class="tag">WordPress</span><span class="tag">Drupal</span><span class="tag">Joomla</span>, frameworky <span class="tag">Laravel</span><span class="tag">Symfony</span><span class="tag">Nette</span>, aplikace <span class="tag">Moodle</span><span class="tag">Nextcloud</span><span class="tag">phpMyAdmin</span>.</p>
+    <h3>Webové „stacky“</h3>
+    <div class="tbl"><table>
+      <tr><td><b>LAMP</b></td><td>Linux + Apache + MySQL/MariaDB + PHP</td></tr>
+      <tr><td><b>LEMP</b></td><td>Linux + Nginx („engine-x“) + MySQL + PHP</td></tr>
+      <tr><td><b>WAMP</b></td><td>Windows + Apache + MySQL + PHP</td></tr>
+      <tr><td><b>XAMPP</b></td><td>X (libovolný OS) + Apache + MariaDB + PHP + Perl</td></tr>
+    </table></div>
+  </article>
+
+  <article class="card c12"><h2>Režimy běhu PHP (SAPI)</h2>
+    <p>Tentýž interpret PHP se dá připojit k okolí různými způsoby. Říká se jim SAPI (Server API) a každý může mít vlastní <code>php.ini</code>. Na tomto pojmu stojí kapitoly 4, 6 a 7.</p>
+    <div class="tbl"><table>
+      <tr><th>SAPI</th><th>Jak běží</th><th>Kdy</th><th>Kapitola</th></tr>
+      <tr><td><code>cli</code></td><td>v terminálu: <code>php skript.php</code></td><td>skripty, cron, Composer, testy</td><td>6</td></tr>
+      <tr><td><code>cli-server</code></td><td>vestavěný webový server <code>php -S</code></td><td>rychlý vývoj, výuka</td><td>7</td></tr>
+      <tr><td><code>apache2handler</code></td><td>modul uvnitř Apache (mod_php)</td><td>XAMPP, WampServer, jednoduché servery</td><td>3, 7</td></tr>
+      <tr><td><code>fpm-fcgi</code></td><td>samostatná služba PHP-FPM, web server s ní mluví přes FastCGI</td><td>Nginx, výkonné produkční servery</td><td>7</td></tr>
+    </table></div>
+<pre>$ php -r 'echo php_sapi_name(), PHP_EOL;'
+<span class="out">cli</span></pre>
+  </article>
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="k2" class="view wrap chapter" data-title="Samostatná instalace">
+<header class="ch-head">
+  <div class="kicker">Kapitola 2 / 7 · Instalace</div>
+  <h1>Samostatná instalace PHP</h1>
+  <p class="lead">Samotný interpret stačí pro skripty v terminálu a pro vestavěný webový server. Webový server a databázi lze doinstalovat později.</p>
+</header>
+<div class="grid">
+  <article class="card c7"><h2>Windows — ZIP archiv</h2>
+    <ol class="steps">
+      <li><span>Stáhnout z <code>windows.php.net/download</code> verzi <b>x64</b>, archiv ZIP.</span></li>
+      <li><span>Vybrat <b>Thread Safe</b> (pro Apache s mod_php) nebo <b>Non Thread Safe</b> (CLI, FastCGI, IIS). Pro výuku CLI stačí NTS.</span></li>
+      <li><span>Rozbalit do <code>C:\php</code>. Bez mezer a diakritiky v cestě.</span></li>
+      <li><span>Zkopírovat <code>php.ini-development</code> jako <code>php.ini</code>.</span></li>
+      <li><span>Přidat <code>C:\php</code> do proměnné <b>Path</b>: Nastavení → Systém → O systému → Upřesnit nastavení systému → Proměnné prostředí.</span></li>
+      <li><span>Otevřít <b>nový</b> terminál a ověřit <code>php -v</code>.</span></li>
+    </ol>
+    <div class="callout">Když <code>php.exe</code> hlásí chybějící <code>VCRUNTIME140.dll</code>, doinstalujte <b>Microsoft Visual C++ Redistributable</b> (x64) pro Visual Studio 2015–2022.</div>
+  </article>
+  <article class="card c5"><h2>Ověření ve Windows</h2>
+<pre>PS&gt; php -v
+<span class="out">PHP 8.4.13 (cli) (built: …) (NTS Visual C++ 2022 x64)
+Copyright (c) The PHP Group
+Zend Engine v4.4.13</span>
+
+PS&gt; where.exe php
+<span class="out">C:\php\php.exe</span>
+
+PS&gt; php --ini
+<span class="out">Loaded Configuration File: C:\php\php.ini</span></pre>
+    <p class="muted">Čísla verzí jsou ilustrativní. Pokud <code>php --ini</code> ukáže <code>(none)</code>, PHP nenašlo <code>php.ini</code> a běží s výchozími hodnotami.</p>
+    <h3>Alternativa</h3>
+    <p><b>WSL</b> s Debianem: instalace je pak stejná jako v Linuxu (vedle).</p>
+  </article>
+
+  <article class="card c7"><h2>Debian / Ubuntu — apt</h2>
+<pre>$ sudo apt update
+$ sudo apt install php-cli          <span class="cm"># jen interpret pro terminál</span>
+$ php -v
+<span class="out">PHP 8.4.x (cli) …</span>              <span class="cm"># Debian 13 obsahuje PHP 8.4</span>
+
+$ sudo apt install php-mysql php-mbstring php-xml php-curl
+                                    <span class="cm"># běžná rozšíření (kapitola 5)</span>
+$ apt list --installed 'php*'       <span class="cm"># co je nainstalováno</span></pre>
+    <div class="callout warn"><b>Pozor:</b> balíček <code>php</code> (bez přípony) doinstaluje i Apache s mod_php. Na server s Nginx proto instalujte <code>php-fpm</code>, ne <code>php</code>.</div>
+    <h3>Novější verze než v distribuci</h3>
+    <p>Repozitář <code>packages.sury.org</code> udržuje Ondřej Surý, správce PHP balíčků v Debianu. Nabízí všechny podporované větve a umožňuje mít jich nainstalováno víc najednou (<code>php8.3-cli</code>, <code>php8.5-cli</code>, přepnutí přes <code>update-alternatives --config php</code>).</p>
+  </article>
+  <article class="card c5"><h2>macOS a Docker</h2>
+    <h3>macOS — Homebrew</h3>
+<pre>$ brew install php
+$ php -v
+$ brew services start php     <span class="cm"># PHP-FPM jako služba</span></pre>
+    <h3>Docker — oficiální obrazy</h3>
+<pre><span class="cm"># interaktivní PHP bez instalace</span>
+$ docker run --rm -it php:8.5-cli php -a
+
+<span class="cm"># spustit skript z aktuální složky</span>
+$ docker run --rm -v "$PWD":/app -w /app php:8.4-cli php skript.php
+
+<span class="cm"># Apache + PHP na portu 8080</span>
+$ docker run --rm -p 8080:80 -v "$PWD":/var/www/html php:8.4-apache</pre>
+    <p class="muted">Výhoda: přesná verze, stejné prostředí u všech žáků i na serveru.</p>
+  </article>
+</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="k3" class="view wrap chapter" data-title="Balíčky XAMPP, WAMP a další">
+<header class="ch-head">
+  <div class="kicker">Kapitola 3 / 7 · Instalace</div>
+  <h1>Balíčky XAMPP, WAMP a další</h1>
+  <p class="lead">Balíček nainstaluje najednou webový server, PHP, databázi a správu databáze přes web. Za pět minut máme funkční vývojové prostředí, ale za cenu menší kontroly nad verzemi.</p>
+</header>
+<div class="grid">
+  <article class="card c12"><h2>Srovnání</h2>
+    <div class="tbl"><table>
+      <tr><th>Balíček</th><th>Systém</th><th>Obsah</th><th>Výhody</th><th>Nevýhody</th></tr>
+      <tr><td><b>XAMPP</b></td><td>Windows, Linux, macOS</td><td>Apache, MariaDB, PHP, Perl, phpMyAdmin</td><td>nejrozšířenější, zdarma, jednoduchý ovládací panel</td><td>poslední verze 8.2.12 s PHP 8.2, které má bezpečnostní opravy jen do konce roku 2026</td></tr>
+      <tr><td><b>WampServer</b></td><td>Windows</td><td>Apache, MySQL, MariaDB, PHP, phpMyAdmin</td><td>více verzí PHP najednou, přepínání z ikony v liště</td><td>jen Windows, vyžaduje VC++ runtime</td></tr>
+      <tr><td><b>Laragon</b></td><td>Windows</td><td>Apache/Nginx, MySQL, PHP, Node.js, Composer</td><td>rychlý, automatické virtuální domény <code>projekt.test</code></td><td>od verze 7 placená licence, verze 6 zdarma</td></tr>
+      <tr><td><b>MAMP</b></td><td>macOS, Windows</td><td>Apache/Nginx, MySQL, PHP</td><td>jednoduchý na macOS</td><td>pokročilé funkce jen v placené verzi PRO</td></tr>
+      <tr><td><b>Laravel Herd</b></td><td>macOS, Windows</td><td>Nginx, PHP, Composer, Node.js</td><td>rychlý, přepínání verzí PHP</td><td>databáze a další služby jen v placené verzi</td></tr>
+      <tr><td><b>Docker Compose</b></td><td>všude</td><td>libovolné kontejnery</td><td>stejné jako na serveru, verze v souboru</td><td>nutná znalost Dockeru, vyšší nároky</td></tr>
+    </table></div>
+  </article>
+
+  <article class="card c6"><h2>XAMPP — instalace a spuštění</h2>
+    <ol class="steps">
+      <li><span>Stáhnout instalátor z <code>apachefriends.org</code>.</span></li>
+      <li><span>Instalovat do <code>C:\xampp</code>, <b>ne</b> do <code>C:\Program Files</code> (kvůli oprávněním UAC).</span></li>
+      <li><span>Spustit <b>XAMPP Control Panel</b> a tlačítkem <b>Start</b> zapnout Apache a MySQL.</span></li>
+      <li><span>Otevřít <code>http://localhost/</code> (úvodní stránka) a <code>http://localhost/phpmyadmin/</code>.</span></li>
+      <li><span>Vlastní soubory ukládat do <code>C:\xampp\htdocs\</code>, např. <code>htdocs\test\index.php</code> → <code>http://localhost/test/</code>.</span></li>
+    </ol>
+  </article>
+  <article class="card c6"><h2>Struktura XAMPP</h2>
+    <div class="tbl"><table>
+      <tr><th>Cesta</th><th>Obsah</th></tr>
+      <tr><td><code>C:\xampp\htdocs\</code></td><td>kořen webu (DocumentRoot)</td></tr>
+      <tr><td><code>C:\xampp\php\php.ini</code></td><td>konfigurace PHP</td></tr>
+      <tr><td><code>C:\xampp\php\ext\</code></td><td>rozšíření PHP (.dll)</td></tr>
+      <tr><td><code>C:\xampp\apache\conf\httpd.conf</code></td><td>konfigurace Apache</td></tr>
+      <tr><td><code>C:\xampp\apache\conf\extra\httpd-vhosts.conf</code></td><td>virtuální hosty</td></tr>
+      <tr><td><code>C:\xampp\apache\logs\error.log</code></td><td>chyby Apache a PHP</td></tr>
+      <tr><td><code>C:\xampp\mysql\bin\my.ini</code></td><td>konfigurace MariaDB</td></tr>
+    </table></div>
+    <p class="muted">V Control Panelu vede tlačítko <b>Config</b> u Apache přímo na <code>httpd.conf</code> i <code>php.ini</code>.</p>
+  </article>
+
+  <article class="card c6"><h2>Časté problémy</h2>
+    <div class="tbl"><table>
+      <tr><th>Příznak</th><th>Řešení</th></tr>
+      <tr><td>Apache nenaběhne, port 80 je obsazený</td><td>najít viníka: <code>netstat -ano | findstr :80</code>. Často IIS nebo služba „World Wide Web Publishing“. Nebo v <code>httpd.conf</code> změnit <code>Listen 8080</code></td></tr>
+      <tr><td>MySQL nenaběhne, port 3306</td><td>běží jiný MySQL server, např. z WampServeru. Zastavit ho nebo změnit <code>port</code> v <code>my.ini</code></td></tr>
+      <tr><td>MySQL padá po nečekaném vypnutí</td><td>v <code>mysql\data</code> poškozené soubory; obnovit ze složky <code>mysql\backup</code> (zachovat vlastní databáze)</td></tr>
+      <tr><td>Změna v <code>php.ini</code> se neprojeví</td><td>restartovat Apache v Control Panelu</td></tr>
+    </table></div>
+  </article>
+  <article class="card c6"><h2>Docker Compose místo XAMPP</h2>
+    <p>Soubor <code>compose.yaml</code> v kořeni projektu popisuje celé prostředí. Spuštění: <code>docker compose up -d</code>.</p>
+<pre>services:
+  web:
+    image: php:8.4-apache
+    ports: ["8080:80"]
+    volumes: ["./src:/var/www/html"]
+  db:
+    image: mariadb:11
+    environment:
+      MARIADB_ROOT_PASSWORD: heslo
+      MARIADB_DATABASE: skola
+  pma:
+    image: phpmyadmin
+    ports: ["8081:80"]
+    environment: { PMA_HOST: db }</pre>
+  </article>
+  <article class="card c12">
+    <div class="callout warn" style="margin-top:0"><b>Jen pro vývoj.</b> Balíčky typu XAMPP mají výchozí účet <code>root</code> v databázi bez hesla, zapnuté zobrazování chyb a vypnutá bezpečnostní omezení. Na veřejný server patří samostatně nainstalovaný a nastavený Apache/Nginx, PHP a databáze.</div>
+  </article>
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="k4" class="view wrap chapter" data-title="Konfigurační soubory">
+<header class="ch-head">
+  <div class="kicker">Kapitola 4 / 7 · Konfigurace</div>
+  <h1>Konfigurační soubory</h1>
+  <p class="lead">Chování PHP řídí soubor <code>php.ini</code>: limity paměti a času, velikost nahrávaných souborů, zobrazování chyb i načtená rozšíření. Nejdřív je třeba zjistit, který soubor se opravdu načítá.</p>
+</header>
+<div class="grid">
+  <article class="card c6"><h2>Který php.ini se načítá?</h2>
+<pre>$ php --ini
+<span class="out">Configuration File (php.ini) Path: /etc/php/8.4/cli
+Loaded Configuration File:         /etc/php/8.4/cli/php.ini
+Scan for additional .ini files in: /etc/php/8.4/cli/conf.d
+Additional .ini files parsed:      /etc/php/8.4/cli/conf.d/10-opcache.ini,
+                                   /etc/php/8.4/cli/conf.d/20-mbstring.ini, …</span></pre>
+    <p>Pro web vytvoříme dočasný soubor a hledáme řádek <b>Loaded Configuration File</b>:</p>
+<pre>&lt;?php phpinfo();</pre>
+    <div class="callout warn"><code>phpinfo()</code> prozradí útočníkovi vše o serveru. Po použití soubor smažte.</div>
+  </article>
+  <article class="card c6"><h2>Kde soubory leží</h2>
+    <div class="tbl"><table>
+      <tr><th>Prostředí</th><th>Soubor</th></tr>
+      <tr><td>Windows (ZIP)</td><td><code>C:\php\php.ini</code></td></tr>
+      <tr><td>XAMPP</td><td><code>C:\xampp\php\php.ini</code></td></tr>
+      <tr><td>Debian — CLI</td><td><code>/etc/php/8.4/cli/php.ini</code></td></tr>
+      <tr><td>Debian — Apache</td><td><code>/etc/php/8.4/apache2/php.ini</code></td></tr>
+      <tr><td>Debian — FPM</td><td><code>/etc/php/8.4/fpm/php.ini</code></td></tr>
+      <tr><td>Debian — rozšíření</td><td><code>/etc/php/8.4/mods-available/*.ini</code> → odkazy v <code>conf.d/</code></td></tr>
+      <tr><td>Docker</td><td><code>/usr/local/etc/php/php.ini</code> + <code>conf.d/</code></td></tr>
+    </table></div>
+    <div class="callout">V Debianu má <b>každé SAPI vlastní php.ini</b>. Změna v <code>cli/php.ini</code> se na webu neprojeví a naopak.</div>
+  </article>
+
+  <article class="card c5"><h2>Syntaxe</h2>
+<pre>; středník = komentář (zakázané nastavení)
+;extension=gd
+
+direktiva = hodnota
+memory_limit = 256M          ; K, M, G
+display_errors = On          ; On/Off, 1/0, true/false
+date.timezone = "Europe/Prague"
+error_reporting = E_ALL &amp; ~E_DEPRECATED
+
+[Session]                    ; sekce jsou jen pro přehlednost
+session.gc_maxlifetime = 1440</pre>
+    <h3>Šablony</h3>
+    <p>PHP přichází se dvěma vzory: <code>php.ini-development</code> (chyby zobrazuje) a <code>php.ini-production</code> (chyby jen loguje, přísnější). Na vlastním počítači použijte první, na serveru druhý.</p>
+  </article>
+  <article class="card c7"><h2>Nejdůležitější direktivy</h2>
+    <div class="tbl"><table>
+      <tr><th>Direktiva</th><th>Vývoj</th><th>Produkce</th><th>Význam</th></tr>
+      <tr><td><code>display_errors</code></td><td>On</td><td>Off</td><td>chyby přímo do stránky</td></tr>
+      <tr><td><code>error_reporting</code></td><td>E_ALL</td><td>E_ALL &amp; ~E_DEPRECATED</td><td>které chyby hlásit</td></tr>
+      <tr><td><code>log_errors</code> / <code>error_log</code></td><td>On</td><td>On + cesta</td><td>zápis chyb do logu</td></tr>
+      <tr><td><code>memory_limit</code></td><td>256M</td><td>128M–512M</td><td>paměť pro jeden skript</td></tr>
+      <tr><td><code>max_execution_time</code></td><td>60</td><td>30</td><td>sekundy na skript (v CLI 0 = bez limitu)</td></tr>
+      <tr><td><code>upload_max_filesize</code></td><td>20M</td><td>podle potřeby</td><td>max. velikost nahraného souboru</td></tr>
+      <tr><td><code>post_max_size</code></td><td>25M</td><td>&gt; upload_max_filesize</td><td>celý formulář POST</td></tr>
+      <tr><td><code>date.timezone</code></td><td colspan="2">Europe/Prague</td><td>výchozí časové pásmo pro <code>date()</code></td></tr>
+      <tr><td><code>expose_php</code></td><td>On</td><td>Off</td><td>hlavička <code>X-Powered-By</code> s verzí</td></tr>
+    </table></div>
+  </article>
+
+  <article class="card c7"><h2>Jak nastavení přepsat jinde</h2>
+    <div class="tbl"><table>
+      <tr><th>Kde</th><th>Příklad</th><th>Platí pro</th></tr>
+      <tr><td>v kódu</td><td><code>ini_set('display_errors', '1');</code></td><td>jen běžící skript</td></tr>
+      <tr><td>na příkazové řádce</td><td><code>php -d memory_limit=1G skript.php</code></td><td>jedno spuštění v CLI</td></tr>
+      <tr><td><code>.htaccess</code> (mod_php)</td><td><code>php_value upload_max_filesize 50M</code></td><td>adresář webu v Apache</td></tr>
+      <tr><td><code>.user.ini</code> (FPM, CGI)</td><td><code>upload_max_filesize = 50M</code></td><td>adresář webu</td></tr>
+      <tr><td>pool PHP-FPM</td><td><code>php_admin_value[memory_limit] = 256M</code></td><td>celý web, nelze přepsat v kódu</td></tr>
+    </table></div>
+    <p class="muted">Některé direktivy (např. <code>upload_max_filesize</code>) nelze měnit přes <code>ini_set()</code>, protože se uplatní dřív, než skript začne běžet.</p>
+  </article>
+  <article class="card c5"><h2>Ověření a projevení změn</h2>
+<pre>$ php -i | grep -E 'memory_limit|timezone'
+<span class="out">memory_limit =&gt; 256M =&gt; 256M
+date.timezone =&gt; Europe/Prague =&gt; Europe/Prague</span>
+
+$ php -r 'echo ini_get("upload_max_filesize"), PHP_EOL;'
+
+<span class="cm"># web: po změně restartovat službu</span>
+$ sudo systemctl restart apache2        <span class="cm"># mod_php</span>
+$ sudo systemctl restart php8.4-fpm     <span class="cm"># PHP-FPM</span></pre>
+    <p class="muted">CLI čte <code>php.ini</code> při každém spuštění, změna platí hned.</p>
+  </article>
+</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="k5" class="view wrap chapter" data-title="Rozšíření (extensions)">
+<header class="ch-head">
+  <div class="kicker">Kapitola 5 / 7 · Konfigurace</div>
+  <h1>Rozšíření (extensions)</h1>
+  <p class="lead">Jádro PHP je malé. Práci s databází, obrázky, ZIP archivy nebo síťovými požadavky přidávají rozšíření, knihovny napsané v C, které se zapínají v konfiguraci.</p>
+</header>
+<div class="grid">
+  <article class="card c5"><h2>Co je načteno</h2>
+<pre>$ php -m                     <span class="cm"># seznam modulů</span>
+<span class="out">[PHP Modules]
+Core
+ctype
+curl
+date
+mbstring
+…
+[Zend Modules]
+Zend OPcache</span>
+
+$ php -m | grep -i mysql
+$ php --ri mbstring          <span class="cm"># nastavení rozšíření</span></pre>
+<pre>&lt;?php
+if (!extension_loaded('pdo_mysql')) {
+    exit('Chybí rozšíření pdo_mysql');
+}</pre>
+  </article>
+  <article class="card c7"><h2>Běžná rozšíření</h2>
+    <div class="tbl"><table>
+      <tr><th>Rozšíření</th><th>K čemu</th><th>Debian balíček</th></tr>
+      <tr><td><code>pdo_mysql</code>, <code>mysqli</code></td><td>připojení k MySQL / MariaDB</td><td><code>php8.4-mysql</code></td></tr>
+      <tr><td><code>pdo_sqlite</code></td><td>databáze v jednom souboru</td><td><code>php8.4-sqlite3</code></td></tr>
+      <tr><td><code>mbstring</code></td><td>řetězce v UTF-8 (čeština!)</td><td><code>php8.4-mbstring</code></td></tr>
+      <tr><td><code>intl</code></td><td>řazení podle češtiny, formát čísel a dat</td><td><code>php8.4-intl</code></td></tr>
+      <tr><td><code>gd</code></td><td>práce s obrázky, náhledy</td><td><code>php8.4-gd</code></td></tr>
+      <tr><td><code>curl</code></td><td>HTTP požadavky na jiné servery, API</td><td><code>php8.4-curl</code></td></tr>
+      <tr><td><code>xml</code>, <code>dom</code></td><td>XML, HTML parsování</td><td><code>php8.4-xml</code></td></tr>
+      <tr><td><code>zip</code></td><td>ZIP archivy (potřebuje Composer)</td><td><code>php8.4-zip</code></td></tr>
+      <tr><td><code>opcache</code></td><td>cache přeloženého kódu, rychlost</td><td>součást <code>php8.4-common</code></td></tr>
+      <tr><td><code>xdebug</code></td><td>krokování a ladění v editoru</td><td><code>php8.4-xdebug</code></td></tr>
+    </table></div>
+  </article>
+
+  <article class="card c6"><h2>Zapnutí ve Windows / XAMPP</h2>
+    <p>Rozšíření jsou soubory <code>php_*.dll</code> ve složce <code>ext</code>. Zapínají se odkomentováním řádku v <code>php.ini</code>:</p>
+<pre>; kde hledat .dll soubory
+extension_dir = "ext"
+
+; běžná rozšíření — smazat středník na začátku
+extension=curl
+extension=gd
+extension=intl
+extension=mbstring
+extension=mysqli
+extension=openssl
+extension=pdo_mysql
+;extension=pdo_pgsql        ; zůstává vypnuté
+
+; rozšíření jádra Zend
+zend_extension=opcache</pre>
+    <div class="callout">Po úpravě restartovat Apache (XAMPP Control Panel → Stop / Start). Hláška <i>Unable to load dynamic library</i> znamená špatnou cestu <code>extension_dir</code> nebo .dll pro jinou verzi PHP.</div>
+  </article>
+  <article class="card c6"><h2>Zapnutí v Debianu</h2>
+<pre><span class="cm"># nainstalovat (zapne se automaticky)</span>
+$ sudo apt install php8.4-mysql php8.4-gd php8.4-intl
+
+<span class="cm"># ručně vypnout / zapnout</span>
+$ sudo phpdismod xdebug
+$ sudo phpenmod xdebug
+$ sudo phpenmod -s cli xdebug          <span class="cm"># jen pro CLI</span>
+
+<span class="cm"># projevit na webu</span>
+$ sudo systemctl restart apache2       <span class="cm"># nebo php8.4-fpm</span>
+
+$ ls -l /etc/php/8.4/apache2/conf.d/
+<span class="out">20-gd.ini -&gt; /etc/php/8.4/mods-available/gd.ini
+20-mysqli.ini -&gt; /etc/php/8.4/mods-available/mysqli.ini …</span></pre>
+    <p class="muted">Číslo na začátku názvu (10-, 20-) určuje pořadí načítání.</p>
+  </article>
+
+  <article class="card c6"><h2>Xdebug — ladění v editoru</h2>
+    <p>Xdebug umí zastavit skript na zarážce (breakpoint) ve VS Code nebo PhpStormu a ukázat hodnoty proměnných. Ve VS Code k tomu slouží rozšíření <b>PHP Debug</b>.</p>
+<pre>; /etc/php/8.4/mods-available/xdebug.ini  (nebo php.ini)
+zend_extension=xdebug
+xdebug.mode = debug,develop
+xdebug.start_with_request = yes
+xdebug.client_port = 9003</pre>
+    <div class="callout warn">Xdebug výrazně zpomaluje běh. Na produkčním serveru ho nezapínejte.</div>
+  </article>
+  <article class="card c6"><h2>Rozšíření mimo distribuci</h2>
+    <h3>PECL a PIE</h3>
+    <p>Rozšíření, která nejsou v balíčcích, lze přeložit ze zdrojového kódu. Starší nástroj je <code>pecl</code>, novější <code>pie</code> (PHP Installer for Extensions). V Debianu je pohodlnější hledat nejdřív balíček <code>php-…</code>.</p>
+<pre>$ sudo apt install php8.4-dev       <span class="cm"># hlavičky pro překlad</span>
+$ sudo pecl install redis
+$ echo "extension=redis" | sudo tee /etc/php/8.4/mods-available/redis.ini
+$ sudo phpenmod redis</pre>
+    <h3>Docker</h3>
+<pre>RUN docker-php-ext-install pdo_mysql intl</pre>
+  </article>
+</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="k6" class="view wrap chapter" data-title="PHP v shellu (CLI)">
+<header class="ch-head">
+  <div class="kicker">Kapitola 6 / 7 · Použití</div>
+  <h1>PHP v shellu (CLI)</h1>
+  <p class="lead">PHP nemusí běžet jen na webu. Z terminálu ho spouštíme na skripty, automatické úlohy, nástroje jako Composer a na rychlé vyzkoušení kousku kódu.</p>
+</header>
+<div class="grid">
+  <article class="card c6"><h2>Základní přepínače</h2>
+    <div class="syntax"><b>php</b> <i>[přepínače]</i> <em>[soubor.php] [argumenty]</em></div>
+    <div class="tbl"><table>
+      <tr><td><code>php -v</code></td><td>verze</td></tr>
+      <tr><td><code>php skript.php</code></td><td>spustit skript</td></tr>
+      <tr><td><code>php -r 'kód'</code></td><td>spustit kód bez souboru (bez <code>&lt;?php</code>)</td></tr>
+      <tr><td><code>php -a</code></td><td>interaktivní režim</td></tr>
+      <tr><td><code>php -l skript.php</code></td><td>kontrola syntaxe, nic nespustí</td></tr>
+      <tr><td><code>php -m</code>, <code>php -i</code></td><td>rozšíření, celá konfigurace</td></tr>
+      <tr><td><code>php --ini</code></td><td>načtené konfigurační soubory</td></tr>
+      <tr><td><code>php -d klíč=hodnota</code></td><td>dočasně změnit direktivu</td></tr>
+      <tr><td><code>php -S adresa:port</code></td><td>vestavěný webový server (kapitola 7)</td></tr>
+    </table></div>
+  </article>
+  <article class="card c6"><h2>První spuštění</h2>
+<pre>$ php -r 'echo "Ahoj z PHP ", PHP_VERSION, PHP_EOL;'
+<span class="out">Ahoj z PHP 8.4.13</span>
+
+$ php -a
+<span class="out">Interactive shell</span>
+php &gt; $x = [3, 1, 2];
+php &gt; sort($x);
+php &gt; print_r($x);
+<span class="out">Array ( [0] =&gt; 1 [1] =&gt; 2 [2] =&gt; 3 )</span>
+php &gt; exit
+
+$ php -l index.php
+<span class="out">No syntax errors detected in index.php</span></pre>
+    <p class="muted">Ve Windows v PowerShellu použijte u <code>-r</code> dvojité uvozovky venku a jednoduché uvnitř.</p>
+  </article>
+
+  <article class="card c7"><h2>Skript s argumenty a vstupem</h2>
+    <h3>pozdrav.php</h3>
+<pre>&lt;?php
+// $argv[0] je název skriptu, další položky jsou argumenty
+if ($argc &lt; 2) {
+    fwrite(STDERR, "Použití: php pozdrav.php JMÉNO\n");
+    exit(1);                         // nenulový kód = chyba
+}
+$jmeno = $argv[1];
+
+echo "Kolik je ti let? ";
+$vek = (int) trim(fgets(STDIN));     // čtení z klávesnice
+
+printf("Ahoj %s, za 10 let ti bude %d.\n", $jmeno, $vek + 10);
+exit(0);</pre>
+<pre>$ php pozdrav.php Anna
+<span class="out">Kolik je ti let?</span> 17
+<span class="out">Ahoj Anna, za 10 let ti bude 27.</span>
+$ php pozdrav.php; echo "kód: $?"
+<span class="out">Použití: php pozdrav.php JMÉNO
+kód: 1</span></pre>
+  </article>
+  <article class="card c5"><h2>CLI × web</h2>
+    <div class="tbl"><table>
+      <tr><th></th><th>CLI</th><th>Web</th></tr>
+      <tr><td>Vstup</td><td><code>$argv</code>, <code>STDIN</code></td><td><code>$_GET</code>, <code>$_POST</code></td></tr>
+      <tr><td>Výstup</td><td>text do terminálu</td><td>HTML do prohlížeče</td></tr>
+      <tr><td>Časový limit</td><td>žádný</td><td><code>max_execution_time</code></td></tr>
+      <tr><td>Běží jako</td><td>přihlášený uživatel</td><td><code>www-data</code> (Debian)</td></tr>
+      <tr><td>php.ini (Debian)</td><td><code>cli/php.ini</code></td><td><code>apache2/</code> nebo <code>fpm/</code></td></tr>
+      <tr><td>Rozpoznání</td><td colspan="2"><code>PHP_SAPI === 'cli'</code></td></tr>
+    </table></div>
+    <h3>Spustitelný skript v Linuxu</h3>
+<pre>#!/usr/bin/env php
+&lt;?php
+echo "Spuštěno bez slova php\n";</pre>
+<pre>$ chmod +x nastroj.php
+$ ./nastroj.php</pre>
+  </article>
+
+  <article class="card c6"><h2>Pravidelné úlohy (cron)</h2>
+<pre>$ crontab -e
+<span class="cm"># min hod den měs dvt  příkaz</span>
+  0   2   *   *   *   /usr/bin/php /home/alice/zaloha.php &gt;&gt; /home/alice/zaloha.log 2&gt;&amp;1
+ */5  *   *   *   *   /usr/bin/php /var/www/app/cron.php</pre>
+    <p class="muted">V cronu vždy plná cesta k <code>php</code> (zjistíte <code>which php</code>). Ve Windows stejnou roli plní Plánovač úloh.</p>
+  </article>
+  <article class="card c6"><h2>Composer — balíčky pro PHP</h2>
+    <p>Composer stahuje knihovny z <code>packagist.org</code> a je sám PHP skript spouštěný v CLI.</p>
+<pre>$ sudo apt install composer        <span class="cm"># Debian; Windows: Composer-Setup.exe</span>
+$ composer init                    <span class="cm"># vytvoří composer.json</span>
+$ composer require monolog/monolog <span class="cm"># přidat knihovnu do vendor/</span>
+$ composer install                 <span class="cm"># nainstalovat podle composer.lock</span>
+$ composer check-platform-reqs     <span class="cm"># chybí nějaké rozšíření PHP?</span></pre>
+<pre>&lt;?php
+require __DIR__ . '/vendor/autoload.php';</pre>
+  </article>
+</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="k7" class="view wrap chapter" data-title="PHP přes HTTP server">
+<header class="ch-head">
+  <div class="kicker">Kapitola 7 / 7 · Použití</div>
+  <h1>PHP přes HTTP server</h1>
+  <p class="lead">Aby PHP generovalo webové stránky, musí ho volat webový server. Ukážeme tři způsoby: vestavěný server pro vývoj, Apache s modulem PHP a Nginx s PHP-FPM.</p>
+</header>
+<div class="grid">
+  <article class="card c12"><h2>Tři způsoby propojení</h2>
+    <div class="flow"><span>prohlížeč</span><i>→</i><span>php -S (PHP samo poslouchá na portu)</span></div>
+    <div class="flow"><span>prohlížeč</span><i>→</i><span>Apache</span><i>⇢</i><span>mod_php uvnitř procesu Apache</span></div>
+    <div class="flow"><span>prohlížeč</span><i>→</i><span>Nginx</span><i>→ FastCGI →</i><span>PHP-FPM (samostatná služba)</span></div>
+    <div class="tbl"><table>
+      <tr><th></th><th>php -S</th><th>Apache + mod_php</th><th>Nginx + PHP-FPM</th></tr>
+      <tr><td>Instalace</td><td>nic navíc</td><td>jednoduchá, XAMPP</td><td>dvě služby</td></tr>
+      <tr><td>Výkon</td><td>jeden požadavek najednou</td><td>dobrý</td><td>nejlepší, samostatné škálování</td></tr>
+      <tr><td><code>.htaccess</code></td><td>ne</td><td>ano</td><td>ne, pravidla v konfiguraci Nginx</td></tr>
+      <tr><td>Použití</td><td>vývoj, výuka</td><td>vývoj, menší weby</td><td>produkce</td></tr>
+    </table></div>
+  </article>
+
+  <article class="card c6"><h2>Vestavěný server</h2>
+    <div class="syntax"><b>php -S</b> <i>adresa:port</i> <em>[-t kořen] [router.php]</em></div>
+<pre>$ cd ~/projekt
+$ php -S localhost:8000
+<span class="out">[Thu Oct  1 10:15:02 2026] PHP 8.4.13 Development Server (http://localhost:8000) started</span>
+
+$ php -S localhost:8000 -t public/     <span class="cm"># kořen webu ve složce public</span>
+$ php -S 0.0.0.0:8000                  <span class="cm"># dostupné i z jiných PC v síti</span>
+$ php -S localhost:8000 router.php     <span class="cm"># všechny požadavky přes router</span></pre>
+    <div class="callout ok">Ideální do výuky: žádný Apache, žádný XAMPP, stačí <code>php</code> v <code>PATH</code>. Ukončení <span class="kbd">Ctrl+C</span>.</div>
+    <div class="callout warn">Nikdy ne na produkci: je jednovláknový a nemá bezpečnostní nastavení.</div>
+  </article>
+  <article class="card c6"><h2>Testovací stránka</h2>
+    <h3>index.php</h3>
+<pre>&lt;?php
+$jmeno = $_GET['jmeno'] ?? 'světe';
+?&gt;
+&lt;!doctype html&gt;
+&lt;html lang="cs"&gt;
+&lt;meta charset="utf-8"&gt;
+&lt;title&gt;Test PHP&lt;/title&gt;
+&lt;h1&gt;Ahoj, &lt;?= htmlspecialchars($jmeno) ?&gt;!&lt;/h1&gt;
+&lt;p&gt;PHP &lt;?= PHP_VERSION ?&gt; přes &lt;?= PHP_SAPI ?&gt;&lt;/p&gt;
+&lt;form&gt;
+  &lt;input name="jmeno" placeholder="Tvé jméno"&gt;
+  &lt;button&gt;Odeslat&lt;/button&gt;
+&lt;/form&gt;</pre>
+    <p class="muted">Otevřít <code>http://localhost:8000/?jmeno=Anna</code>. <code>htmlspecialchars()</code> brání vložení cizího HTML a JavaScriptu (XSS).</p>
+  </article>
+
+  <article class="card c6"><h2>Apache + mod_php (Debian)</h2>
+<pre>$ sudo apt install apache2 libapache2-mod-php php-mysql
+$ systemctl status apache2
+
+<span class="cm"># kořen webu</span>
+$ ls /var/www/html
+$ echo '&lt;?php phpinfo();' | sudo tee /var/www/html/info.php
+<span class="cm"># → http://IP-serveru/info.php, pak soubor smazat</span>
+
+<span class="cm"># vlastní soubory: vlastník www-data, nebo skupina</span>
+$ sudo chown -R www-data:www-data /var/www/html
+
+<span class="cm"># povolit .htaccess s mod_rewrite</span>
+$ sudo a2enmod rewrite
+$ sudo systemctl restart apache2</pre>
+    <p class="muted">Pro <code>.htaccess</code> musí být v konfiguraci webu <code>AllowOverride All</code>. XAMPP i WampServer fungují stejným modelem.</p>
+  </article>
+  <article class="card c6"><h2>Nginx + PHP-FPM (Debian)</h2>
+<pre>$ sudo apt install nginx php8.4-fpm
+$ systemctl status php8.4-fpm</pre>
+    <h3>/etc/nginx/sites-available/default</h3>
+<pre>server {
+    listen 80;
+    root /var/www/html;
+    index index.php index.html;
+
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    location ~ \.php$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php8.4-fpm.sock;
+    }
+}</pre>
+<pre>$ sudo nginx -t &amp;&amp; sudo systemctl reload nginx</pre>
+    <p class="muted">Apache umí FPM také: <code>a2enmod proxy_fcgi</code> a <code>a2enconf php8.4-fpm</code>.</p>
+  </article>
+
+  <article class="card c12"><h2>Když to nefunguje</h2>
+    <div class="tbl"><table>
+      <tr><th>Příznak</th><th>Příčina</th><th>Řešení</th></tr>
+      <tr><td>Prohlížeč ukazuje PHP kód nebo soubor stáhne</td><td>soubor otevřen přes <code>file://</code>, nebo server nepředává <code>.php</code> interpretu</td><td>otevírat přes <code>http://localhost/…</code>; zkontrolovat mod_php nebo blok <code>location ~ \.php$</code></td></tr>
+      <tr><td>Prázdná stránka, chyba 500</td><td>chyba v kódu, <code>display_errors = Off</code></td><td>log: <code>/var/log/apache2/error.log</code>, <code>journalctl -u php8.4-fpm</code>, XAMPP <code>apache\logs\error.log</code></td></tr>
+      <tr><td>404 Not Found</td><td>soubor mimo kořen webu</td><td>ověřit <code>DocumentRoot</code> / <code>root</code>, v XAMPP složku <code>htdocs</code></td></tr>
+      <tr><td>502 Bad Gateway (Nginx)</td><td>PHP-FPM neběží nebo jiná cesta k socketu</td><td><code>systemctl status php8.4-fpm</code>, porovnat cestu v <code>fastcgi_pass</code></td></tr>
+      <tr><td>Call to undefined function mysqli_connect()</td><td>chybí rozšíření</td><td>kapitola 5, pak restart serveru</td></tr>
+      <tr><td>Změna v <code>php.ini</code> bez účinku</td><td>upraven jiný soubor (CLI místo webu)</td><td><code>phpinfo()</code> → Loaded Configuration File, restart služby</td></tr>
+      <tr><td>Permission denied při zápisu souboru</td><td>web běží jako <code>www-data</code></td><td>nastavit vlastníka nebo skupinu složky pro zápis</td></tr>
+    </table></div>
+  </article>
+</div>
+</section>
+
+<div class="wrap"><nav class="pager" id="pager" hidden></nav></div>
+<footer>Výuková prezentace · Úvod do PHP · vizuální styl vychází z design systému VOŠ, SPŠ a SOŠ Varnsdorf.</footer>
+
+<script>
+(function(){
+  var DECK = 'Úvod do PHP';
+  document.querySelectorAll('pre').forEach(function(pre){
+    pre.innerHTML = pre.innerHTML.split('\n').map(function(l){
+      if (/^\$ /.test(l)) return '<span class="pr">$</span>'+l.slice(1);
+      if (/^PS&gt; /.test(l)) return '<span class="pr">PS&gt;</span>'+l.slice(5);
+      if (/^\s*;/.test(l) && l.indexOf('class=')===-1) return '<span class="cm">'+l+'</span>';
+      return l;
+    }).join('\n');
+  });
+
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var chapters = views.filter(function(v){ return v.classList.contains('chapter'); });
+  var pager = document.getElementById('pager');
+  var barTitle = document.getElementById('barTitle');
+  var barPrev = document.getElementById('barPrev');
+  var barNext = document.getElementById('barNext');
+
+  function setLink(a, target){
+    if (target){ a.href = '#'+target.id; a.removeAttribute('aria-disabled'); }
+    else { a.href = '#prehled'; a.setAttribute('aria-disabled','true'); }
+  }
+  function show(){
+    var id = (location.hash || '').replace('#','') || 'prehled';
+    var current = document.getElementById(id);
+    if (!current || !current.classList.contains('view')) current = document.getElementById('prehled');
+    views.forEach(function(v){ v.hidden = (v !== current); });
+    var i = chapters.indexOf(current);
+    if (i === -1){
+      barTitle.textContent = 'Přehled kapitol';
+      setLink(barPrev, null); setLink(barNext, chapters[0]);
+      pager.hidden = true;
+    } else {
+      barTitle.textContent = (i+1) + ' / ' + chapters.length + ' · ' + current.dataset.title;
+      var prev = chapters[i-1], next = chapters[i+1];
+      setLink(barPrev, prev || document.getElementById('prehled'));
+      setLink(barNext, next);
+      pager.innerHTML =
+        (prev ? '<a class="btn" href="#'+prev.id+'"><span>← <small>Kapitola '+i+'</small>'+prev.dataset.title+'</span></a>'
+              : '<a class="btn" href="#prehled"><span>← <small>Zpět</small>Přehled kapitol</span></a>') +
+        (next ? '<a class="btn next" href="#'+next.id+'"><span><small>Kapitola '+(i+2)+'</small>'+next.dataset.title+' →</span></a>'
+              : '<a class="btn next" href="#prehled"><span><small>Konec</small>Přehled kapitol →</span></a>');
+      pager.hidden = false;
+    }
+    document.title = (i === -1 ? '' : current.dataset.title + ' · ') + DECK;
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+  document.addEventListener('keydown', function(e){
+    if (e.target.closest('input,textarea,select') || e.altKey || e.ctrlKey || e.metaKey) return;
+    var cur = document.getElementById((location.hash || '#prehled').slice(1));
+    var i = chapters.indexOf(cur);
+    if (e.key === 'ArrowRight'){ var n = i === -1 ? chapters[0] : chapters[i+1]; if (n) location.hash = n.id; }
+    else if (e.key === 'ArrowLeft'){ if (i > 0) location.hash = chapters[i-1].id; else if (i === 0) location.hash = 'prehled'; }
+    else if (e.key === 'Escape'){ location.hash = 'prehled'; }
+  });
+  show();
+})();
+</script>
+</body>
+</html>

@@ -26,22 +26,22 @@ if ($conn->connect_error) {
     die("Chyba připojení: " . $conn->connect_error);
 }
 
-echo "Připojeno k databázi\n\n";
+echo "Připojeno k databázi<br><br>";
 
 $sqlSelect = "SELECT * FROM warehouse;";
 $result = $conn->query($sqlSelect);
 
 if ($result->num_rows > 0) {
 
-    echo "<strong>Seznam skladů:</strong>\n\n";
+    echo "<strong>Seznam skladů:</strong><br><br>";
 
     while ($row = $result->fetch_assoc()) {
-        echo "ID: " . $row["id"] . "\n";
-        echo "Jméno: " . $row["name"] . "\n";
-        echo "Ulice: " . $row["street"] . "\n";
-        echo "Město: " . $row["city"] . "\n";
-        echo "PSČ: " . $row["postal_code"] . "\n";
-        echo "Země: " . $row["country"] . "\n\n";
+        echo "ID: " . $row["id"] . "<br>";
+        echo "Jméno: " . $row["name"] . "<br>";
+        echo "Ulice: " . $row["street"] . "<br>";
+        echo "Město: " . $row["city"] . "<br>";
+        echo "PSČ: " . $row["postal_code"] . "<br>";
+        echo "Země: " . $row["country"] . "<br><br>";
     }
 
 } else {
