@@ -41,6 +41,7 @@ body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
 .btn:hover{background:rgba(65,215,255,.15);color:var(--cyan)}
 .btn:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
 .btn[aria-disabled="true"]{opacity:.35;pointer-events:none}
+.bar-nav .btn.kurz{color:var(--yellow)}
 
 /* společné */
 .wrap{position:relative;z-index:1;max-width:1450px;margin:auto;padding-inline:5vw}
@@ -138,6 +139,7 @@ footer{position:relative;z-index:1;max-width:1450px;margin:auto;padding:0 5vw 2r
   <a class="brand" href="#prehled">Úvod do <span>PHP</span></a>
   <div class="bar-ch" id="barTitle">Přehled kapitol</div>
   <div class="bar-nav">
+    <a class="btn kurz" href="index.html" title="Přehled všech prezentací kurzu">Kurz</a>
     <a class="btn" id="barPrev" href="#prehled" aria-label="Předchozí kapitola">←</a>
     <a class="btn" href="#prehled">Přehled</a>
     <a class="btn" id="barNext" href="#k1" aria-label="Další kapitola">→</a>
@@ -835,7 +837,7 @@ $ systemctl status php8.4-fpm</pre>
         (prev ? '<a class="btn" href="#'+prev.id+'"><span>← <small>Kapitola '+i+'</small>'+prev.dataset.title+'</span></a>'
               : '<a class="btn" href="#prehled"><span>← <small>Zpět</small>Přehled kapitol</span></a>') +
         (next ? '<a class="btn next" href="#'+next.id+'"><span><small>Kapitola '+(i+2)+'</small>'+next.dataset.title+' →</span></a>'
-              : '<a class="btn next" href="#prehled"><span><small>Konec</small>Přehled kapitol →</span></a>');
+              : '<a class="btn next" href="01-zaklady-syntaxe.html"><span><small>Další prezentace</small>Základy syntaxe PHP →</span></a>');
       pager.hidden = false;
     }
     document.title = (i === -1 ? '' : current.dataset.title + ' · ') + DECK;

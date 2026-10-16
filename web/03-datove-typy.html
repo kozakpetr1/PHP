@@ -1,0 +1,1385 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Datové typy a přetypování</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: přehled kapitol PHP (dashboard) → jedna kapitola na obrazovku, mřížka 12 sloupců s průsvitnými panely.
+   Design: vizuální systém VOŠ, SPŠ a SOŠ Varnsdorf — jeden tmavý svět (záměrně bez světlého režimu). */
+:root{
+  color-scheme:dark;
+  --bg1:#003b4b;--bg2:#006783;--panel:rgba(0,27,34,.48);--panel-2:rgba(0,0,0,.2);
+  --cyan:#41d7ff;--blue:#00c0f3;--yellow:#ffd400;--green:#a6ce39;--red:#ff7a6b;
+  --muted:rgba(255,255,255,.62);--white:#fff;--line:rgba(255,255,255,.1);
+  --code-bg:#001820;--code-fg:#eaffff;--code-hl:#ffea80;
+  --font:Raleway,"Segoe UI",system-ui,sans-serif;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;font-family:var(--font);color:var(--white);background:var(--bg1);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;line-height:1.45;font-size:15px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 85% 10%,rgba(65,215,255,.12),transparent 30%),
+  radial-gradient(circle at 10% 90%,rgba(166,206,57,.08),transparent 30%)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* horní lišta */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(0,30,38,.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+.bar-in{max-width:1450px;margin:auto;padding:.55rem 5vw;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{color:#fff;text-decoration:none;font-weight:800;letter-spacing:.04em;font-size:.82rem;text-transform:uppercase}
+.brand span{color:var(--cyan)}
+.bar-ch{color:var(--muted);font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-nav{display:flex;gap:.35rem}
+.btn{display:inline-flex;align-items:center;gap:.35rem;color:#fff;text-decoration:none;background:rgba(0,20,26,.55);
+  padding:.42rem .7rem;font-size:.75rem;font-weight:600;letter-spacing:.04em;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(65,215,255,.15);color:var(--cyan)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.btn[aria-disabled="true"]{opacity:.35;pointer-events:none}
+
+/* společné */
+.wrap{position:relative;z-index:1;max-width:1450px;margin:auto;padding-inline:5vw}
+header.hero{padding-block:3rem 1.5rem}
+.kicker{color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(2.2rem,5vw,4.5rem);line-height:1.05;margin:.35rem 0 .7rem;letter-spacing:-.03em;text-wrap:balance;font-weight:800}
+.lead{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:200;max-width:62ch;color:rgba(255,255,255,.9);margin:0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1rem}
+.card{background:var(--panel);backdrop-filter:blur(12px);padding:1.25rem 1.35rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+h2{font-size:1.1rem;margin:0 0 .85rem;color:var(--cyan);text-wrap:balance}
+h3{font-size:.82rem;margin:.9rem 0 .35rem;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase}
+h3:first-child{margin-top:0}
+p{margin:.35rem 0 .65rem;overflow-wrap:anywhere}
+.muted{color:var(--muted);font-size:.82rem}
+ul,ol{margin:.4rem 0 0;padding-left:1.15rem} li{margin:.25rem 0}
+.tag{display:inline-block;padding:.18rem .45rem;margin:.12rem;background:rgba(65,215,255,.1);color:var(--cyan);font-size:.72rem;font-family:var(--mono)}
+.tag.g{background:rgba(166,206,57,.12);color:var(--green)}
+.tag.y{background:rgba(255,212,0,.1);color:var(--yellow)}
+pre{margin:.5rem 0 0;padding:.75rem .85rem;background:var(--code-bg);color:var(--code-fg);overflow:auto;font:.78rem/1.55 var(--mono);tab-size:4}
+pre .pr{color:var(--green);user-select:none}
+pre .cm{color:#7fb3c2;font-style:italic}
+pre .out{color:rgba(234,255,255,.62)}
+code{font-family:var(--mono);color:var(--code-hl);font-size:.92em}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;color:var(--cyan);padding:.45rem;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:.45rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;overflow-wrap:anywhere}
+.perms{font-family:var(--mono);font-size:1rem;color:var(--yellow)}
+.callout{border-left:4px solid var(--yellow);background:rgba(255,212,0,.07);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.callout.warn{border-color:var(--red);background:rgba(255,122,107,.08)}
+.callout.ok{border-color:var(--green);background:rgba(166,206,57,.08)}
+.syntax{font-family:var(--mono);font-size:1rem;background:var(--panel-2);padding:.7rem .85rem;border-left:3px solid var(--cyan);overflow-x:auto;white-space:nowrap}
+.syntax b{color:#fff}.syntax i{color:var(--cyan);font-style:normal}.syntax em{color:var(--yellow);font-style:normal}
+.arch{display:grid;gap:.35rem}.layer{padding:.55rem .75rem;background:var(--panel-2);border-left:3px solid var(--cyan)}
+.layer:nth-child(2){border-color:var(--blue)}.layer:nth-child(3){border-color:var(--green)}.layer:nth-child(4){border-color:var(--yellow)}.layer:nth-child(5){border-color:var(--muted)}
+.layer b{display:block;font-size:.82rem}.layer span{font-size:.74rem;color:var(--muted)}
+.timeline{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}.time{background:var(--panel-2);padding:.65rem}.time b{color:var(--yellow);font-size:.78rem}.time div{font-size:.78rem;margin-top:.25rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:.45rem;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:.6rem;align-items:start;margin:0;background:var(--panel-2);padding:.55rem .65rem;font-size:.84rem}
+.steps li:before{content:counter(s);font-weight:800;color:var(--bg1);background:var(--cyan);width:1.6rem;height:1.6rem;display:grid;place-items:center;font-size:.8rem}
+.kbd{font-family:var(--mono);font-size:.78rem;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(255,255,255,.25);padding:.05rem .35rem;color:#fff;white-space:nowrap}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.mode{background:var(--panel-2);padding:.65rem;border-top:3px solid var(--cyan)}
+.mode:nth-child(2){border-color:var(--green)}.mode:nth-child(3){border-color:var(--yellow)}.mode:nth-child(4){border-color:var(--blue)}
+.mode b{display:block;font-size:.85rem}.mode span{font-size:.76rem;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.8rem;margin:.4rem 0}
+.flow span{background:var(--panel-2);padding:.35rem .55rem;border:1px solid var(--line)}
+.flow i{color:var(--yellow);font-style:normal;font-weight:700}
+
+/* dashboard */
+.dash-meta{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+.dash-meta b{display:block;color:#fff;font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.part{margin-top:1.6rem}
+.part-h{display:flex;align-items:baseline;gap:.8rem;margin:0 0 .7rem;flex-wrap:wrap}
+.part-h h2{margin:0;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow)}
+.part-h span{color:var(--muted);font-size:.8rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.tile{display:flex;flex-direction:column;gap:.45rem;text-decoration:none;color:#fff;background:var(--panel);backdrop-filter:blur(12px);
+  padding:1.1rem 1.2rem 1rem;border-bottom:3px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.tile:hover{background:rgba(0,27,34,.7);border-color:var(--cyan);transform:translateY(-2px)}
+.tile .n{font-size:2.2rem;font-weight:200;color:var(--cyan);line-height:1;font-variant-numeric:tabular-nums}
+.tile .t{font-weight:700;font-size:1rem;line-height:1.25;text-wrap:balance}
+.tile .d{font-size:.8rem;color:var(--muted);flex:1}
+.tile .k{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.2rem}
+.tile .k span{font-family:var(--mono);font-size:.68rem;color:var(--code-hl);background:rgba(0,0,0,.25);padding:.12rem .38rem}
+.p2 .tile .n{color:var(--green)} .p2 .tile:hover{border-color:var(--green)}
+.p3 .tile .n{color:var(--yellow)} .p3 .tile:hover{border-color:var(--yellow)}
+.hint{margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+
+/* kapitola */
+.ch-head{padding-block:2.4rem 1.3rem}
+.ch-head h1{font-size:clamp(2rem,4.4vw,3.8rem)}
+.pager{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;padding-block:.6rem 2.5rem}
+.pager a{max-width:48%}
+.pager .next{margin-left:auto;text-align:right}
+.pager small{display:block;color:var(--muted);font-weight:400;letter-spacing:0;font-size:.7rem}
+footer{position:relative;z-index:1;max-width:1450px;margin:auto;padding:0 5vw 2rem;color:var(--muted);font-size:.7rem}
+
+@media(max-width:950px){
+  .c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 6}
+}
+@media(max-width:720px){
+  .c3,.c4,.c5,.c6,.c7,.c8,.c12{grid-column:span 12}
+  .modes,.timeline{grid-template-columns:1fr}
+  .grid{gap:.75rem}.card{padding:1rem}
+  .bar-ch{display:none}
+  .pager a{max-width:100%;flex:1 1 100%}.pager .next{text-align:left}
+}
+@media print{.bar,.pager{display:none}}
+
+/* ---- doplňky pro navazující prezentace ---- */
+.bar-nav .btn.kurz{color:var(--yellow)}
+pre.php,pre.sh,pre.res{position:relative}
+pre.php{border-left:3px solid var(--cyan)}
+pre.res{margin-top:0;background:rgba(0,0,0,.32);color:rgba(234,255,255,.78);border-left:3px solid var(--green);padding-top:1.35rem}
+pre.res:before{content:"výstup";position:absolute;top:.3rem;left:.85rem;font:700 .58rem/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+pre.php + pre.res{margin-top:2px}
+pre.sh{border-left:3px solid var(--muted)}
+pre .k{color:#41d7ff}
+pre .t{color:#7ee0c3}
+pre .v{color:#ffd76a}
+pre .s{color:#b8e986}
+pre .n{color:#ffa77a}
+pre .c{color:#7fb3c2;font-style:italic}
+pre .f{color:#9fd8ff}
+pre .tg{color:#ff8f80;font-weight:700}
+pre .a{color:#d7a6ff}
+pre .co{color:#ffc7f0}
+pre .hl{background:rgba(255,212,0,.16);display:inline-block;width:100%}
+.copy{position:absolute;top:.3rem;right:.3rem;opacity:0;transition:opacity .15s;font:600 .62rem/1 var(--font);letter-spacing:.06em;
+  background:rgba(65,215,255,.15);color:var(--cyan);border:0;padding:.35rem .5rem;cursor:pointer}
+pre:hover .copy,.copy:focus-visible{opacity:1}
+.v8{display:inline-block;font:700 .62rem/1 var(--font);letter-spacing:.06em;padding:.22rem .4rem;background:var(--yellow);color:#00222c;vertical-align:middle;margin-left:.35rem}
+.v8.g{background:var(--green)}
+.v8.r{background:var(--red)}
+.task{border-left:4px solid var(--green);background:rgba(166,206,57,.08);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.task b:first-child{color:var(--green);letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;display:block;margin-bottom:.2rem}
+.task details{margin-top:.4rem}
+.task summary{cursor:pointer;color:var(--cyan);font-size:.78rem;font-weight:600}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.cols2 > div{min-width:0}
+.big{font-size:1.05rem}
+.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}
+td code,th code{white-space:nowrap}
+.prev-deck{color:var(--muted);font-size:.8rem;margin-top:1rem}
+.prev-deck a{color:var(--cyan)}
+@media(max-width:720px){.cols2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#prehled">Datové typy <span>PHP</span></a>
+  <div class="bar-ch" id="barTitle">Přehled kapitol</div>
+  <div class="bar-nav">
+    <a class="btn kurz" href="index.html" title="Přehled všech prezentací kurzu">Kurz</a>
+    <a class="btn" id="barPrev" href="#prehled" aria-label="Předchozí kapitola">←</a>
+    <a class="btn" href="#prehled">Přehled</a>
+    <a class="btn" id="barNext" href="#k1" aria-label="Další kapitola">→</a>
+  </div>
+</div></div>
+
+<section id="prehled" class="view wrap" data-title="Přehled kapitol">
+  <header class="hero">
+    <div class="kicker">Prezentace 3 · Programování webových aplikací</div>
+    <h1>Datové typy a přetypování</h1>
+    <p class="lead">Jaké typy hodnot PHP zná, jak se chovají celá a desetinná čísla, řetězce, bool a null, kdy PHP převádí typy samo a jak je převést ručně. Na závěr typové deklarace a režim strict_types.</p>
+    <div class="dash-meta"><div><b>12</b>kapitol</div><div><b>48</b>ukázek kódu</div><div><b>10</b>základních typů</div><div><b>8.2+</b>cílová verze PHP</div></div>
+  </header>
+<div class="part p1"><div class="part-h"><h2>Skalární typy</h2><span>jedna hodnota v proměnné</span></div><div class="tiles"><a class="tile" href="#k1"><span class="n">01</span><span class="t">Typový systém PHP</span><span class="d">Přehled všech typů, dynamické typování a funkce, kterými zjistíte typ hodnoty.</span><span class="k"><span>gettype</span><span>get_debug_type</span><span>var_dump</span><span>is_int</span></span></a><a class="tile" href="#k2"><span class="n">02</span><span class="t">Logický typ bool</span><span class="d">Pravdivostní hodnoty, které hodnoty se chovají jako false a na co si dát pozor.</span><span class="k"><span>true</span><span>false</span><span>falsy</span><span>(bool)</span></span></a><a class="tile" href="#k3"><span class="n">03</span><span class="t">Celá čísla int</span><span class="d">Zápisy v různých soustavách, rozsah, přetečení do float, celočíselné dělení a zbytek.</span><span class="k"><span>PHP_INT_MAX</span><span>0x</span><span>1_000</span><span>intdiv</span></span></a><a class="tile" href="#k4"><span class="n">04</span><span class="t">Desetinná čísla float</span><span class="d">Binární reprezentace, zaokrouhlovací chyby, porovnávání, zaokrouhlování, INF a NAN, práce s penězi.</span><span class="k"><span>0.1 + 0.2</span><span>round</span><span>PHP_FLOAT_EPSILON</span><span>NAN</span></span></a><a class="tile" href="#k5"><span class="n">05</span><span class="t">Řetězce jako typ</span><span class="d">Řetězec jako posloupnost bajtů, kódování UTF-8, číselné řetězce a jejich pravidla v PHP 8.</span><span class="k"><span>bajty</span><span>UTF-8</span><span>is_numeric</span><span>&quot;12abc&quot;</span></span></a><a class="tile" href="#k6"><span class="n">06</span><span class="t">Hodnota null</span><span class="d">Kdy je proměnná null, nullovatelné typy, operátory ?? a ?-> a rozdíl mezi null a prázdnou hodnotou.</span><span class="k"><span>null</span><span>??</span><span>?-&gt;</span><span>?string</span></span></a></div></div>
+<div class="part p2"><div class="part-h"><h2>Převody typů</h2><span>automaticky i ručně</span></div><div class="tiles"><a class="tile" href="#k7"><span class="n">07</span><span class="t">Automatické převody</span><span class="d">Kdy PHP převádí typy samo: aritmetika, spojování řetězců, podmínky, klíče polí a porovnání.</span><span class="k"><span>type juggling</span><span>1 + &quot;1&quot;</span><span>if ($x)</span><span>. 5</span></span></a><a class="tile" href="#k8"><span class="n">08</span><span class="t">Explicitní přetypování</span><span class="d">Operátory přetypování, převodní funkce, tabulka výsledků a změny v PHP 8.5.</span><span class="k"><span>(int)</span><span>(string)</span><span>intval</span><span>settype</span></span></a><a class="tile" href="#k9"><span class="n">09</span><span class="t">Čísla a text tam a zpět</span><span class="d">Bezpečný převod vstupu na číslo, česká desetinná čárka, formátování čísel na text.</span><span class="k"><span>number_format</span><span>sprintf</span><span>filter_var</span><span>ctype_digit</span></span></a></div></div>
+<div class="part p3"><div class="part-h"><h2>Typy v kódu</h2><span>typové deklarace a složené typy</span></div><div class="tiles"><a class="tile" href="#k10"><span class="n">10</span><span class="t">Typové deklarace a strict_types</span><span class="d">Deklarace typů parametrů, návratu a vlastností, režim převodu × striktní režim, sjednocené a DNF typy.</span><span class="k"><span>strict_types</span><span>TypeError</span><span>int|string</span><span>mixed</span></span></a><a class="tile" href="#k11"><span class="n">11</span><span class="t">Složené typy a výčty</span><span class="d">Stručně o polích, objektech, callable a výčtovém typu enum. Kopírování hodnotou a odkazem.</span><span class="k"><span>array</span><span>object</span><span>callable</span><span>enum</span></span></a><a class="tile" href="#k12"><span class="n">12</span><span class="t">Shrnutí a úlohy</span><span class="d">Pravidla pro práci s typy na jedné obrazovce a úlohy na procvičení.</span><span class="k"><span>tahák</span><span>===</span><span>validace</span><span>úlohy</span></span></a></div></div>
+
+  <p class="hint">Při promítání se mezi kapitolami posouváte šipkami <span class="kbd">←</span> <span class="kbd">→</span>, klávesa <span class="kbd">Esc</span> vrací na přehled. Ukázky kódu jdou zkopírovat tlačítkem v rohu, výstupy pod nimi jsou z reálného běhu PHP.</p>
+  <p class="prev-deck">Navazuje na <a href="01-zaklady-syntaxe.html">Základy syntaxe</a>. Pole podrobně rozebírá <a href="04-pole.html">prezentace 4</a>, porovnávací operátory <a href="05-vyrazy-operatory.html">prezentace 5</a>.</p>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="k1" class="view wrap chapter" data-title="Typový systém PHP">
+<header class="ch-head">
+  <div class="kicker">Kapitola 1 / 12 · Typy</div>
+  <h1>Typový systém PHP</h1>
+  <p class="lead">PHP je <b>dynamicky typovaný</b> jazyk: typ nemá proměnná, ale hodnota v ní. Stejná proměnná může nejdřív obsahovat číslo a potom text. Typy parametrů a vlastností ale lze (a je vhodné) deklarovat.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Přehled typů</h2>
+<div class="tbl"><table>
+  <tr><th>Skupina</th><th>Typ</th><th>Příklad</th></tr>
+  <tr><td rowspan="4">skalární</td><td><code>bool</code></td><td><code>true</code>, <code>false</code></td></tr>
+  <tr><td><code>int</code></td><td><code>42</code>, <code>-7</code>, <code>0xFF</code></td></tr>
+  <tr><td><code>float</code></td><td><code>3.14</code>, <code>1e-3</code></td></tr>
+  <tr><td><code>string</code></td><td><code>'text'</code>, <code>"řádek\n"</code></td></tr>
+  <tr><td rowspan="4">složené</td><td><code>array</code></td><td><code>[1, 2]</code>, <code>['a' => 1]</code></td></tr>
+  <tr><td><code>object</code></td><td><code>new DateTime()</code></td></tr>
+  <tr><td><code>callable</code></td><td><code>fn($x) => $x</code>, <code>'strlen'</code></td></tr>
+  <tr><td><code>iterable</code></td><td>pole nebo procházitelný objekt</td></tr>
+  <tr><td rowspan="2">speciální</td><td><code>null</code></td><td><code>null</code></td></tr>
+  <tr><td><code>resource</code></td><td>otevřený soubor z <code>fopen()</code></td></tr>
+</table></div>
+  <p class="muted">V deklaracích navíc: <code>mixed</code>, <code>void</code>, <code>never</code>, <code>true</code>/<code>false</code>, <code>self</code>, <code>static</code>.</p>
+</article>
+<article class="card c6"><h2>Jak zjistit typ</h2>
+<pre class="php">$hodnoty = [42, 3.14, 'PHP', true, null, [1, 2], new DateTime(), fopen('php://memory', 'r')];
+
+foreach ($hodnoty as $h) {
+    printf("%-10s %s\n", gettype($h), get_debug_type($h));
+}</pre>
+<pre class="res">integer    int
+double     float
+string     string
+boolean    bool
+NULL       null
+array      array
+object     DateTime
+resource   resource (stream)</pre>
+  <p><code>get_debug_type()</code> (8.0) vrací názvy shodné s deklaracemi (<code>int</code>, <code>float</code>, název třídy). Starší <code>gettype()</code> vrací historické názvy (<code>integer</code>, <code>double</code>, <code>NULL</code>).</p>
+</article>
+
+<article class="card c6"><h2>var_dump: typ i hodnota</h2>
+<pre class="php">var_dump(42, 42.0, '42', true, null);
+var_dump(0.1 + 0.2);</pre>
+<pre class="res">int(42)
+float(42)
+string(2) "42"
+bool(true)
+NULL
+float(0.30000000000000004)</pre>
+</article>
+<article class="card c6"><h2>Testovací funkce is_*</h2>
+<pre class="php">$x = '42';
+var_dump(
+    is_int($x),        // false: je to řetězec
+    is_string($x),     // true
+    is_numeric($x),    // true: řetězec vypadá jako číslo
+    is_bool(false),
+    is_float(1.0),
+    is_null(null),
+    is_array([]),
+    is_callable('strlen'),
+    is_iterable([1]),
+    is_scalar('a'),    // int, float, string nebo bool
+);</pre>
+<pre class="res">bool(false)
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+bool(true)
+bool(true)</pre>
+  <div class="task"><b>Zkuste si</b>Napište funkci <code>popis(mixed $v): string</code>, která pomocí <code>match (true)</code> a funkcí <code>is_*</code> vrátí „celé číslo“, „desetinné číslo“, „text“, „pravdivostní hodnota“, „nic“ nebo „jiné“.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="k2" class="view wrap chapter" data-title="Logický typ bool">
+<header class="ch-head">
+  <div class="kicker">Kapitola 2 / 12 · Typy</div>
+  <h1>Logický typ bool</h1>
+  <p class="lead">Typ <code>bool</code> má jen dvě hodnoty: <code>true</code> a <code>false</code>. Na bool se převede každá hodnota v podmínce. Je proto důležité vědět, které hodnoty se chovají jako nepravda (<i>falsy</i>).</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Hodnoty, které jsou false</h2>
+<pre class="php">$falsy = [false, 0, 0.0, -0.0, '', '0', [], null];
+foreach ($falsy as $v) {
+    echo str_pad(json_encode($v), 6), ' → ', $v ? 'true' : 'false', "\n";
+}</pre>
+<pre class="res">false  → false
+0      → false
+0      → false
+-0     → false
+""     → false
+"0"    → false
+[]     → false
+null   → false</pre>
+  <p>Všechno ostatní je <b>true</b>, včetně objektů a záporných čísel.</p>
+</article>
+<article class="card c6"><h2>Pasti: tohle je true</h2>
+<pre class="php">$pasti = ['0.0', ' ', 'false', '00', [0], -1, 0.1, 'null'];
+foreach ($pasti as $v) {
+    echo str_pad(json_encode($v), 8), ' → ', var_export((bool) $v, true), "\n";
+}</pre>
+<pre class="res">"0.0"    → true
+" "      → true
+"false"  → true
+"00"     → true
+[0]      → true
+-1       → true
+0.1      → true
+"null"   → true</pre>
+  <div class="callout warn">Řetězec <code>'false'</code> je <b>true</b>, protože není prázdný. Vstup z formuláře proto převádějte přes <code>filter_var($v, FILTER_VALIDATE_BOOL)</code>.</div>
+</article>
+
+<article class="card c6"><h2>Kde na tom záleží</h2>
+<pre class="php">$pozice = strpos('PHP je super', 'PHP');   // 0 = nalezeno na začátku
+
+if ($pozice) {
+    echo "nalezeno (if)\n";                 // neproběhne!
+}
+if ($pozice !== false) {
+    echo "nalezeno (!== false)\n";          // správně
+}
+var_dump(str_contains('PHP je super', 'PHP'));  // od 8.0 jednodušeji</pre>
+<pre class="res">nalezeno (!== false)
+bool(true)</pre>
+  <p class="muted">Funkce, které vrací číslo <b>nebo</b> <code>false</code> (<code>strpos</code>, <code>array_search</code>), testujte vždy přes <code>=== false</code>.</p>
+</article>
+<article class="card c6"><h2>Výpis bool</h2>
+<pre class="php">$ok = true; $chyba = false;
+echo "ok: [$ok], chyba: [$chyba]\n";     // true → "1", false → ""
+echo 'ok: ', var_export($ok, true), "\n";
+echo 'chyba: ', $chyba ? 'ano' : 'ne', "\n";
+echo json_encode(['ok' =&gt; $ok]), "\n";</pre>
+<pre class="res">ok: [1], chyba: []
+ok: true
+chyba: ne
+{"ok":true}</pre>
+  <p class="muted">Při převodu na řetězec je <code>true</code> „1“ a <code>false</code> prázdný řetězec. Pro výpis použijte ternární operátor nebo <code>var_export</code>.</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="k3" class="view wrap chapter" data-title="Celá čísla int">
+<header class="ch-head">
+  <div class="kicker">Kapitola 3 / 12 · Typy</div>
+  <h1>Celá čísla int</h1>
+  <p class="lead">Typ <code>int</code> je celé číslo se znaménkem. Na 64bitových systémech má rozsah zhruba ±9,2 × 10<sup>18</sup>. Při překročení rozsahu se z výsledku tiše stane <code>float</code>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Zápis celých čísel</h2>
+<pre class="php">$dec = 255;
+$hex = 0xFF;          // šestnáctková
+$oct = 0o377;         // osmičková (8.1), dříve 0377
+$bin = 0b1111_1111;   // dvojková
+$velke = 1_000_000;   // oddělovač tisíců (7.4)
+
+var_dump($dec === $hex, $hex === $oct, $oct === $bin);
+echo $velke, "\n";
+echo dechex(255), ' ', decbin(10), ' ', decoct(8), ' ', bindec('1010'), "\n";
+echo base_convert('ff', 16, 2), "\n";</pre>
+<pre class="res">bool(true)
+bool(true)
+bool(true)
+1000000
+ff 1010 10 10
+11111111</pre>
+  <div class="callout warn">Číslo s úvodní nulou <code>0377</code> je osmičkové (= 255). <code>010</code> není deset, ale osm.</div>
+</article>
+<article class="card c6"><h2>Rozsah a přetečení</h2>
+<pre class="php">echo PHP_INT_SIZE, " bajtů\n";
+echo PHP_INT_MAX, "\n";
+echo PHP_INT_MIN, "\n";
+
+var_dump(PHP_INT_MAX + 1);       // už není int!
+var_dump(PHP_INT_MAX * 2);
+var_dump(9_007_199_254_740_993 === (int) (float) 9_007_199_254_740_993);</pre>
+<pre class="res">8 bajtů
+9223372036854775807
+-9223372036854775808
+float(9.223372036854776E+18)
+float(1.8446744073709552E+19)
+bool(false)</pre>
+  <p class="muted">Float má jen asi 15–17 platných číslic, takže přetečením se ztrácí přesnost. Pro velká celá čísla použijte rozšíření <code>bcmath</code> nebo <code>gmp</code>.</p>
+</article>
+
+<article class="card c6"><h2>Dělení a zbytek</h2>
+<pre class="php">var_dump(10 / 5);        // int: dělení beze zbytku
+var_dump(7 / 2);         // float!
+var_dump(intdiv(7, 2));  // celočíselné dělení
+var_dump(7 % 3);         // zbytek
+var_dump(-7 % 3);        // znaménko podle dělence
+var_dump(fmod(7.5, 2));  // zbytek pro float</pre>
+<pre class="res">int(2)
+float(3.5)
+int(3)
+int(1)
+int(-1)
+float(1.5)</pre>
+</article>
+<article class="card c6"><h2>Dělení nulou</h2>
+<pre class="php">foreach (['10 / 0', '10 % 0', 'intdiv(10, 0)'] as $vyraz) {
+    try {
+        eval("return $vyraz;");
+    } catch (DivisionByZeroError $e) {
+        echo "$vyraz → ", get_class($e), ': ', $e-&gt;getMessage(), "\n";
+    }
+}
+var_dump(fdiv(10, 0), fdiv(0, 0));   // IEEE 754: INF a NAN</pre>
+<pre class="res">10 / 0 → DivisionByZeroError: Division by zero
+10 % 0 → DivisionByZeroError: Modulo by zero
+intdiv(10, 0) → DivisionByZeroError: Division by zero
+float(INF)
+float(NAN)</pre>
+  <p class="muted">Od PHP 8.0 dělení nulou vyhazuje výjimku (dříve vracelo <code>false</code> s varováním). <code>eval</code> tu slouží jen pro ukázku, v kódu ho nepoužívejte.</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="k4" class="view wrap chapter" data-title="Desetinná čísla float">
+<header class="ch-head">
+  <div class="kicker">Kapitola 4 / 12 · Typy</div>
+  <h1>Desetinná čísla float</h1>
+  <p class="lead"><code>float</code> je číslo s plovoucí řádovou čárkou podle IEEE 754 (dvojitá přesnost). Většinu desetinných zlomků neumí uložit přesně, protože počítá ve dvojkové soustavě.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Zápis a nepřesnost</h2>
+<pre class="php">$a = 1.5;
+$b = 1.2e3;      // 1200.0
+$c = 7E-10;
+var_dump($b, $c);
+
+var_dump(0.1 + 0.2);
+var_dump(0.1 + 0.2 == 0.3);
+echo 0.1 + 0.2, "\n";             // echo zaokrouhlí, var_dump ne
+printf("%.20f\n", 0.1);</pre>
+<pre class="res">float(1200)
+float(7.0E-10)
+float(0.30000000000000004)
+bool(false)
+0.3
+0.10000000000000000555</pre>
+  <p class="muted">0,1 je ve dvojkové soustavě nekonečný periodický zlomek, stejně jako 1/3 v desítkové.</p>
+</article>
+<article class="card c6"><h2>Jak porovnávat floaty</h2>
+<pre class="php">$a = 0.1 + 0.2;
+$b = 0.3;
+
+var_dump(abs($a - $b) &lt; PHP_FLOAT_EPSILON);   // tolerance
+var_dump(round($a, 10) === round($b, 10));     // zaokrouhlit
+
+echo PHP_FLOAT_EPSILON, "\n";
+echo PHP_FLOAT_DIG, " platných číslic\n";</pre>
+<pre class="res">bool(true)
+bool(true)
+2.2204460492503E-16
+15 platných číslic</pre>
+<pre class="php">// rozšíření bcmath: počítá s čísly zapsanými jako řetězce
+var_dump(bccomp('0.3', bcadd('0.1', '0.2', 10), 10) === 0);</pre>
+<pre class="res">bool(true)</pre>
+</article>
+
+<article class="card c6"><h2>Zaokrouhlování</h2>
+<pre class="php">var_dump(round(2.5), round(3.5), round(-2.5));   // od nuly
+var_dump(round(1234.5678, 2), round(1234.5678, -2));
+var_dump(floor(2.7), ceil(2.1), floor(-2.5));   // vrací float!
+var_dump((int) 2.99, (int) -2.99);                // useknutí
+var_dump(round(2.5, 0, PHP_ROUND_HALF_EVEN));      // bankovní</pre>
+<pre class="res">float(3)
+float(4)
+float(-3)
+float(1234.57)
+float(1200)
+float(2)
+float(3)
+float(-3)
+int(2)
+int(-2)
+float(2)</pre>
+  <p class="muted"><code>round</code>, <code>floor</code> a <code>ceil</code> vrací <b>float</b>. Pro int přetypujte: <code>(int) round($x)</code>.</p>
+</article>
+<article class="card c6"><h2>INF a NAN</h2>
+<pre class="php">$inf = fdiv(1, 0);
+$nan = fdiv(0, 0);
+var_dump($inf, -$inf, $nan);
+var_dump(is_infinite($inf), is_nan($nan), is_finite(1.5));
+var_dump($nan == $nan);              // NAN se nerovná ničemu
+var_dump(sqrt(-1), log(0));</pre>
+<pre class="res">float(INF)
+float(-INF)
+float(NAN)
+bool(true)
+bool(true)
+bool(true)
+bool(false)
+float(NAN)
+float(-INF)</pre>
+</article>
+
+<article class="card c12"><h2>Peníze: nikdy ne float</h2>
+<div class="cols2"><div>
+<pre class="php">// ✗ float
+$soucet = 0.0;
+for ($i = 0; $i &lt; 10; $i++) {
+    $soucet += 0.10;        // 10× 10 haléřů
+}
+var_dump($soucet, $soucet == 1.0);
+
+// ✓ celé haléře (int)
+$haleru = 0;
+for ($i = 0; $i &lt; 10; $i++) {
+    $haleru += 10;
+}
+printf("%d,%02d Kč\n", intdiv($haleru, 100), $haleru % 100);</pre>
+<pre class="res">float(0.9999999999999999)
+bool(false)
+1,00 Kč</pre>
+<pre class="php">// ✓ bcmath: čísla jako řetězce s danou přesností
+echo bcadd('0.10', '0.20', 2);</pre>
+<pre class="res">0.30</pre>
+</div><div>
+  <ul>
+    <li>ukládejte částky v <b>nejmenší jednotce</b> (haléře, centy) jako <code>int</code></li>
+    <li>nebo používejte <code>bcmath</code> (<code>bcadd</code>, <code>bcmul</code>, <code>bcdiv</code>) s řetězci</li>
+    <li>v databázi typ <code>DECIMAL(10,2)</code>, ne <code>FLOAT</code></li>
+    <li><span class="v8">8.4</span> přibyla objektová třída <code>BcMath\Number</code> s běžnými operátory</li>
+  </ul>
+<pre class="php">// PHP 8.4+
+use BcMath\Number;
+$cena = new Number('19.99');
+echo $cena * 3;            // 59.97 přesně</pre>
+  <div class="task"><b>Zkuste si</b>Vypočítejte cenu s DPH 21 % pro 0,1 Kč, 19,99 Kč a 1234,5 Kč nejprve ve float, pak v haléřích. Kdy se výsledky liší?</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="k5" class="view wrap chapter" data-title="Řetězce jako typ">
+<header class="ch-head">
+  <div class="kicker">Kapitola 5 / 12 · Typy</div>
+  <h1>Řetězce jako typ</h1>
+  <p class="lead">Řetězec je posloupnost <b>bajtů</b> bez určeného kódování. Většina funkcí pracuje s bajty, funkce <code>mb_*</code> se znaky v UTF-8. Zvláštní kategorií jsou <b>číselné řetězce</b>, se kterými PHP umí počítat.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Bajty a znaky</h2>
+<pre class="php">$s = 'čaj ☕';
+echo strlen($s), ' bajtů, ', mb_strlen($s), " znaků\n";
+echo bin2hex('č'), "\n";                 // dva bajty v UTF-8
+echo $s[0] === 'č' ? 'ano' : 'ne', "\n";  // $s[0] je jen 1 bajt
+echo mb_substr($s, 0, 1), "\n";
+var_dump(mb_check_encoding($s, 'UTF-8'));
+echo bin2hex(iconv('UTF-8', 'CP1250', 'čaj')), "  ← Windows-1250 (iconv)\n";</pre>
+<pre class="res">8 bajtů, 5 znaků
+c48d
+ne
+č
+bool(true)
+e8616a  ← Windows-1250 (iconv)</pre>
+</article>
+<article class="card c6"><h2>Číselné řetězce</h2>
+<pre class="php">foreach (['42', ' 42', '42 ', '4.2e1', '0x2A', '42abc', 'abc', '', '.5'] as $s) {
+    printf("%-7s %s\n", "'$s'", is_numeric($s) ? 'číselný' : 'ne');
+}</pre>
+<pre class="res">'42'    číselný
+' 42'   číselný
+'42 '   číselný
+'4.2e1' číselný
+'0x2A'  ne
+'42abc' ne
+'abc'   ne
+''      ne
+'.5'    číselný</pre>
+  <p class="muted">Od PHP 8.0 jsou povolené mezery na začátku <b>i na konci</b>. Šestnáctkový zápis v řetězci číselný není.</p>
+</article>
+
+<article class="card c6"><h2>Počítání s řetězci</h2>
+<pre class="php">var_dump('5' + '3');          // int 8
+var_dump('1.5' + 1);          // float 2.5
+var_dump('10' * '2.5');
+var_dump('42abc' + 1);        // začíná číslem: Warning, ale spočítá
+var_dump('abc' + 1);          // není číslo: TypeError</pre>
+<pre class="res">int(8)
+float(2.5)
+float(25)
+
+Warning: A non-numeric value encountered in ukazka.php on line 4
+int(43)
+
+Fatal error: Uncaught TypeError: Unsupported operand types: string + int in ukazka.php:5
+Stack trace:
+#0 {main}
+  thrown in ukazka.php on line 5</pre>
+</article>
+<article class="card c6"><h2>Pravidla PHP 8</h2>
+<div class="tbl"><table>
+  <tr><th>Řetězec</th><th>Druh</th><th>V aritmetice</th></tr>
+  <tr><td><code>'42'</code>, <code>' 42 '</code>, <code>'1e3'</code></td><td>číselný</td><td>bez varování</td></tr>
+  <tr><td><code>'42abc'</code>, <code>'7 dní'</code></td><td>začíná číslem</td><td>Warning „A non-numeric value“, použije se číslo</td></tr>
+  <tr><td><code>'abc'</code>, <code>''</code></td><td>nečíselný</td><td><code>TypeError</code></td></tr>
+</table></div>
+  <p class="muted">Přetypování <code>(int)</code> je benevolentnější: nikdy nehlásí chybu, viz kapitola 8.</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="k6" class="view wrap chapter" data-title="Hodnota null">
+<header class="ch-head">
+  <div class="kicker">Kapitola 6 / 12 · Typy</div>
+  <h1>Hodnota null</h1>
+  <p class="lead"><code>null</code> znamená „bez hodnoty“. Má ji proměnná, které se null přiřadí, funkce bez <code>return</code> nebo neexistující prvek přečtený přes <code>??</code>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Odkud se null bere</h2>
+<pre class="php">function nic(): void {}
+$a = null;
+$b = @$neexistuje;              // nedefinovaná (s potlačeným varováním)
+$c = ['x' =&gt; 1]['y'] ?? null;
+$d = (function () {})();        // funkce bez return
+
+var_dump($a, $b, $c, $d);
+var_dump(null === NULL);        // klíčové slovo bez ohledu na velikost</pre>
+<pre class="res">NULL
+NULL
+NULL
+NULL
+bool(true)</pre>
+</article>
+<article class="card c6"><h2>Nullovatelné typy</h2>
+<pre class="php">function najdiZaka(int $id): ?string     // string nebo null
+{
+    $zaci = [1 =&gt; 'Anna', 2 =&gt; 'Petr'];
+    return $zaci[$id] ?? null;
+}
+
+echo najdiZaka(1) ?? 'nenalezen', "\n";
+echo najdiZaka(9) ?? 'nenalezen', "\n";
+
+function pozdrav(?string $jmeno = null): string
+{
+    return 'Ahoj ' . ($jmeno ?? 'neznámý');
+}
+echo pozdrav(), "\n";</pre>
+<pre class="res">Anna
+nenalezen
+Ahoj neznámý</pre>
+  <p class="muted"><code>?string</code> je totéž co <code>string|null</code>.</p>
+</article>
+
+<article class="card c6"><h2>Operátory pro null</h2>
+<pre class="php">$uzivatel = null;
+echo $uzivatel?-&gt;jmeno ?? 'host', "\n";     // ?-&gt; nespadne na null (8.0)
+
+$nastaveni = ['jazyk' =&gt; null];
+$nastaveni['jazyk'] ??= 'cs';               // přiřadí, jen když je null
+$nastaveni['motiv'] ??= 'tmavý';
+print_r($nastaveni);</pre>
+<pre class="res">host
+Array
+(
+    [jazyk] =&gt; cs
+    [motiv] =&gt; tmavý
+)</pre>
+</article>
+<article class="card c6"><h2>null × prázdná hodnota</h2>
+<div class="tbl"><table>
+  <tr><th>Výraz</th><th><code>null</code></th><th><code>''</code></th><th><code>0</code></th><th><code>[]</code></th></tr>
+  <tr><td><code>=== null</code></td><td class="yes">true</td><td>false</td><td>false</td><td>false</td></tr>
+  <tr><td><code>isset()</code></td><td>false</td><td class="yes">true</td><td class="yes">true</td><td class="yes">true</td></tr>
+  <tr><td><code>empty()</code></td><td class="yes">true</td><td class="yes">true</td><td class="yes">true</td><td class="yes">true</td></tr>
+  <tr><td><code>?? 'x'</code></td><td>'x'</td><td>''</td><td>0</td><td>[]</td></tr>
+  <tr><td><code>?: 'x'</code></td><td>'x'</td><td>'x'</td><td>'x'</td><td>'x'</td></tr>
+</table></div>
+  <div class="callout">„Hodnota nebyla zadána“ (null) a „zadána prázdná“ (<code>''</code>) jsou dvě různé informace. <code>??</code> je rozliší, <code>?:</code> ne.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="k7" class="view wrap chapter" data-title="Automatické převody">
+<header class="ch-head">
+  <div class="kicker">Kapitola 7 / 12 · Přetypování</div>
+  <h1>Automatické převody</h1>
+  <p class="lead">Když operace dostane hodnotu jiného typu, než potřebuje, PHP ji převede samo (<i>type juggling</i>). Je to pohodlné, ale zdroj chyb. Pomůže znát pravidla a kde to jde, převádět ručně.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Podle operace</h2>
+<div class="tbl"><table>
+  <tr><th>Kontext</th><th>Převádí na</th><th>Příklad</th></tr>
+  <tr><td>aritmetika <code>+ - * / %</code></td><td>int nebo float</td><td><code>'5' + 1</code> → 6</td></tr>
+  <tr><td>spojení <code>.</code>, <code>echo</code></td><td>string</td><td><code>5 . ''</code> → '5'</td></tr>
+  <tr><td>podmínka, <code>!</code>, <code>&amp;&amp;</code></td><td>bool</td><td><code>if ('0')</code> → false</td></tr>
+  <tr><td>klíč pole</td><td>int nebo string</td><td><code>$a['8']</code> → <code>$a[8]</code></td></tr>
+  <tr><td>volné porovnání <code>==</code></td><td>podle typů (prezentace 5)</td><td><code>'1' == '01'</code> → true</td></tr>
+  <tr><td>parametr funkce (bez strict)</td><td>deklarovaný typ</td><td><code>strlen(123)</code> → 3</td></tr>
+</table></div>
+</article>
+<article class="card c6"><h2>Aritmetika a spojování</h2>
+<pre class="php">var_dump(1 + '1');         // int
+var_dump(1 + '1.0');       // float
+var_dump(true + true);     // bool → int
+var_dump(null + 5);        // null → 0
+var_dump('3' . 4);         // int → string
+var_dump(1.0 . '');        // float → '1'
+var_dump(7 . '' . 0.5);</pre>
+<pre class="res">int(2)
+float(2)
+int(2)
+int(5)
+string(2) "34"
+string(1) "1"
+string(4) "70.5"</pre>
+</article>
+
+<article class="card c6"><h2>Float na řetězec</h2>
+<pre class="php">echo 1.0, ' ', 0.5, ' ', 1/3, "\n";
+echo 1e15, ' ', 1e20, ' ', 0.00001, "\n";
+echo 100000000000000000000.0, "\n";
+var_dump((string) 2.50);</pre>
+<pre class="res">1 0.5 0.33333333333333
+1.0E+15 1.0E+20 1.0E-5
+1.0E+20
+string(3) "2.5"</pre>
+  <p class="muted">Velmi velká a malá čísla se vypíší ve vědeckém zápisu. Pro pevný počet míst použijte <code>number_format</code> nebo <code>sprintf('%.2f')</code>.</p>
+</article>
+<article class="card c6"><h2>Klíče pole</h2>
+<pre class="php">$a = [];
+$a['8'] = 'řetězec "8" → int 8';
+$a['08'] = '"08" zůstane řetězec';
+$a[true] = 'true → 1';
+$a[null] = 'null → ""';
+var_dump(array_keys($a));</pre>
+<pre class="res">array(4) {
+  [0]=&gt;
+  int(8)
+  [1]=&gt;
+  string(2) "08"
+  [2]=&gt;
+  int(1)
+  [3]=&gt;
+  string(0) ""
+}</pre>
+  <p class="muted">Podrobnosti o klíčích v <a href="04-pole.html">prezentaci 4</a>. <span class="v8">8.5</span> klíč <code>null</code> je zastaralý.</p>
+</article>
+
+<article class="card c12"><h2>Kdy automatika selže</h2>
+<div class="cols2"><div>
+<pre class="php">$pocet = $_GET['pocet'] ?? '3 kusy';   // vstup od uživatele
+echo $pocet * 10, "\n";                 // Warning + 30
+
+$cena = '';                             // prázdné pole formuláře
+echo $cena * 2;                         // TypeError</pre>
+<pre class="res">Warning: A non-numeric value encountered in ukazka.php on line 2
+30
+
+Fatal error: Uncaught TypeError: Unsupported operand types: string * int in ukazka.php:5
+Stack trace:
+#0 {main}
+  thrown in ukazka.php on line 5</pre>
+</div><div>
+<pre class="php">$vstup = '3 kusy';
+$pocet = filter_var($vstup, FILTER_VALIDATE_INT);
+if ($pocet === false) {
+    echo "Zadejte celé číslo\n";
+} else {
+    echo $pocet * 10, "\n";
+}</pre>
+<pre class="res">Zadejte celé číslo</pre>
+  <div class="callout ok">Hodnoty zvenku (formulář, soubor, databáze) nejdřív ověřte a převeďte na správný typ, teprve potom s nimi počítejte.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="k8" class="view wrap chapter" data-title="Explicitní přetypování">
+<header class="ch-head">
+  <div class="kicker">Kapitola 8 / 12 · Přetypování</div>
+  <h1>Explicitní přetypování</h1>
+  <p class="lead">Přetypování zapíšete typem v závorce před hodnotou: <code>(int) $x</code>. Na rozdíl od automatiky nikdy nehlásí chybu. Vždy vrátí <i>nějaký</i> výsledek, i když nemusí dávat smysl.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Operátory přetypování</h2>
+<pre class="php">$s = '12.7 kg';
+var_dump((int) $s);       // 12
+var_dump((float) $s);     // 12.7
+var_dump((bool) $s);      // true
+var_dump((string) 3.0);   // '3'
+var_dump((array) 'a');    // ['a']
+var_dump((object) ['x' =&gt; 1]);</pre>
+<pre class="res">int(12)
+float(12.7)
+bool(true)
+string(1) "3"
+array(1) {
+  [0]=&gt;
+  string(1) "a"
+}
+object(stdClass)#1 (1) {
+  ["x"]=&gt;
+  int(1)
+}</pre>
+  <div class="callout warn"><span class="v8 r">8.5</span> Dlouhé tvary <code>(integer)</code>, <code>(boolean)</code>, <code>(double)</code>, <code>(binary)</code> jsou zastaralé. Pište <code>(int)</code>, <code>(bool)</code>, <code>(float)</code>, <code>(string)</code>. <code>(unset)</code> bylo odstraněno už v 8.0.</div>
+</article>
+<article class="card c6"><h2>Převod na int</h2>
+<pre class="php">foreach (['42', ' 42 ', '42abc', 'abc', '3.99', '-3.99', '1e3', '0x1A', '012', ''] as $v) {
+    printf("(int) %-8s → %d\n", "'$v'", (int) $v);
+}
+printf("(int) %-8s → %d\n", '3.99', (int) 3.99);
+printf("(int) %-8s → %d\n", 'true', (int) true);
+printf("(int) %-8s → %d\n", 'null', (int) null);</pre>
+<pre class="res">(int) '42'     → 42
+(int) ' 42 '   → 42
+(int) '42abc'  → 42
+(int) 'abc'    → 0
+(int) '3.99'   → 3
+(int) '-3.99'  → -3
+(int) '1e3'    → 1000
+(int) '0x1A'   → 0
+(int) '012'    → 12
+(int) ''       → 0
+(int) 3.99     → 3
+(int) true     → 1
+(int) null     → 0</pre>
+</article>
+
+<article class="card c6"><h2>Převodní funkce</h2>
+<pre class="php">var_dump(intval('42abc'));
+var_dump(intval('1A', 16));       // základ soustavy
+var_dump(intval('0x1A', 0));      // základ 0: podle předpony
+var_dump(intval('012', 0));       // osmičkově
+var_dump(floatval('1,5'));        // čárka! jen 1
+var_dump((float) str_replace(',', '.', '1,5'));
+var_dump(strval(1.5), boolval('0'));
+
+$x = '15';
+settype($x, 'integer');           // změní proměnnou na místě
+var_dump($x);</pre>
+<pre class="res">int(42)
+int(26)
+int(26)
+int(10)
+float(1)
+float(1.5)
+string(3) "1.5"
+bool(false)
+int(15)</pre>
+</article>
+<article class="card c6"><h2>Převodní tabulka</h2>
+<div class="tbl"><table>
+  <tr><th>Hodnota</th><th><code>(int)</code></th><th><code>(float)</code></th><th><code>(string)</code></th><th><code>(bool)</code></th></tr>
+  <tr><td><code>true</code></td><td>1</td><td>1.0</td><td>'1'</td><td>true</td></tr>
+  <tr><td><code>false</code></td><td>0</td><td>0.0</td><td>''</td><td>false</td></tr>
+  <tr><td><code>null</code></td><td>0</td><td>0.0</td><td>''</td><td>false</td></tr>
+  <tr><td><code>3.99</code></td><td>3</td><td>3.99</td><td>'3.99'</td><td>true</td></tr>
+  <tr><td><code>'0'</code></td><td>0</td><td>0.0</td><td>'0'</td><td><b>false</b></td></tr>
+  <tr><td><code>'12abc'</code></td><td>12</td><td>12.0</td><td>'12abc'</td><td>true</td></tr>
+  <tr><td><code>'abc'</code></td><td>0</td><td>0.0</td><td>'abc'</td><td>true</td></tr>
+  <tr><td><code>[]</code></td><td>0</td><td>0.0</td><td>chyba*</td><td>false</td></tr>
+  <tr><td><code>[1, 2]</code></td><td>1</td><td>1.0</td><td>chyba*</td><td>true</td></tr>
+</table></div>
+  <p class="muted">* pole na řetězec: Warning „Array to string conversion“ a výsledek <code>'Array'</code>.</p>
+</article>
+
+<article class="card c6"><h2>Pole a objekty</h2>
+<pre class="php">var_dump((array) null);              // prázdné pole
+var_dump((array) 5);                 // [5]
+
+$o = (object) ['jmeno' =&gt; 'Eva', 'vek' =&gt; 17];
+echo $o-&gt;jmeno, "\n";
+var_dump((array) $o);
+
+$p = json_decode('{"a":{"b":1}}', true);   // celý strom na pole</pre>
+<pre class="res">array(0) {
+}
+array(1) {
+  [0]=&gt;
+  int(5)
+}
+Eva
+array(2) {
+  ["jmeno"]=&gt;
+  string(3) "Eva"
+  ["vek"]=&gt;
+  int(17)
+}</pre>
+</article>
+<article class="card c6"><h2>Ztráta informace</h2>
+<pre class="php">var_dump((int) 1e19);              // mimo rozsah int
+var_dump((int) '9999999999999999999');  // řetězec: zastaví se na maximu
+var_dump((int) NAN);
+var_dump((bool) 0.0000001);</pre>
+<pre class="res">int(-8446744073709551616)
+int(9223372036854775807)
+int(0)
+bool(true)</pre>
+  <p class="muted"><span class="v8">8.5</span> Převod floatu mimo rozsah int a převod <code>NAN</code> nově hlásí varování.</p>
+  <div class="task"><b>Zkuste si</b>Odhadněte výsledek a ověřte: <code>(int) '1e2'</code>, <code>(bool) '0.0'</code>, <code>(string) 0.1 + 0.2</code>, <code>(int) (0.1 + 0.7) * 10</code> a <code>(int) ((0.1 + 0.7) * 10)</code>.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="k9" class="view wrap chapter" data-title="Čísla a text tam a zpět">
+<header class="ch-head">
+  <div class="kicker">Kapitola 9 / 12 · Přetypování</div>
+  <h1>Čísla a text tam a zpět</h1>
+  <p class="lead">Nejčastější převod v praxi: uživatel napíše „1 234,50“ a program potřebuje float. Opačně se float musí vypsat v české podobě. Obojí jde spolehlivě, když se ví, kterou funkci použít.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Text → číslo spolehlivě</h2>
+<pre class="php">function naCislo(string $vstup): ?float
+{
+    $s = str_replace([' ', "\u{A0}", ','], ['', '', '.'], trim($vstup));
+    $f = filter_var($s, FILTER_VALIDATE_FLOAT);
+    return $f === false ? null : $f;
+}
+
+foreach (['1 234,50', '12.5', '-3', '1e3', '12a', ''] as $v) {
+    printf("%-10s → %s\n", "'$v'", var_export(naCislo($v), true));
+}</pre>
+<pre class="res">'1 234,50' → 1234.5
+'12.5'     → 12.5
+'-3'       → -3.0
+'1e3'      → 1000.0
+'12a'      → NULL
+''         → NULL</pre>
+</article>
+<article class="card c6"><h2>Jen číslice?</h2>
+<pre class="php">foreach (['123', '-5', '12.0', '', ' 7', '０'] as $v) {
+    printf("%-6s ctype_digit:%-5s is_numeric:%-5s INT:%s\n", "'$v'",
+        var_export(ctype_digit($v), true),
+        var_export(is_numeric($v), true),
+        var_export(filter_var($v, FILTER_VALIDATE_INT), true));
+}</pre>
+<pre class="res">'123'  ctype_digit:true  is_numeric:true  INT:123
+'-5'   ctype_digit:false is_numeric:true  INT:-5
+'12.0' ctype_digit:false is_numeric:true  INT:false
+''     ctype_digit:false is_numeric:false INT:false
+' 7'   ctype_digit:false is_numeric:true  INT:7
+'０'  ctype_digit:false is_numeric:false INT:false</pre>
+  <p class="muted"><code>ctype_digit</code> pro PSČ, rodná čísla, kódy (jen 0–9). <code>FILTER_VALIDATE_INT</code> pro hodnoty, se kterými se počítá.</p>
+</article>
+
+<article class="card c6"><h2>Číslo → text</h2>
+<pre class="php">$x = 1234567.891;
+echo $x, "\n";
+echo number_format($x, 2, ',', ' '), "\n";
+echo sprintf('%.2f', $x), "\n";
+echo sprintf('%08.2f', 3.14159), "\n";
+echo str_pad((string) 7, 3, '0', STR_PAD_LEFT), "\n";
+echo (new NumberFormatter('cs_CZ', NumberFormatter::DECIMAL))-&gt;format($x), "\n";
+echo (new NumberFormatter('cs_CZ', NumberFormatter::PERCENT))-&gt;format(0.256), "\n";</pre>
+<pre class="res">1234567.891
+1 234 567,89
+1234567.89
+00003.14
+007
+1 234 567,891
+26 %</pre>
+</article>
+<article class="card c6"><h2>Soustavy a bajty</h2>
+<pre class="php">echo decbin(42), ' ', dechex(42), ' ', decoct(42), "\n";
+echo bindec('101010'), ' ', hexdec('2A'), ' ', octdec('52'), "\n";
+echo sprintf('%08b', 5), "\n";            // s nulami
+echo ord('A'), ' ', chr(66), "\n";         // ASCII kód
+echo mb_ord('Č'), ' ', mb_chr(268), "\n";  // Unicode</pre>
+<pre class="res">101010 2a 52
+42 42 42
+00000101
+65 B
+268 Č</pre>
+  <div class="task"><b>Zkuste si</b>Funkce <code>formatujCenu(int $haleru): string</code> vrátí např. „1 234,50 Kč“. Ověřte pro 0, 5, 123456 a záporná čísla.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="k10" class="view wrap chapter" data-title="Typové deklarace a strict_types">
+<header class="ch-head">
+  <div class="kicker">Kapitola 10 / 12 · Deklarace</div>
+  <h1>Typové deklarace a strict_types</h1>
+  <p class="lead">Deklarace typu říká, jakou hodnotu funkce přijímá a vrací. Bez <code>strict_types</code> se PHP pokusí hodnotu převést. Se <code>strict_types=1</code> vyžaduje přesně daný typ a jinak vyhodí <code>TypeError</code>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Režim převodu (výchozí)</h2>
+<pre class="php">function dvojnasobek(int $n): int
+{
+    return $n * 2;
+}
+
+var_dump(dvojnasobek('21'));     // '21' → 21
+var_dump(dvojnasobek(4.0));      // 4.0 → 4
+var_dump(dvojnasobek(true));     // true → 1
+var_dump(dvojnasobek('21 kusů'));  // TypeError</pre>
+<pre class="res">int(42)
+int(8)
+int(2)
+
+Fatal error: Uncaught TypeError: dvojnasobek(): Argument #1 ($n) must be of type int, string given, called in ukazka.php on line 9 and defined in ukazka.php:1
+Stack trace:
+#0 ukazka.php(9): dvojnasobek()
+#1 {main}
+  thrown in ukazka.php on line 1</pre>
+</article>
+<article class="card c6"><h2>Striktní režim</h2>
+<pre class="php">&lt;?php
+declare(strict_types=1);
+
+function dvojnasobek(int $n): int
+{
+    return $n * 2;
+}
+
+var_dump(dvojnasobek(21));
+var_dump(dvojnasobek('21'));     // TypeError</pre>
+<pre class="res">int(42)
+
+Fatal error: Uncaught TypeError: dvojnasobek(): Argument #1 ($n) must be of type int, string given, called in ukazka.php on line 10 and defined in ukazka.php:4
+Stack trace:
+#0 ukazka.php(10): dvojnasobek()
+#1 {main}
+  thrown in ukazka.php on line 4</pre>
+  <ul>
+    <li>platí pro <b>volání zapsaná v tomto souboru</b>, ne pro celý projekt</li>
+    <li>jedinou výjimkou je <code>int</code> → <code>float</code> (povoleno)</li>
+    <li>chyby odhalí hned, proto ho používejte v každém souboru</li>
+  </ul>
+</article>
+
+<article class="card c6"><h2>Složitější typy</h2>
+<pre class="php">&lt;?php
+declare(strict_types=1);
+
+function popis(int|float|string $x): string       // sjednocení (8.0)
+{
+    return get_debug_type($x) . ": $x";
+}
+echo popis(5), ' / ', popis(2.5), ' / ', popis('a'), "\n";
+
+function prvni(iterable $data): mixed             // mixed = cokoli
+{
+    foreach ($data as $v) { return $v; }
+    return null;
+}
+echo prvni(['x', 'y']), "\n";
+
+function ulozeno(): true { return true; }         // 8.2
+
+function vypis(int $n): void { echo $n * 1.5, "\n"; }   // int → float OK
+vypis(2);</pre>
+<pre class="res">int: 5 / float: 2.5 / string: a
+x
+3</pre>
+</article>
+<article class="card c6"><h2>Typy vlastností</h2>
+<pre class="php">&lt;?php
+declare(strict_types=1);
+
+class Zak
+{
+    public function __construct(
+        public string $jmeno,
+        public int $rocnik = 1,
+        public ?string $email = null,
+        public readonly int $id = 0,
+    ) {}
+}
+
+$z = new Zak('Eva', 3);
+echo "$z-&gt;jmeno, $z-&gt;rocnik. ročník\n";
+$z-&gt;rocnik = '4';            // TypeError</pre>
+<pre class="res">Eva, 3. ročník
+
+Fatal error: Uncaught TypeError: Cannot assign string to property Zak::$rocnik of type int in ukazka.php:16
+Stack trace:
+#0 {main}
+  thrown in ukazka.php on line 16</pre>
+</article>
+
+<article class="card c12"><h2>Přehled zápisů</h2>
+<div class="tbl"><table>
+  <tr><th>Zápis</th><th>Od verze</th><th>Význam</th></tr>
+  <tr><td><code>int</code>, <code>float</code>, <code>string</code>, <code>bool</code></td><td>7.0</td><td>skalární typy</td></tr>
+  <tr><td><code>?int</code></td><td>7.1</td><td>int nebo null</td></tr>
+  <tr><td><code>void</code>, <code>iterable</code></td><td>7.1</td><td>bez návratu; pole či iterovatelný objekt</td></tr>
+  <tr><td><code>int|string</code>, <code>mixed</code>, <code>static</code></td><td>8.0</td><td>sjednocení; cokoli; volající třída</td></tr>
+  <tr><td><code>never</code>, <code>A&amp;B</code></td><td>8.1</td><td>nevrací se; průnik rozhraní</td></tr>
+  <tr><td><code>(A&amp;B)|null</code>, <code>true</code>, <code>false</code>, <code>null</code></td><td>8.2</td><td>DNF typy; samostatné literály</td></tr>
+  <tr><td><code>const int X = 1;</code></td><td>8.3</td><td>typované konstanty tříd</td></tr>
+</table></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="k11" class="view wrap chapter" data-title="Složené typy a výčty">
+<header class="ch-head">
+  <div class="kicker">Kapitola 11 / 12 · Deklarace</div>
+  <h1>Složené typy a výčty</h1>
+  <p class="lead">Složené typy obsahují víc hodnot. Důležitý rozdíl: <b>pole se kopíruje</b> při přiřazení, kdežto u <b>objektu</b> se kopíruje jen odkaz, takže obě proměnné ukazují na tentýž objekt.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Pole × objekt při přiřazení</h2>
+<pre class="php">$pole = ['n' =&gt; 1];
+$kopie = $pole;
+$kopie['n'] = 99;
+echo $pole['n'], "\n";        // 1: pole se zkopírovalo
+
+$obj = new stdClass();
+$obj-&gt;n = 1;
+$druhy = $obj;
+$druhy-&gt;n = 99;
+echo $obj-&gt;n, "\n";           // 99: stejný objekt
+
+$klon = clone $obj;
+$klon-&gt;n = 5;
+echo $obj-&gt;n, "\n";           // 99: klon je samostatný</pre>
+<pre class="res">1
+99
+99</pre>
+</article>
+<article class="card c6"><h2>Výčtový typ enum (8.1)</h2>
+<pre class="php">enum Znamka: int
+{
+    case Vyborne = 1;
+    case Chvalitebne = 2;
+    case Dobre = 3;
+    case Dostatecne = 4;
+    case Nedostatecne = 5;
+
+    public function proslo(): bool
+    {
+        return $this !== self::Nedostatecne;
+    }
+}
+
+$z = Znamka::from(2);                  // z čísla
+echo $z-&gt;name, ' = ', $z-&gt;value, "\n";
+var_dump(Znamka::tryFrom(7));          // null místo výjimky
+var_dump(Znamka::Nedostatecne-&gt;proslo());
+echo count(Znamka::cases()), " hodnot\n";</pre>
+<pre class="res">Chvalitebne = 2
+NULL
+bool(false)
+5 hodnot</pre>
+</article>
+
+<article class="card c6"><h2>callable a Closure</h2>
+<pre class="php">function aplikuj(callable $f, array $data): array
+{
+    return array_map($f, $data);
+}
+
+print_r(aplikuj('strtoupper', ['a', 'b']));
+print_r(aplikuj(fn($x) =&gt; $x * 10, [1, 2]));
+var_dump(strlen(...) instanceof Closure);</pre>
+<pre class="res">Array
+(
+    [0] =&gt; A
+    [1] =&gt; B
+)
+Array
+(
+    [0] =&gt; 10
+    [1] =&gt; 20
+)
+bool(true)</pre>
+</article>
+<article class="card c6"><h2>Kontrola typu objektu</h2>
+<pre class="php">$d = new DateTimeImmutable('2026-10-16');
+var_dump($d instanceof DateTimeInterface);
+var_dump(get_class($d), get_debug_type($d));
+var_dump(is_object($d), is_object([]));</pre>
+<pre class="res">bool(true)
+string(17) "DateTimeImmutable"
+string(17) "DateTimeImmutable"
+bool(true)
+bool(false)</pre>
+  <p class="muted">Pole podrobně: <a href="04-pole.html">prezentace 4</a>. Objekty a třídy budou mít vlastní prezentaci.</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section id="k12" class="view wrap chapter" data-title="Shrnutí a úlohy">
+<header class="ch-head">
+  <div class="kicker">Kapitola 12 / 12 · Deklarace</div>
+  <h1>Shrnutí a úlohy</h1>
+  <p class="lead">Typové chyby patří k nejčastějším chybám v PHP. Většině z nich předejdete několika pravidly.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Pravidla</h2>
+<ol class="steps">
+  <li><span><code>declare(strict_types=1);</code> na začátku každého souboru.</span></li>
+  <li><span>Typy u všech parametrů, návratových hodnot a vlastností.</span></li>
+  <li><span>Porovnávejte přes <code>===</code> a <code>!==</code>.</span></li>
+  <li><span>Vstup zvenku nejdřív ověřte (<code>filter_var</code>) a teprve pak používejte.</span></li>
+  <li><span>Peníze v celých haléřích nebo přes <code>bcmath</code>, nikdy ve float.</span></li>
+  <li><span>Funkce vracející <code>int|false</code> testujte <code>=== false</code>.</span></li>
+  <li><span>Na text v UTF-8 funkce <code>mb_*</code>.</span></li>
+</ol>
+</article>
+<article class="card c6"><h2>Rychlý test</h2>
+<pre class="php">$testy = [
+    "'10' + 5"       =&gt; '10' + 5,
+    "'10' . 5"       =&gt; '10' . 5,
+    "(int) '7.9'"    =&gt; (int) '7.9',
+    "(bool) '0'"     =&gt; (bool) '0',
+    "(bool) 'false'" =&gt; (bool) 'false',
+    "0.1 + 0.2"      =&gt; 0.1 + 0.2,
+    "intdiv(7, 2)"   =&gt; intdiv(7, 2),
+    "7 / 2"          =&gt; 7 / 2,
+    "null ?? 'x'"    =&gt; null ?? 'x',
+    "'' ?: 'x'"      =&gt; '' ?: 'x',
+];
+foreach ($testy as $vyraz =&gt; $vysledek) {
+    printf("%-15s → %s\n", $vyraz, var_export($vysledek, true));
+}</pre>
+<pre class="res">'10' + 5        → 15
+'10' . 5        → '105'
+(int) '7.9'     → 7
+(bool) '0'      → false
+(bool) 'false'  → true
+0.1 + 0.2       → 0.30000000000000004
+intdiv(7, 2)    → 3
+7 / 2           → 3.5
+null ?? 'x'     → 'x'
+'' ?: 'x'       → 'x'</pre>
+</article>
+
+<article class="card c4"><h2>Úloha 1: Převodník</h2>
+  <p>CLI skript načte z klávesnice libovolný text a vypíše, jak by dopadl převod na <code>int</code>, <code>float</code>, <code>bool</code>, zda je číselný (<code>is_numeric</code>) a co vrátí <code>filter_var</code> s <code>FILTER_VALIDATE_INT</code> a <code>FLOAT</code>.</p>
+</article>
+<article class="card c4"><h2>Úloha 2: Účtenka</h2>
+  <p>Pole položek <code>['název', cena v Kč jako string s čárkou, počet]</code>. Převeďte ceny na haléře, spočítejte mezisoučty, DPH 21 % a celkovou cenu. Vypište česky formátovanou účtenku.</p>
+</article>
+<article class="card c4"><h2>Úloha 3: Typová kontrola</h2>
+  <p>Funkce <code>ulozZaka(string $jmeno, int $rocnik, ?string $email = null): array</code> se <code>strict_types</code>. Zavolejte ji s daty z formuláře (řetězce) tak, aby nevznikl <code>TypeError</code>, a neplatné hodnoty ohlaste uživateli.</p>
+</article>
+
+</div>
+</section>
+
+<div class="wrap"><nav class="pager" id="pager" hidden></nav></div>
+<footer>Výuková prezentace 3 · Datové typy a přetypování · vizuální styl vychází z design systému VOŠ, SPŠ a SOŠ Varnsdorf. Výstupy ukázek vygenerovalo PHP 8.3.6; ukázky označené 8.4+ a 8.5+ vyžadují novější verzi.</footer>
+<script>
+function hlPHP(src){
+  var KW = ('abstract and as break callable case catch class clone const continue declare default do echo else elseif empty enddeclare endfor endforeach endif endswitch endwhile enum exit extends final finally fn for foreach function global goto if implements include include_once instanceof insteadof interface isset list match namespace new or print private protected public readonly require require_once return static switch throw trait try unset use var while xor yield from parent self').split(' ');
+  var TY = ('int float string bool array object mixed void never null true false iterable callable').split(' ');
+  var re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#(?!\[)[^\n]*)|(<<<[ \t]*(['"]?)([A-Za-z_]\w*)\3\n[\s\S]*?\n[ \t]*\4\b)|('(?:\\[\s\S]|[^'\\])*'|"(?:\\[\s\S]|[^"\\])*")|(<\?php|<\?=|\?>)|(#\[[^\]\n]*\])|(\$[A-Za-z_\u00C0-\u024F][\w\u00C0-\u024F]*)|(\b(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?)\b)|([A-Za-z_\\][\w\\]*)/g;
+  var out = '', last = 0, m;
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function w(cls, s){ return '<span class="'+cls+'">'+esc(s)+'</span>'; }
+  while ((m = re.exec(src))){
+    out += esc(src.slice(last, m.index));
+    var t = m[0];
+    if (m[1]) out += w('c', t);
+    else if (m[2] || m[5]) out += w('s', t);
+    else if (m[6]) out += w('tg', t);
+    else if (m[7]) out += w('a', t);
+    else if (m[8]) out += w('v', t);
+    else if (m[9]) out += w('n', t);
+    else {
+      var low = t.toLowerCase(), rest = src.slice(re.lastIndex);
+      var prev = src.slice(0, m.index).replace(/\s+$/,'');
+      if (/(->|\?->|::)$/.test(prev)) out += /^\s*\(/.test(rest) ? w('f', t) : esc(t);
+      else if (KW.indexOf(low) > -1) out += w('k', t);
+      else if (TY.indexOf(low) > -1) out += w('t', t);
+      else if (/^\s*\(/.test(rest)) out += w('f', t);
+      else if (/^[A-Z][A-Z0-9_]+$/.test(t) || /^__[A-Z]+__$/.test(t)) out += w('co', t);
+      else out += esc(t);
+    }
+    last = re.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+document.querySelectorAll('pre.php').forEach(function(pre){
+  var src = pre.textContent;
+  pre.innerHTML = hlPHP(src);
+  var b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = 'kopírovat';
+  b.addEventListener('click', function(){
+    try { navigator.clipboard.writeText(src).then(function(){ b.textContent = 'zkopírováno'; setTimeout(function(){ b.textContent = 'kopírovat'; }, 1200); }); } catch(e){}
+  });
+  pre.appendChild(b);
+});
+document.querySelectorAll('pre.sh').forEach(function(pre){
+  pre.innerHTML = pre.innerHTML.split('\n').map(function(l){
+    var cm = l.match(/^(.*?)(\s#\s.*)$/);
+    var tail = '';
+    if (cm && /^(\$|PS&gt;) /.test(l)) { l = cm[1]; tail = '<span class="cm">'+cm[2]+'</span>'; }
+    else if (/^\s*#/.test(l)) return '<span class="cm">'+l+'</span>';
+    if (/^\$ /.test(l)) return '<span class="pr">$</span>'+l.slice(1)+tail;
+    if (/^PS&gt; /.test(l)) return '<span class="pr">PS&gt;</span>'+l.slice(5)+tail;
+    if (/^&gt; /.test(l)) return '<span class="pr">&gt;</span>'+l.slice(4)+tail;
+    return '<span class="out">'+l+'</span>'+tail;
+  }).join('\n');
+});
+
+
+(function(){
+  var DECK = "Datové typy a přetypování";
+  var NEXT_DECK = {"href": "04-pole.html", "title": "Pole a asociativní pole"};
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var chapters = views.filter(function(v){ return v.classList.contains('chapter'); });
+  var pager = document.getElementById('pager');
+  var barTitle = document.getElementById('barTitle');
+  var barPrev = document.getElementById('barPrev');
+  var barNext = document.getElementById('barNext');
+  function setLink(a, target){
+    if (target){ a.href = '#'+target.id; a.removeAttribute('aria-disabled'); }
+    else { a.href = '#prehled'; a.setAttribute('aria-disabled','true'); }
+  }
+  function show(){
+    var id = (location.hash || '').replace('#','') || 'prehled';
+    var current = document.getElementById(id);
+    if (!current || !current.classList.contains('view')) current = document.getElementById('prehled');
+    views.forEach(function(v){ v.hidden = (v !== current); });
+    var i = chapters.indexOf(current);
+    if (i === -1){
+      barTitle.textContent = 'Přehled kapitol';
+      setLink(barPrev, null); setLink(barNext, chapters[0]);
+      pager.hidden = true;
+    } else {
+      barTitle.textContent = (i+1) + ' / ' + chapters.length + ' · ' + current.dataset.title;
+      var prev = chapters[i-1], next = chapters[i+1];
+      setLink(barPrev, prev || document.getElementById('prehled'));
+      setLink(barNext, next);
+      var nextHtml;
+      if (next) nextHtml = '<a class="btn next" href="#'+next.id+'"><span><small>Kapitola '+(i+2)+'</small>'+next.dataset.title+' →</span></a>';
+      else if (NEXT_DECK) nextHtml = '<a class="btn next" href="'+NEXT_DECK.href+'"><span><small>Další prezentace</small>'+NEXT_DECK.title+' →</span></a>';
+      else nextHtml = '<a class="btn next" href="index.html"><span><small>Konec</small>Přehled kurzu →</span></a>';
+      pager.innerHTML =
+        (prev ? '<a class="btn" href="#'+prev.id+'"><span>← <small>Kapitola '+i+'</small>'+prev.dataset.title+'</span></a>'
+              : '<a class="btn" href="#prehled"><span>← <small>Zpět</small>Přehled kapitol</span></a>') + nextHtml;
+      pager.hidden = false;
+    }
+    document.title = (i === -1 ? '' : current.dataset.title + ' · ') + DECK;
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+  document.addEventListener('keydown', function(e){
+    if (e.target.closest('input,textarea,select,summary') || e.altKey || e.ctrlKey || e.metaKey) return;
+    var cur = document.getElementById((location.hash || '#prehled').slice(1));
+    var i = chapters.indexOf(cur);
+    if (e.key === 'ArrowRight'){ var n = i === -1 ? chapters[0] : chapters[i+1]; if (n) location.hash = n.id; }
+    else if (e.key === 'ArrowLeft'){ if (i > 0) location.hash = chapters[i-1].id; else if (i === 0) location.hash = 'prehled'; }
+    else if (e.key === 'Escape'){ location.hash = 'prehled'; }
+  });
+  show();
+})();
+</script>
+</body>
+</html>

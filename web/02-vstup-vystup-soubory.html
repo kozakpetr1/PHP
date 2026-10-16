@@ -1,0 +1,1468 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Vstup a výstup, soubory a adresáře</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: přehled kapitol PHP (dashboard) → jedna kapitola na obrazovku, mřížka 12 sloupců s průsvitnými panely.
+   Design: vizuální systém VOŠ, SPŠ a SOŠ Varnsdorf — jeden tmavý svět (záměrně bez světlého režimu). */
+:root{
+  color-scheme:dark;
+  --bg1:#003b4b;--bg2:#006783;--panel:rgba(0,27,34,.48);--panel-2:rgba(0,0,0,.2);
+  --cyan:#41d7ff;--blue:#00c0f3;--yellow:#ffd400;--green:#a6ce39;--red:#ff7a6b;
+  --muted:rgba(255,255,255,.62);--white:#fff;--line:rgba(255,255,255,.1);
+  --code-bg:#001820;--code-fg:#eaffff;--code-hl:#ffea80;
+  --font:Raleway,"Segoe UI",system-ui,sans-serif;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;font-family:var(--font);color:var(--white);background:var(--bg1);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;line-height:1.45;font-size:15px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 85% 10%,rgba(65,215,255,.12),transparent 30%),
+  radial-gradient(circle at 10% 90%,rgba(166,206,57,.08),transparent 30%)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* horní lišta */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(0,30,38,.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+.bar-in{max-width:1450px;margin:auto;padding:.55rem 5vw;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{color:#fff;text-decoration:none;font-weight:800;letter-spacing:.04em;font-size:.82rem;text-transform:uppercase}
+.brand span{color:var(--cyan)}
+.bar-ch{color:var(--muted);font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-nav{display:flex;gap:.35rem}
+.btn{display:inline-flex;align-items:center;gap:.35rem;color:#fff;text-decoration:none;background:rgba(0,20,26,.55);
+  padding:.42rem .7rem;font-size:.75rem;font-weight:600;letter-spacing:.04em;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(65,215,255,.15);color:var(--cyan)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.btn[aria-disabled="true"]{opacity:.35;pointer-events:none}
+
+/* společné */
+.wrap{position:relative;z-index:1;max-width:1450px;margin:auto;padding-inline:5vw}
+header.hero{padding-block:3rem 1.5rem}
+.kicker{color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(2.2rem,5vw,4.5rem);line-height:1.05;margin:.35rem 0 .7rem;letter-spacing:-.03em;text-wrap:balance;font-weight:800}
+.lead{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:200;max-width:62ch;color:rgba(255,255,255,.9);margin:0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1rem}
+.card{background:var(--panel);backdrop-filter:blur(12px);padding:1.25rem 1.35rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+h2{font-size:1.1rem;margin:0 0 .85rem;color:var(--cyan);text-wrap:balance}
+h3{font-size:.82rem;margin:.9rem 0 .35rem;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase}
+h3:first-child{margin-top:0}
+p{margin:.35rem 0 .65rem;overflow-wrap:anywhere}
+.muted{color:var(--muted);font-size:.82rem}
+ul,ol{margin:.4rem 0 0;padding-left:1.15rem} li{margin:.25rem 0}
+.tag{display:inline-block;padding:.18rem .45rem;margin:.12rem;background:rgba(65,215,255,.1);color:var(--cyan);font-size:.72rem;font-family:var(--mono)}
+.tag.g{background:rgba(166,206,57,.12);color:var(--green)}
+.tag.y{background:rgba(255,212,0,.1);color:var(--yellow)}
+pre{margin:.5rem 0 0;padding:.75rem .85rem;background:var(--code-bg);color:var(--code-fg);overflow:auto;font:.78rem/1.55 var(--mono);tab-size:4}
+pre .pr{color:var(--green);user-select:none}
+pre .cm{color:#7fb3c2;font-style:italic}
+pre .out{color:rgba(234,255,255,.62)}
+code{font-family:var(--mono);color:var(--code-hl);font-size:.92em}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;color:var(--cyan);padding:.45rem;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:.45rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;overflow-wrap:anywhere}
+.perms{font-family:var(--mono);font-size:1rem;color:var(--yellow)}
+.callout{border-left:4px solid var(--yellow);background:rgba(255,212,0,.07);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.callout.warn{border-color:var(--red);background:rgba(255,122,107,.08)}
+.callout.ok{border-color:var(--green);background:rgba(166,206,57,.08)}
+.syntax{font-family:var(--mono);font-size:1rem;background:var(--panel-2);padding:.7rem .85rem;border-left:3px solid var(--cyan);overflow-x:auto;white-space:nowrap}
+.syntax b{color:#fff}.syntax i{color:var(--cyan);font-style:normal}.syntax em{color:var(--yellow);font-style:normal}
+.arch{display:grid;gap:.35rem}.layer{padding:.55rem .75rem;background:var(--panel-2);border-left:3px solid var(--cyan)}
+.layer:nth-child(2){border-color:var(--blue)}.layer:nth-child(3){border-color:var(--green)}.layer:nth-child(4){border-color:var(--yellow)}.layer:nth-child(5){border-color:var(--muted)}
+.layer b{display:block;font-size:.82rem}.layer span{font-size:.74rem;color:var(--muted)}
+.timeline{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}.time{background:var(--panel-2);padding:.65rem}.time b{color:var(--yellow);font-size:.78rem}.time div{font-size:.78rem;margin-top:.25rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:.45rem;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:.6rem;align-items:start;margin:0;background:var(--panel-2);padding:.55rem .65rem;font-size:.84rem}
+.steps li:before{content:counter(s);font-weight:800;color:var(--bg1);background:var(--cyan);width:1.6rem;height:1.6rem;display:grid;place-items:center;font-size:.8rem}
+.kbd{font-family:var(--mono);font-size:.78rem;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(255,255,255,.25);padding:.05rem .35rem;color:#fff;white-space:nowrap}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.mode{background:var(--panel-2);padding:.65rem;border-top:3px solid var(--cyan)}
+.mode:nth-child(2){border-color:var(--green)}.mode:nth-child(3){border-color:var(--yellow)}.mode:nth-child(4){border-color:var(--blue)}
+.mode b{display:block;font-size:.85rem}.mode span{font-size:.76rem;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.8rem;margin:.4rem 0}
+.flow span{background:var(--panel-2);padding:.35rem .55rem;border:1px solid var(--line)}
+.flow i{color:var(--yellow);font-style:normal;font-weight:700}
+
+/* dashboard */
+.dash-meta{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+.dash-meta b{display:block;color:#fff;font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.part{margin-top:1.6rem}
+.part-h{display:flex;align-items:baseline;gap:.8rem;margin:0 0 .7rem;flex-wrap:wrap}
+.part-h h2{margin:0;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow)}
+.part-h span{color:var(--muted);font-size:.8rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.tile{display:flex;flex-direction:column;gap:.45rem;text-decoration:none;color:#fff;background:var(--panel);backdrop-filter:blur(12px);
+  padding:1.1rem 1.2rem 1rem;border-bottom:3px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.tile:hover{background:rgba(0,27,34,.7);border-color:var(--cyan);transform:translateY(-2px)}
+.tile .n{font-size:2.2rem;font-weight:200;color:var(--cyan);line-height:1;font-variant-numeric:tabular-nums}
+.tile .t{font-weight:700;font-size:1rem;line-height:1.25;text-wrap:balance}
+.tile .d{font-size:.8rem;color:var(--muted);flex:1}
+.tile .k{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.2rem}
+.tile .k span{font-family:var(--mono);font-size:.68rem;color:var(--code-hl);background:rgba(0,0,0,.25);padding:.12rem .38rem}
+.p2 .tile .n{color:var(--green)} .p2 .tile:hover{border-color:var(--green)}
+.p3 .tile .n{color:var(--yellow)} .p3 .tile:hover{border-color:var(--yellow)}
+.hint{margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+
+/* kapitola */
+.ch-head{padding-block:2.4rem 1.3rem}
+.ch-head h1{font-size:clamp(2rem,4.4vw,3.8rem)}
+.pager{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;padding-block:.6rem 2.5rem}
+.pager a{max-width:48%}
+.pager .next{margin-left:auto;text-align:right}
+.pager small{display:block;color:var(--muted);font-weight:400;letter-spacing:0;font-size:.7rem}
+footer{position:relative;z-index:1;max-width:1450px;margin:auto;padding:0 5vw 2rem;color:var(--muted);font-size:.7rem}
+
+@media(max-width:950px){
+  .c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 6}
+}
+@media(max-width:720px){
+  .c3,.c4,.c5,.c6,.c7,.c8,.c12{grid-column:span 12}
+  .modes,.timeline{grid-template-columns:1fr}
+  .grid{gap:.75rem}.card{padding:1rem}
+  .bar-ch{display:none}
+  .pager a{max-width:100%;flex:1 1 100%}.pager .next{text-align:left}
+}
+@media print{.bar,.pager{display:none}}
+
+/* ---- doplňky pro navazující prezentace ---- */
+.bar-nav .btn.kurz{color:var(--yellow)}
+pre.php,pre.sh,pre.res{position:relative}
+pre.php{border-left:3px solid var(--cyan)}
+pre.res{margin-top:0;background:rgba(0,0,0,.32);color:rgba(234,255,255,.78);border-left:3px solid var(--green);padding-top:1.35rem}
+pre.res:before{content:"výstup";position:absolute;top:.3rem;left:.85rem;font:700 .58rem/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+pre.php + pre.res{margin-top:2px}
+pre.sh{border-left:3px solid var(--muted)}
+pre .k{color:#41d7ff}
+pre .t{color:#7ee0c3}
+pre .v{color:#ffd76a}
+pre .s{color:#b8e986}
+pre .n{color:#ffa77a}
+pre .c{color:#7fb3c2;font-style:italic}
+pre .f{color:#9fd8ff}
+pre .tg{color:#ff8f80;font-weight:700}
+pre .a{color:#d7a6ff}
+pre .co{color:#ffc7f0}
+pre .hl{background:rgba(255,212,0,.16);display:inline-block;width:100%}
+.copy{position:absolute;top:.3rem;right:.3rem;opacity:0;transition:opacity .15s;font:600 .62rem/1 var(--font);letter-spacing:.06em;
+  background:rgba(65,215,255,.15);color:var(--cyan);border:0;padding:.35rem .5rem;cursor:pointer}
+pre:hover .copy,.copy:focus-visible{opacity:1}
+.v8{display:inline-block;font:700 .62rem/1 var(--font);letter-spacing:.06em;padding:.22rem .4rem;background:var(--yellow);color:#00222c;vertical-align:middle;margin-left:.35rem}
+.v8.g{background:var(--green)}
+.v8.r{background:var(--red)}
+.task{border-left:4px solid var(--green);background:rgba(166,206,57,.08);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.task b:first-child{color:var(--green);letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;display:block;margin-bottom:.2rem}
+.task details{margin-top:.4rem}
+.task summary{cursor:pointer;color:var(--cyan);font-size:.78rem;font-weight:600}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.cols2 > div{min-width:0}
+.big{font-size:1.05rem}
+.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}
+td code,th code{white-space:nowrap}
+.prev-deck{color:var(--muted);font-size:.8rem;margin-top:1rem}
+.prev-deck a{color:var(--cyan)}
+@media(max-width:720px){.cols2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#prehled">Vstup/výstup <span>PHP</span></a>
+  <div class="bar-ch" id="barTitle">Přehled kapitol</div>
+  <div class="bar-nav">
+    <a class="btn kurz" href="index.html" title="Přehled všech prezentací kurzu">Kurz</a>
+    <a class="btn" id="barPrev" href="#prehled" aria-label="Předchozí kapitola">←</a>
+    <a class="btn" href="#prehled">Přehled</a>
+    <a class="btn" id="barNext" href="#k1" aria-label="Další kapitola">→</a>
+  </div>
+</div></div>
+
+<section id="prehled" class="view wrap" data-title="Přehled kapitol">
+  <header class="hero">
+    <div class="kicker">Prezentace 2 · Programování webových aplikací</div>
+    <h1>Vstup a výstup, soubory a adresáře</h1>
+    <p class="lead">Jak PHP vypisuje data do terminálu i prohlížeče, jak čte vstup z klávesnice, z příkazové řádky a z formulářů, a jak pracuje se soubory, CSV, JSON a adresáři.</p>
+    <div class="dash-meta"><div><b>11</b>kapitol</div><div><b>60</b>ukázek kódu</div><div><b>CLI + web</b>oba způsoby vstupu</div><div><b>8.2+</b>cílová verze PHP</div></div>
+  </header>
+<div class="part p1"><div class="part-h"><h2>Výstup</h2><span>co a jak skript vypisuje</span></div><div class="tiles"><a class="tile" href="#k1"><span class="n">01</span><span class="t">Formátovaný výstup</span><span class="d">echo a print, formátovací řetězce printf/sprintf, čísla po česku, zarovnání a ladicí výpisy.</span><span class="k"><span>printf</span><span>sprintf</span><span>number_format</span><span>var_dump</span></span></a><a class="tile" href="#k2"><span class="n">02</span><span class="t">Výstup do prohlížeče</span><span class="d">Bezpečný výpis do HTML, HTTP hlavičky, přesměrování, stažení souboru a výstupní buffer.</span><span class="k"><span>htmlspecialchars</span><span>header()</span><span>nl2br</span><span>ob_start</span></span></a></div></div>
+<div class="part p2"><div class="part-h"><h2>Vstup</h2><span>klávesnice, příkazová řádka, formuláře</span></div><div class="tiles"><a class="tile" href="#k3"><span class="n">03</span><span class="t">Vstup v příkazové řádce</span><span class="d">Čtení z klávesnice, argumenty skriptu, přepínače, chybový výstup a návratový kód.</span><span class="k"><span>STDIN</span><span>readline</span><span>$argv</span><span>getopt</span></span></a><a class="tile" href="#k4"><span class="n">04</span><span class="t">Vstup z webu: GET a POST</span><span class="d">Formuláře, metody GET a POST, superglobální pole, zpracování formuláře a JSON v těle požadavku.</span><span class="k"><span>$_GET</span><span>$_POST</span><span>$_SERVER</span><span>form</span></span></a><a class="tile" href="#k5"><span class="n">05</span><span class="t">Validace vstupu a nahrávání souborů</span><span class="d">Kontrola a převod vstupních hodnot přes filtry a bezpečné přijetí souboru z formuláře.</span><span class="k"><span>filter_var</span><span>filter_input</span><span>$_FILES</span><span>move_uploaded_file</span></span></a></div></div>
+<div class="part p3"><div class="part-h"><h2>Soubory</h2><span>čtení, zápis, CSV a JSON</span></div><div class="tiles"><a class="tile" href="#k6"><span class="n">06</span><span class="t">Celé soubory najednou</span><span class="d">Nejjednodušší čtení a zápis, připisování na konec, soubor jako pole řádků, informace o souboru.</span><span class="k"><span>file_get_contents</span><span>file_put_contents</span><span>file()</span><span>FILE_APPEND</span></span></a><a class="tile" href="#k7"><span class="n">07</span><span class="t">Práce se souborem po částech</span><span class="d">Režimy otevření, čtení po řádcích, zápis, zamykání a SplFileObject pro velké soubory.</span><span class="k"><span>fopen</span><span>fgets</span><span>fwrite</span><span>flock</span></span></a><a class="tile" href="#k8"><span class="n">08</span><span class="t">CSV a JSON</span><span class="d">Tabulková data z Excelu a strukturovaná data pro konfiguraci a API.</span><span class="k"><span>fgetcsv</span><span>fputcsv</span><span>json_encode</span><span>json_decode</span></span></a></div></div>
+<div class="part p1"><div class="part-h"><h2>Adresáře a bezpečnost</h2><span>cesty, procházení složek, oprávnění</span></div><div class="tiles"><a class="tile" href="#k9"><span class="n">09</span><span class="t">Cesty k souborům</span><span class="d">Absolutní a relativní cesty, pracovní adresář, rozklad cesty na části, rozdíly Windows a Linux.</span><span class="k"><span>__DIR__</span><span>basename</span><span>pathinfo</span><span>realpath</span></span></a><a class="tile" href="#k10"><span class="n">10</span><span class="t">Práce s adresáři</span><span class="d">Vytvoření a smazání složky, výpis obsahu, hledání podle masky a rekurzivní procházení stromu.</span><span class="k"><span>mkdir</span><span>scandir</span><span>glob</span><span>RecursiveDirectoryIterator</span></span></a><a class="tile" href="#k11"><span class="n">11</span><span class="t">Oprávnění, bezpečnost a úlohy</span><span class="d">Práva souborů na serveru, útok přes ../ v cestě, nastavení open_basedir a závěrečné úlohy.</span><span class="k"><span>chmod</span><span>is_writable</span><span>../</span><span>open_basedir</span></span></a></div></div>
+
+  <p class="hint">Při promítání se mezi kapitolami posouváte šipkami <span class="kbd">←</span> <span class="kbd">→</span>, klávesa <span class="kbd">Esc</span> vrací na přehled. Ukázky kódu jdou zkopírovat tlačítkem v rohu, výstupy pod nimi jsou z reálného běhu PHP.</p>
+  <p class="prev-deck">Navazuje na prezentace <a href="00-uvod-do-php.html">Úvod do PHP</a> a <a href="01-zaklady-syntaxe.html">Základy syntaxe</a>. Ukázky čtou cvičné soubory ze složky <code>cvicne-soubory/</code> (<code>zaci.txt</code>, <code>znamky.csv</code>, <code>config.json</code>, <code>data/</code>). Spouštějte je z této složky.</p>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="k1" class="view wrap chapter" data-title="Formátovaný výstup">
+<header class="ch-head">
+  <div class="kicker">Kapitola 1 / 11 · Výstup</div>
+  <h1>Formátovaný výstup</h1>
+  <p class="lead">Výstup skriptu jde v terminálu na obrazovku a na webu do těla HTTP odpovědi. Pro hezké tabulky, čísla a ceny slouží rodina funkcí <code>printf</code>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>printf a sprintf</h2>
+<pre class="php">$jmeno = 'Eva'; $body = 42; $procent = 87.456;
+
+printf("%s má %d bodů (%.1f %%)\n", $jmeno, $body, $procent);
+
+$radek = sprintf('%05d|%-8s|%8.2f|', 42, 'PHP', 3.14159);  // vrátí řetězec
+echo $radek, "\n";
+
+printf("%1\$s, %2\$s a zase %1\$s\n", 'A', 'B');        // pořadí argumentů
+printf("[%'*10s]\n", 'hvězdy');                          // vlastní výplň</pre>
+<pre class="res">Eva má 42 bodů (87.5 %)
+00042|PHP     |    3.14|
+A, B a zase A
+[***hvězdy]</pre>
+  <p class="muted"><code>printf</code> vypisuje, <code>sprintf</code> vrací text, <code>fprintf</code> zapisuje do souboru.</p>
+</article>
+<article class="card c6"><h2>Formátovací značky</h2>
+<div class="tbl"><table>
+  <tr><th>Značka</th><th>Význam</th><th>Příklad → výsledek</th></tr>
+  <tr><td><code>%s</code></td><td>řetězec</td><td><code>%s</code>, 'a' → a</td></tr>
+  <tr><td><code>%d</code></td><td>celé číslo</td><td><code>%d</code>, 3.9 → 3</td></tr>
+  <tr><td><code>%f</code>, <code>%.2f</code></td><td>desetinné číslo</td><td><code>%.2f</code>, 2.5 → 2.50</td></tr>
+  <tr><td><code>%5d</code> / <code>%-5s</code></td><td>šířka, zarovnání vpravo/vlevo</td><td><code>[%-5s]</code> → [ab&nbsp;&nbsp;&nbsp;]</td></tr>
+  <tr><td><code>%05d</code></td><td>doplnění nulami</td><td>42 → 00042</td></tr>
+  <tr><td><code>%x</code>, <code>%b</code>, <code>%o</code></td><td>šestnáctkově, binárně, osmičkově</td><td><code>%b</code>, 10 → 1010</td></tr>
+  <tr><td><code>%e</code></td><td>vědecký zápis</td><td>1500 → 1.500000e+3</td></tr>
+  <tr><td><code>%%</code></td><td>znak procenta</td><td>%</td></tr>
+</table></div>
+</article>
+
+<article class="card c6"><h2>Čísla a ceny po česku</h2>
+<pre class="php">$cena = 1234567.891;
+
+echo number_format($cena), "\n";                 // anglicky
+echo number_format($cena, 2, ',', ' '), " Kč\n"; // česky
+
+$f = new NumberFormatter('cs_CZ', NumberFormatter::CURRENCY);  // rozšíření intl
+echo $f-&gt;formatCurrency(1234.5, 'CZK'), "\n";
+
+echo round(2.675, 2), ' ', floor(2.9), ' ', ceil(2.1), "\n";</pre>
+<pre class="res">1,234,568
+1 234 567,89 Kč
+1 234,50 Kč
+2.68 2 3</pre>
+  <p class="muted"><code>printf</code> desetinnou čárku neumí. Pro české formátování použijte <code>number_format</code> nebo <code>NumberFormatter</code>.</p>
+</article>
+<article class="card c6"><h2>Tabulka v terminálu</h2>
+<pre class="php">$zaci = [['Anna', 1, 98.5], ['Bořivoj', 3, 71.25], ['Eva', 2, 85]];
+
+printf("%-10s %6s %8s\n", 'Jméno', 'Známka', 'Body');
+echo str_repeat('-', 26), "\n";
+foreach ($zaci as [$jmeno, $znamka, $body]) {
+    $mezery = 10 - mb_strlen($jmeno);              // %-10s počítá bajty!
+    printf("%s%s %6d %8.1f\n", $jmeno, str_repeat(' ', $mezery), $znamka, $body);
+}</pre>
+<pre class="res">Jméno     Známka     Body
+--------------------------
+Anna            1     98.5
+Bořivoj         3     71.2
+Eva             2     85.0</pre>
+  <p class="muted"><code>printf</code> měří šířku v bajtech, proto se česká jména zarovnávají ručně přes <code>mb_strlen</code>.</p>
+</article>
+
+<article class="card c12"><h2>Ladicí výpisy</h2>
+<div class="cols2"><div>
+<pre class="php">$zak = ['jmeno' =&gt; 'Eva', 'znamky' =&gt; [1, 2], 'aktivni' =&gt; true, 'pozn' =&gt; null];
+
+var_dump($zak['znamky']);     // typy a délky
+print_r($zak);                // čitelné pro člověka
+echo print_r($zak, true) === '' ? '' : "(print_r umí i vrátit řetězec)\n";</pre>
+<pre class="res">array(2) {
+  [0]=&gt;
+  int(1)
+  [1]=&gt;
+  int(2)
+}
+Array
+(
+    [jmeno] =&gt; Eva
+    [znamky] =&gt; Array
+        (
+            [0] =&gt; 1
+            [1] =&gt; 2
+        )
+
+    [aktivni] =&gt; 1
+    [pozn] =&gt; 
+)
+(print_r umí i vrátit řetězec)</pre>
+</div><div>
+<pre class="php">$zak = ['jmeno' =&gt; 'Eva', 'aktivni' =&gt; true, 'pozn' =&gt; null];
+var_export($zak);             // platný PHP kód
+echo "\n";
+echo json_encode($zak, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE), "\n";
+error_log('Tohle jde do logu, ne na stránku');</pre>
+<pre class="res">array (
+  'jmeno' =&gt; 'Eva',
+  'aktivni' =&gt; true,
+  'pozn' =&gt; NULL,
+)
+{
+    "jmeno": "Eva",
+    "aktivni": true,
+    "pozn": null
+}
+Tohle jde do logu, ne na stránku</pre>
+  <p class="muted"><code>error_log()</code> zapisuje do logu serveru (v CLI na standardní chybový výstup).</p>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="k2" class="view wrap chapter" data-title="Výstup do prohlížeče">
+<header class="ch-head">
+  <div class="kicker">Kapitola 2 / 11 · Výstup</div>
+  <h1>Výstup do prohlížeče</h1>
+  <p class="lead">Na webu PHP posílá dvě věci: <b>HTTP hlavičky</b> a <b>tělo</b> odpovědi. Hlavičky musí odejít dřív než první znak těla. Text od uživatele se do HTML musí vždy escapovat.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>htmlspecialchars: ochrana proti XSS</h2>
+<pre class="php">$komentar = '&lt;script&gt;alert("hack")&lt;/script&gt; &amp; &lt;b&gt;tučně&lt;/b&gt;';
+
+echo "&lt;p&gt;$komentar&lt;/p&gt;\n";                         // ✗ nebezpečné
+echo '&lt;p&gt;', htmlspecialchars($komentar), "&lt;/p&gt;\n"; // ✓ bezpečné
+
+function e(?string $s): string            // zkratka do šablon
+{
+    return htmlspecialchars($s ?? '', ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+echo '&lt;input value="', e('Řekl "ahoj"'), "\"&gt;\n";</pre>
+<pre class="res">&lt;p&gt;&lt;script&gt;alert("hack")&lt;/script&gt; &amp; &lt;b&gt;tučně&lt;/b&gt;&lt;/p&gt;
+&lt;p&gt;&amp;lt;script&amp;gt;alert(&amp;quot;hack&amp;quot;)&amp;lt;/script&amp;gt; &amp;amp; &amp;lt;b&amp;gt;tučně&amp;lt;/b&amp;gt;&lt;/p&gt;
+&lt;input value="Řekl &amp;quot;ahoj&amp;quot;"&gt;</pre>
+  <div class="callout warn">XSS (Cross-Site Scripting): útočník vloží do formuláře JavaScript a ten se spustí každému, kdo stránku otevře. Escapujte <b>při výpisu</b>, ne při ukládání.</div>
+</article>
+<article class="card c6"><h2>Text s odřádkováním</h2>
+<pre class="php">$zprava = "Dobrý den,\nposílám úkol.\n&lt;b&gt;Petr&lt;/b&gt;";
+echo nl2br(htmlspecialchars($zprava));</pre>
+<pre class="res">Dobrý den,&lt;br /&gt;
+posílám úkol.&lt;br /&gt;
+&amp;lt;b&amp;gt;Petr&amp;lt;/b&amp;gt;</pre>
+  <p class="muted">Nejdřív escapovat, potom <code>nl2br</code>. Jinak by se escapovaly i vložené značky <code>&lt;br&gt;</code>.</p>
+  <h3>Odkazy a URL</h3>
+<pre class="php">$hledat = 'čeština &amp; PHP';
+echo '&lt;a href="hledat.php?q=', urlencode($hledat), '"&gt;hledat&lt;/a&gt;', "\n";
+echo http_build_query(['q' =&gt; $hledat, 'strana' =&gt; 2]);</pre>
+<pre class="res">&lt;a href="hledat.php?q=%C4%8De%C5%A1tina+%26+PHP"&gt;hledat&lt;/a&gt;
+q=%C4%8De%C5%A1tina+%26+PHP&amp;strana=2</pre>
+</article>
+
+<article class="card c6"><h2>HTTP hlavičky</h2>
+<pre class="php">&lt;?php
+// hlavičky musí odejít PŘED jakýmkoli výstupem
+header('Content-Type: text/plain; charset=utf-8');
+echo "Prostý text, žádné HTML\n";</pre>
+<pre class="php">&lt;?php
+// přesměrování po odeslání formuláře (vzor POST → redirect → GET)
+header('Location: dekujeme.php', true, 303);
+exit;</pre>
+<pre class="php">&lt;?php
+// JSON pro JavaScript (fetch)
+header('Content-Type: application/json; charset=utf-8');
+http_response_code(200);
+echo json_encode(['ok' =&gt; true, 'cas' =&gt; date('c')]);</pre>
+</article>
+<article class="card c6"><h2>Chyba „headers already sent“</h2>
+<pre class="php"> &lt;?php            // ← mezera před &lt;?php je už výstup!
+header('Location: /');</pre>
+<pre class="res">Warning: Cannot modify header information - headers already sent
+by (output started at index.php:1)</pre>
+  <ul>
+    <li>mezera, prázdný řádek nebo BOM před <code>&lt;?php</code></li>
+    <li>prázdný řádek za <code>?&gt;</code> ve vloženém souboru (proto ho vynecháváme)</li>
+    <li><code>echo</code> nebo HTML před voláním <code>header()</code></li>
+  </ul>
+  <h3>Stažení souboru</h3>
+<pre class="php">header('Content-Type: text/csv; charset=utf-8');
+header('Content-Disposition: attachment; filename="znamky.csv"');
+readfile(__DIR__ . '/znamky.csv');</pre>
+</article>
+
+<article class="card c12"><h2>Výstupní buffer</h2>
+<div class="cols2"><div>
+<pre class="php">function vykresli(string $sablona, array $data): string
+{
+    ob_start();                 // od teď se výstup zachytává
+    extract($data);             // ['nadpis' =&gt; …] → $nadpis
+    ?&gt;
+&lt;h1&gt;&lt;?= htmlspecialchars($nadpis) ?&gt;&lt;/h1&gt;
+&lt;p&gt;&lt;?= count($polozky) ?&gt; položek&lt;/p&gt;
+&lt;?php
+    return ob_get_clean();      // vrátí zachycený text a buffer zavře
+}
+
+$html = vykresli('x', ['nadpis' =&gt; 'Nákup', 'polozky' =&gt; [1, 2, 3]]);
+echo 'Zachyceno ', strlen($html), " bajtů:\n", $html;</pre>
+<pre class="res">Zachyceno 34 bajtů:
+&lt;h1&gt;Nákup&lt;/h1&gt;
+&lt;p&gt;3 položek&lt;/p&gt;</pre>
+</div><div>
+  <p>Buffer zachytí vše, co by šlo na výstup, a vrátí to jako řetězec. Hodí se pro šablony, ukládání stránky do cache nebo když je potřeba poslat hlavičku až po vygenerování obsahu.</p>
+  <div class="tbl"><table>
+    <tr><th>Funkce</th><th>Co dělá</th></tr>
+    <tr><td><code>ob_start()</code></td><td>zapne zachytávání</td></tr>
+    <tr><td><code>ob_get_clean()</code></td><td>vrátí obsah a buffer zavře</td></tr>
+    <tr><td><code>ob_end_flush()</code></td><td>pošle obsah ven a zavře</td></tr>
+    <tr><td><code>flush()</code></td><td>pošle data serveru hned (průběžný výpis)</td></tr>
+  </table></div>
+  <div class="task"><b>Zkuste si</b>Vytvořte stránku s formulářovým polem a zobrazte zadaný text pod formulářem. Zkuste do něj napsat <code>&lt;h1&gt;test&lt;/h1&gt;</code> s <code>htmlspecialchars</code> i bez.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="k3" class="view wrap chapter" data-title="Vstup v příkazové řádce">
+<header class="ch-head">
+  <div class="kicker">Kapitola 3 / 11 · Vstup</div>
+  <h1>Vstup v příkazové řádce</h1>
+  <p class="lead">Skript spuštěný v terminálu (<code>php skript.php</code>) dostává vstup třemi cestami: <b>argumenty</b> na příkazové řádce, <b>standardní vstup</b> (klávesnice nebo přesměrovaný soubor) a proměnné prostředí.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Čtení z klávesnice</h2>
+<pre class="php">echo 'Jak se jmenuješ? ';
+$jmeno = trim(fgets(STDIN));          // přečte jeden řádek včetně \n
+
+echo 'Kolik ti je? ';
+$vek = (int) fgets(STDIN);
+
+echo "\nAhoj $jmeno, za rok ti bude ", $vek + 1, ".\n";</pre>
+<pre class="res">Jak se jmenuješ? Kolik ti je? 
+Ahoj Eva, za rok ti bude 18.</pre>
+  <p class="muted">Ve výstupu chybí zadaný text, protože ten se zobrazí jen na klávesnici. <code>fgets</code> vrací řádek i se znakem <code>\n</code>, proto <code>trim()</code>.</p>
+</article>
+<article class="card c6"><h2>readline a fscanf</h2>
+<pre class="php">$a = readline('Zadej číslo: ');       // výzva + řádek bez \n
+echo "Zadal jsi $a\n";
+// fscanf: rozdělí vstup podle formátu
+[$x, $y] = fscanf(STDIN, '%d %d') ?? [0, 0];
+echo "Součin: ", $x * $y, "\n";</pre>
+<pre class="res">Zadal jsi 3
+Součin: 35</pre>
+<pre class="php">// čtení do konce vstupu (EOF)
+$soucet = 0;
+while (($radek = fgets(STDIN)) !== false) {
+    $soucet += (int) $radek;
+}
+echo "Součet: $soucet\n";</pre>
+<pre class="res">Součet: 15</pre>
+<pre class="sh">$ php soucet.php &lt; cisla.txt     # vstup ze souboru
+$ seq 1 100 | php soucet.php     # vstup z jiného programu</pre>
+</article>
+
+<article class="card c6"><h2>Argumenty: $argv a $argc</h2>
+<pre class="php">echo "Počet argumentů: $argc\n";
+print_r($argv);                     // [0] je název skriptu
+
+$jmeno = $argv[1] ?? exit("Použití: php {$argv[0]} JMENO\n");
+echo "Ahoj $jmeno\n";</pre>
+<pre class="res">Počet argumentů: 4
+Array
+(
+    [0] =&gt; ukazka.php
+    [1] =&gt; Eva
+    [2] =&gt; 17
+    [3] =&gt; IT3
+)
+Ahoj Eva</pre>
+<pre class="sh">$ php ukazka.php Eva 17 IT3</pre>
+</article>
+<article class="card c6"><h2>Přepínače: getopt</h2>
+<pre class="php">// "v" bez hodnoty, "n:" povinná hodnota, "rok::" volitelná
+$opt = getopt('vn:', ['rok::', 'help']);
+var_dump($opt);
+
+$podrobne = isset($opt['v']);
+$rok = (int) ($opt['rok'] ?? date('Y'));</pre>
+<pre class="res">array(3) {
+  ["v"]=&gt;
+  bool(false)
+  ["n"]=&gt;
+  string(3) "Eva"
+  ["rok"]=&gt;
+  string(4) "2026"
+}</pre>
+  <p class="muted">Přepínač bez hodnoty má v poli hodnotu <code>false</code>, proto se testuje přes <code>isset</code>.</p>
+<pre class="sh">$ php ukazka.php -v -n Eva --rok=2026</pre>
+</article>
+
+<article class="card c6"><h2>Standardní výstupy a návratový kód</h2>
+<pre class="php">fwrite(STDOUT, "Normální výstup\n");
+fwrite(STDERR, "Chyba: soubor nenalezen\n");   // chybový výstup
+exit(1);                                        // 0 = OK, jinak chyba</pre>
+<pre class="sh">$ php import.php &gt; vysledek.txt 2&gt; chyby.txt
+$ php import.php &amp;&amp; echo "OK" || echo "selhalo"
+$ echo $?                       # návratový kód (PowerShell: $LASTEXITCODE)</pre>
+</article>
+<article class="card c6"><h2>Proměnné prostředí</h2>
+<pre class="php">putenv('APP_ENV=vyvoj');                // jen pro ukázku
+$prostredi = getenv('APP_ENV') ?: 'produkce';
+echo "Prostředí: $prostredi\n";
+echo PHP_SAPI, "\n";                      // cli × apache2handler × fpm-fcgi</pre>
+<pre class="res">Prostředí: vyvoj
+cli</pre>
+  <div class="task"><b>Zkuste si</b>Skript <code>prumer.php</code>, který čte čísla po řádcích ze vstupu, dokud nezadáte prázdný řádek, a pak vypíše jejich průměr na dvě desetinná místa. Vyzkoušejte i <code>php prumer.php &lt; cisla.txt</code>.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="k4" class="view wrap chapter" data-title="Vstup z webu: GET a POST">
+<header class="ch-head">
+  <div class="kicker">Kapitola 4 / 11 · Vstup</div>
+  <h1>Vstup z webu: GET a POST</h1>
+  <p class="lead">Na webu přicházejí data v HTTP požadavku. PHP je před spuštěním skriptu rozparsuje do <b>superglobálních polí</b>, která jsou dostupná všude, i uvnitř funkcí.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Superglobální pole</h2>
+<div class="tbl"><table>
+  <tr><th>Pole</th><th>Obsahuje</th></tr>
+  <tr><td><code>$_GET</code></td><td>parametry z URL: <code>?q=php&amp;strana=2</code></td></tr>
+  <tr><td><code>$_POST</code></td><td>data formuláře s <code>method="post"</code></td></tr>
+  <tr><td><code>$_FILES</code></td><td>nahrané soubory</td></tr>
+  <tr><td><code>$_COOKIE</code></td><td>cookies z prohlížeče</td></tr>
+  <tr><td><code>$_SESSION</code></td><td>data relace (po <code>session_start()</code>)</td></tr>
+  <tr><td><code>$_SERVER</code></td><td>informace o požadavku a serveru</td></tr>
+  <tr><td><code>$_ENV</code></td><td>proměnné prostředí</td></tr>
+  <tr><td><code>$_REQUEST</code></td><td>GET + POST + COOKIE dohromady (nepoužívat)</td></tr>
+</table></div>
+  <div class="callout">Všechno v těchto polích jsou <b>řetězce</b> (nebo pole řetězců) a posílá je uživatel, takže mohou obsahovat cokoli.</div>
+</article>
+<article class="card c6"><h2>GET: parametry v adrese</h2>
+<pre class="php">&lt;?php // hledat.php?q=php&amp;strana=2
+$q = trim($_GET['q'] ?? '');
+$strana = max(1, (int) ($_GET['strana'] ?? 1));
+?&gt;
+&lt;form method="get"&gt;
+  &lt;input name="q" value="&lt;?= htmlspecialchars($q) ?&gt;"&gt;
+  &lt;button&gt;Hledat&lt;/button&gt;
+&lt;/form&gt;
+&lt;?php if ($q !== ''): ?&gt;
+  &lt;p&gt;Hledáte „&lt;?= htmlspecialchars($q) ?&gt;“, strana &lt;?= $strana ?&gt;.&lt;/p&gt;
+&lt;?php endif; ?&gt;</pre>
+  <p class="muted">GET pro čtení (hledání, filtry, stránkování): adresa jde uložit do záložek a sdílet.</p>
+</article>
+
+<article class="card c7"><h2>POST: zpracování formuláře</h2>
+<pre class="php">&lt;?php // kontakt.php
+$chyby = [];
+$data = ['jmeno' =&gt; '', 'email' =&gt; '', 'zprava' =&gt; ''];
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $data['jmeno']  = trim($_POST['jmeno'] ?? '');
+    $data['email']  = trim($_POST['email'] ?? '');
+    $data['zprava'] = trim($_POST['zprava'] ?? '');
+
+    if ($data['jmeno'] === '')                                $chyby[] = 'Vyplňte jméno.';
+    if (!filter_var($data['email'], FILTER_VALIDATE_EMAIL))   $chyby[] = 'Neplatný e-mail.';
+    if (mb_strlen($data['zprava']) &lt; 10)                      $chyby[] = 'Zpráva je krátká.';
+
+    if ($chyby === []) {
+        file_put_contents(__DIR__ . '/zpravy.log', json_encode($data) . "\n", FILE_APPEND | LOCK_EX);
+        header('Location: kontakt.php?odeslano=1', true, 303);
+        exit;
+    }
+}
+?&gt;
+&lt;?php foreach ($chyby as $ch): ?&gt;&lt;p class="chyba"&gt;&lt;?= htmlspecialchars($ch) ?&gt;&lt;/p&gt;&lt;?php endforeach; ?&gt;
+&lt;form method="post"&gt;
+  &lt;input name="jmeno" value="&lt;?= htmlspecialchars($data['jmeno']) ?&gt;"&gt;
+  &lt;input name="email" type="email" value="&lt;?= htmlspecialchars($data['email']) ?&gt;"&gt;
+  &lt;textarea name="zprava"&gt;&lt;?= htmlspecialchars($data['zprava']) ?&gt;&lt;/textarea&gt;
+  &lt;button&gt;Odeslat&lt;/button&gt;
+&lt;/form&gt;</pre>
+</article>
+<article class="card c5"><h2>Co se děje</h2>
+<ol class="steps">
+  <li><span>První načtení stránky je GET: zobrazí se prázdný formulář.</span></li>
+  <li><span>Odeslání je POST: data přijdou v <code>$_POST</code>, klíčem je atribut <code>name</code>.</span></li>
+  <li><span>Při chybě se formulář vykreslí znovu s vyplněnými hodnotami a hláškami.</span></li>
+  <li><span>Při úspěchu přesměrování 303. Obnovení stránky (F5) pak formulář neodešle podruhé.</span></li>
+</ol>
+  <h3>Pole z formuláře</h3>
+<pre class="php">&lt;input type="checkbox" name="predmety[]" value="PRG"&gt;
+&lt;input type="checkbox" name="predmety[]" value="WEB"&gt;
+
+$predmety = $_POST['predmety'] ?? [];   // ['PRG', 'WEB']</pre>
+</article>
+
+<article class="card c6"><h2>$_SERVER: užitečné klíče</h2>
+<div class="tbl"><table>
+  <tr><td><code>REQUEST_METHOD</code></td><td>GET, POST, …</td></tr>
+  <tr><td><code>REQUEST_URI</code></td><td><code>/hledat.php?q=php</code></td></tr>
+  <tr><td><code>SCRIPT_NAME</code></td><td><code>/hledat.php</code></td></tr>
+  <tr><td><code>HTTP_HOST</code></td><td><code>localhost:8000</code></td></tr>
+  <tr><td><code>REMOTE_ADDR</code></td><td>IP adresa klienta</td></tr>
+  <tr><td><code>HTTP_USER_AGENT</code></td><td>identifikace prohlížeče (lze podvrhnout)</td></tr>
+  <tr><td><code>DOCUMENT_ROOT</code></td><td>kořen webu na disku</td></tr>
+</table></div>
+</article>
+<article class="card c6"><h2>JSON v těle požadavku</h2>
+<pre class="php">&lt;?php // api.php: volané z JavaScriptu přes fetch()
+$telo = file_get_contents('php://input');      // surové tělo požadavku
+try {
+    $data = json_decode($telo, true, flags: JSON_THROW_ON_ERROR);
+} catch (JsonException $e) {
+    http_response_code(400);
+    exit(json_encode(['chyba' =&gt; 'Neplatný JSON']));
+}
+header('Content-Type: application/json');
+echo json_encode(['prijato' =&gt; $data['jmeno'] ?? null]);</pre>
+<pre class="sh">$ curl -X POST -H "Content-Type: application/json" \
+       -d '{"jmeno":"Eva"}' http://localhost:8000/api.php
+{"prijato":"Eva"}</pre>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="k5" class="view wrap chapter" data-title="Validace vstupu a nahrávání souborů">
+<header class="ch-head">
+  <div class="kicker">Kapitola 5 / 11 · Vstup</div>
+  <h1>Validace vstupu a nahrávání souborů</h1>
+  <p class="lead">Vstupu nikdy nevěřte. Každou hodnotu <b>ověřte</b> (je to číslo? e-mail? v povoleném rozsahu?) a teprve pak s ní pracujte. Funkce <code>filter_var</code> ověří i převede typ v jednom kroku.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>filter_var</h2>
+<pre class="php">var_dump(filter_var('42', FILTER_VALIDATE_INT));
+var_dump(filter_var('42abc', FILTER_VALIDATE_INT));       // false
+var_dump(filter_var('15', FILTER_VALIDATE_INT,
+    ['options' =&gt; ['min_range' =&gt; 1, 'max_range' =&gt; 5]]));   // false
+var_dump(filter_var('3,14', FILTER_VALIDATE_FLOAT,
+    ['options' =&gt; ['decimal' =&gt; ',']]));
+var_dump(filter_var('eva@skola.cz', FILTER_VALIDATE_EMAIL));
+var_dump(filter_var('ano', FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE));
+var_dump(filter_var('yes', FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE));</pre>
+<pre class="res">int(42)
+bool(false)
+bool(false)
+float(3.14)
+string(12) "eva@skola.cz"
+NULL
+bool(true)</pre>
+</article>
+<article class="card c6"><h2>Nejpoužívanější filtry</h2>
+<div class="tbl"><table>
+  <tr><th>Filtr</th><th>Ověří</th></tr>
+  <tr><td><code>FILTER_VALIDATE_INT</code></td><td>celé číslo, volitelně rozsah</td></tr>
+  <tr><td><code>FILTER_VALIDATE_FLOAT</code></td><td>desetinné číslo</td></tr>
+  <tr><td><code>FILTER_VALIDATE_BOOL</code></td><td>1/0, true/false, on/off, yes/no</td></tr>
+  <tr><td><code>FILTER_VALIDATE_EMAIL</code></td><td>tvar e-mailové adresy</td></tr>
+  <tr><td><code>FILTER_VALIDATE_URL</code></td><td>tvar URL</td></tr>
+  <tr><td><code>FILTER_VALIDATE_IP</code></td><td>IPv4/IPv6 adresu</td></tr>
+  <tr><td><code>FILTER_VALIDATE_REGEXP</code></td><td>shodu s regulárním výrazem</td></tr>
+</table></div>
+<pre class="php">// přímo ze vstupu (null = parametr chybí, false = neplatný)
+$id = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+if (!is_int($id)) {
+    http_response_code(400);
+    exit('Neplatné ID');
+}</pre>
+</article>
+
+<article class="card c6"><h2>Vlastní validace</h2>
+<pre class="php">function overPsc(string $psc): ?string
+{
+    $psc = str_replace(' ', '', $psc);
+    return preg_match('/^\d{5}$/', $psc) ? $psc : null;
+}
+
+foreach (['407 47', '40747', '4O747', '1234'] as $v) {
+    printf("%-7s → %s\n", $v, overPsc($v) ?? 'neplatné');
+}</pre>
+<pre class="res">407 47  → 40747
+40747   → 40747
+4O747   → neplatné
+1234    → neplatné</pre>
+  <p class="muted">Hlídejte i délku (<code>mb_strlen</code>), povolené hodnoty (<code>in_array(…, true)</code>) a povinnost vyplnění.</p>
+</article>
+<article class="card c6"><h2>Formulář pro nahrání souboru</h2>
+<pre class="php">&lt;form method="post" enctype="multipart/form-data"&gt;
+  &lt;input type="file" name="foto" accept="image/*"&gt;
+  &lt;button&gt;Nahrát&lt;/button&gt;
+&lt;/form&gt;</pre>
+<pre class="php">// $_FILES['foto'] obsahuje:
+[
+    'name'     =&gt; 'dovolena.jpg',        // jméno od uživatele (nedůvěryhodné)
+    'type'     =&gt; 'image/jpeg',          // typ od prohlížeče (nedůvěryhodný)
+    'tmp_name' =&gt; '/tmp/phpA1b2C3',      // dočasný soubor na serveru
+    'error'    =&gt; UPLOAD_ERR_OK,         // 0 = v pořádku
+    'size'     =&gt; 245810,                // velikost v bajtech
+]</pre>
+  <p class="muted">Bez <code>enctype="multipart/form-data"</code> soubor nepřijde. Limity nastavují <code>upload_max_filesize</code> a <code>post_max_size</code> v <code>php.ini</code>.</p>
+</article>
+
+<article class="card c12"><h2>Bezpečné přijetí souboru</h2>
+<div class="cols2"><div>
+<pre class="php">&lt;?php
+$f = $_FILES['foto'] ?? null;
+if ($f === null || $f['error'] !== UPLOAD_ERR_OK) {
+    exit('Soubor se nenahrál (kód ' . ($f['error'] ?? '?') . ').');
+}
+if ($f['size'] &gt; 2 * 1024 * 1024) {
+    exit('Maximálně 2 MB.');
+}
+
+// skutečný typ podle obsahu, ne podle přípony
+$typ = (new finfo(FILEINFO_MIME_TYPE))-&gt;file($f['tmp_name']);
+$pripona = match ($typ) {
+    'image/jpeg' =&gt; 'jpg',
+    'image/png'  =&gt; 'png',
+    'image/webp' =&gt; 'webp',
+    default      =&gt; exit('Povolené jsou jen obrázky.'),
+};
+
+// vlastní, náhodné jméno: nikdy nepoužívat $f['name'] jako cestu
+$cil = __DIR__ . '/uploads/' . bin2hex(random_bytes(8)) . '.' . $pripona;
+if (!move_uploaded_file($f['tmp_name'], $cil)) {
+    exit('Uložení selhalo.');
+}
+echo 'Uloženo.';</pre>
+</div><div>
+  <h3>Pravidla</h3>
+  <ul>
+    <li>kontrolujte <code>error</code>, velikost a <b>skutečný</b> typ obsahu (<code>finfo</code>)</li>
+    <li>jméno souboru generujte sami, uživatelské jméno nanejvýš uložte do databáze</li>
+    <li>složka pro nahrávání nesmí spouštět PHP (jinak by šlo nahrát <code>shell.php</code>)</li>
+    <li><code>move_uploaded_file</code> ověří, že soubor opravdu přišel přes upload</li>
+  </ul>
+  <div class="tbl"><table>
+    <tr><th>error</th><th>Význam</th></tr>
+    <tr><td><code>UPLOAD_ERR_INI_SIZE</code> (1)</td><td>větší než <code>upload_max_filesize</code></td></tr>
+    <tr><td><code>UPLOAD_ERR_PARTIAL</code> (3)</td><td>nahrán jen částečně</td></tr>
+    <tr><td><code>UPLOAD_ERR_NO_FILE</code> (4)</td><td>nebyl vybrán soubor</td></tr>
+  </table></div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="k6" class="view wrap chapter" data-title="Celé soubory najednou">
+<header class="ch-head">
+  <div class="kicker">Kapitola 6 / 11 · Soubory</div>
+  <h1>Celé soubory najednou</h1>
+  <p class="lead">Pro malé soubory (do jednotek MB) stačí tři funkce: <code>file_get_contents</code>, <code>file_put_contents</code> a <code>file</code>. Celý soubor načtou nebo zapíšou jedním voláním.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Čtení</h2>
+<pre class="php">$text = file_get_contents('zaci.txt');
+echo $text;
+echo strlen($text), " bajtů\n";
+
+$radky = file('zaci.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
+echo count($radky), ' žáci, druhý: ', $radky[1], "\n";</pre>
+<pre class="res">Anna Nováková
+Petr Svoboda
+Eva Dvořáková
+46 bajtů
+3 žáci, druhý: Petr Svoboda</pre>
+  <div class="tbl"><table>
+    <tr><th>Příznak pro <code>file()</code></th><th>Účinek</th></tr>
+    <tr><td><code>FILE_IGNORE_NEW_LINES</code></td><td>odstraní <code>\n</code> z konce řádků</td></tr>
+    <tr><td><code>FILE_SKIP_EMPTY_LINES</code></td><td>vynechá prázdné řádky (jen spolu s předchozím)</td></tr>
+  </table></div>
+</article>
+<article class="card c6"><h2>Zápis a připisování</h2>
+<pre class="php">file_put_contents('vystup.txt', "první řádek\n");            // přepíše
+file_put_contents('vystup.txt', "druhý řádek\n", FILE_APPEND); // připíše
+file_put_contents('vystup.txt', ['a', 'b', "\n"], FILE_APPEND); // pole se spojí
+
+echo file_get_contents('vystup.txt');
+
+$bajtu = file_put_contents('log.txt', date('Y-m-d') . " start\n", FILE_APPEND | LOCK_EX);
+var_dump($bajtu);</pre>
+<pre class="res">první řádek
+druhý řádek
+ab
+int(17)</pre>
+  <p class="muted"><code>LOCK_EX</code> zamkne soubor po dobu zápisu, takže se zápisy dvou současných požadavků nepromíchají.</p>
+</article>
+
+<article class="card c6"><h2>Když soubor neexistuje</h2>
+<pre class="php">$obsah = file_get_contents('neni.txt');
+var_dump($obsah);</pre>
+<pre class="res">Warning: file_get_contents(neni.txt): Failed to open stream: No such file or directory in ukazka.php on line 1
+bool(false)</pre>
+<pre class="php">$soubor = 'neni.txt';
+if (!is_file($soubor) || !is_readable($soubor)) {
+    echo "Soubor $soubor nelze přečíst\n";
+} else {
+    $obsah = file_get_contents($soubor);
+}</pre>
+<pre class="res">Soubor neni.txt nelze přečíst</pre>
+  <p class="muted">Funkce pro práci se soubory při chybě vrací <code>false</code> a vypíší Warning. Výjimku nevyhazují, proto vždy kontrolujte výsledek.</p>
+</article>
+<article class="card c6"><h2>Informace o souboru</h2>
+<pre class="php">$f = 'znamky.csv';
+var_dump(file_exists($f), is_file($f), is_dir('data'));
+echo filesize($f), " B\n";
+echo date('j. n. Y H:i', filemtime($f)), "\n";   // poslední změna
+echo pathinfo($f, PATHINFO_EXTENSION), "\n";
+echo mime_content_type($f), "\n";</pre>
+<pre class="res">bool(true)
+bool(true)
+bool(true)
+75 B
+1. 10. 2026 10:00
+csv
+text/plain</pre>
+</article>
+
+<article class="card c12"><h2>Kopírování, přejmenování, mazání</h2>
+<div class="cols2"><div>
+<pre class="php">copy('zaci.txt', 'zaci-zaloha.txt');
+rename('zaci-zaloha.txt', 'data/zaci-2026.txt');   // přesun i přejmenování
+var_dump(is_file('data/zaci-2026.txt'));
+unlink('data/zaci-2026.txt');                      // smazání
+var_dump(file_exists('data/zaci-2026.txt'));
+touch('prazdny.txt');                              // vytvoří prázdný soubor</pre>
+<pre class="res">bool(true)
+bool(false)</pre>
+</div><div>
+  <div class="callout warn"><code>unlink</code> maže natrvalo, bez koše. Cestu nikdy neskládejte z neověřeného vstupu.</div>
+  <div class="callout">PHP si výsledky funkcí jako <code>file_exists</code> a <code>filesize</code> ukládá do mezipaměti. Když soubor ve skriptu změníte a měříte znovu, zavolejte <code>clearstatcache()</code>.</div>
+  <div class="task"><b>Zkuste si</b>Počítadlo návštěv: skript načte číslo ze souboru <code>pocitadlo.txt</code> (pokud neexistuje, začne od 0), zvýší ho, uloží a vypíše „Jste 15. návštěvník“.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="k7" class="view wrap chapter" data-title="Práce se souborem po částech">
+<header class="ch-head">
+  <div class="kicker">Kapitola 7 / 11 · Soubory</div>
+  <h1>Práce se souborem po částech</h1>
+  <p class="lead">Velký soubor (log, export) nejde načíst celý do paměti. Otevře se přes <code>fopen</code>, čte se po řádcích a nakonec se zavře. <code>fopen</code> vrací <b>handle</b>, tedy odkaz na otevřený soubor.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Čtení po řádcích</h2>
+<pre class="php">$f = fopen('zaci.txt', 'r');
+if ($f === false) {
+    exit("Nelze otevřít\n");
+}
+$cislo = 0;
+while (($radek = fgets($f)) !== false) {
+    $cislo++;
+    echo $cislo, ': ', rtrim($radek), "\n";
+}
+fclose($f);</pre>
+<pre class="res">1: Anna Nováková
+2: Petr Svoboda
+3: Eva Dvořáková</pre>
+  <div class="callout warn">Nepište <code>while (!feof($f))</code>. Poslední průchod by přečetl <code>false</code> a zpracoval ho jako řádek.</div>
+</article>
+<article class="card c6"><h2>Režimy otevření</h2>
+<div class="tbl"><table>
+  <tr><th>Režim</th><th>Čte</th><th>Zapisuje</th><th>Neexistuje</th><th>Existuje</th></tr>
+  <tr><td><code>r</code></td><td>✓</td><td></td><td>chyba</td><td>od začátku</td></tr>
+  <tr><td><code>r+</code></td><td>✓</td><td>✓</td><td>chyba</td><td>od začátku</td></tr>
+  <tr><td><code>w</code></td><td></td><td>✓</td><td>vytvoří</td><td><b>smaže obsah</b></td></tr>
+  <tr><td><code>w+</code></td><td>✓</td><td>✓</td><td>vytvoří</td><td><b>smaže obsah</b></td></tr>
+  <tr><td><code>a</code></td><td></td><td>✓</td><td>vytvoří</td><td>zápis na konec</td></tr>
+  <tr><td><code>a+</code></td><td>✓</td><td>✓</td><td>vytvoří</td><td>zápis na konec</td></tr>
+  <tr><td><code>x</code></td><td></td><td>✓</td><td>vytvoří</td><td>chyba</td></tr>
+  <tr><td><code>c</code></td><td></td><td>✓</td><td>vytvoří</td><td>obsah ponechá</td></tr>
+</table></div>
+  <p class="muted">Přípona <code>b</code> (<code>rb</code>, <code>wb</code>) znamená binární režim. Ve Windows zabrání převodu konců řádků.</p>
+</article>
+
+<article class="card c6"><h2>Zápis</h2>
+<pre class="php">$f = fopen('nakup.txt', 'w');
+foreach (['mléko', 'chleba', 'jablka'] as $i =&gt; $polozka) {
+    fwrite($f, ($i + 1) . ". $polozka\n");
+}
+fprintf($f, "Celkem: %d položky\n", 3);
+fclose($f);
+
+echo file_get_contents('nakup.txt');</pre>
+<pre class="res">1. mléko
+2. chleba
+3. jablka
+Celkem: 3 položky</pre>
+</article>
+<article class="card c6"><h2>Zamykání při souběžném přístupu</h2>
+<pre class="php">$f = fopen('pocitadlo.txt', 'c+');   // vytvoří, nemaže obsah
+if (flock($f, LOCK_EX)) {            // čeká na výhradní zámek
+    $n = (int) stream_get_contents($f);
+    ftruncate($f, 0);                // vyprázdnit
+    rewind($f);                      // na začátek
+    fwrite($f, (string) ++$n);
+    fflush($f);
+    flock($f, LOCK_UN);
+}
+fclose($f);
+echo "Návštěva č. $n\n";</pre>
+<pre class="res">Návštěva č. 1</pre>
+  <p class="muted">Bez zámku by dva současné požadavky přečetly stejné číslo a jedna návštěva by se ztratila.</p>
+</article>
+
+<article class="card c6"><h2>Pozice v souboru</h2>
+<pre class="php">$f = fopen('zaci.txt', 'r');
+echo fread($f, 4), "|\n";        // 4 bajty
+echo ftell($f), "\n";            // aktuální pozice
+fseek($f, -13, SEEK_END);        // 13 bajtů před koncem
+echo fgets($f);
+rewind($f);
+echo fgetc($f), "\n";            // jeden bajt
+fclose($f);</pre>
+<pre class="res">Anna|
+4
+Dvořáková
+A</pre>
+</article>
+<article class="card c6"><h2>SplFileObject (objektově)</h2>
+<pre class="php">$soubor = new SplFileObject('zaci.txt');
+$soubor-&gt;setFlags(SplFileObject::DROP_NEW_LINE | SplFileObject::SKIP_EMPTY
+                | SplFileObject::READ_AHEAD);
+foreach ($soubor as $cislo =&gt; $radek) {
+    echo $cislo + 1, ") $radek\n";
+}</pre>
+<pre class="res">1) Anna Nováková
+2) Petr Svoboda
+3) Eva Dvořáková</pre>
+  <p class="muted">Soubor se zavře sám, jakmile objekt přestane existovat. Hodí se i na CSV (<code>SplFileObject::READ_CSV</code>).</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="k8" class="view wrap chapter" data-title="CSV a JSON">
+<header class="ch-head">
+  <div class="kicker">Kapitola 8 / 11 · Soubory</div>
+  <h1>CSV a JSON</h1>
+  <p class="lead">CSV je tabulka v textu, kterou otevře Excel. JSON je strukturovaný formát, kterému rozumí JavaScript i většina API. PHP pro oba formáty nabízí vestavěné funkce.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Čtení CSV</h2>
+<pre class="php">$f = fopen('znamky.csv', 'r');
+$hlavicka = fgetcsv($f, separator: ';', escape: '');
+
+$zaznamy = [];
+while (($radek = fgetcsv($f, separator: ';', escape: '')) !== false) {
+    $zaznamy[] = array_combine($hlavicka, $radek);
+}
+fclose($f);
+
+print_r($zaznamy[0]);
+echo count($zaznamy), " záznamů\n";</pre>
+<pre class="res">Array
+(
+    [jmeno] =&gt; Anna
+    [predmet] =&gt; PRG
+    [znamka] =&gt; 1
+)
+5 záznamů</pre>
+  <div class="callout"><span class="v8">8.4</span> Parametr <code>escape</code> uvádějte vždy. Bez něj PHP 8.4 hlásí Deprecated. <code>escape: ''</code> vypne zastaralý escapovací mechanismus.</div>
+</article>
+<article class="card c6"><h2>Zápis CSV pro Excel</h2>
+<pre class="php">$data = [
+    ['Jméno', 'Třída', 'Průměr'],
+    ['Žofie Černá', 'IT3', '1,5'],
+    ['Jan "Honza" Novák', 'IT3', '2,25'],
+];
+$f = fopen('export.csv', 'w');
+fwrite($f, "\xEF\xBB\xBF");          // BOM: Excel pak pozná UTF-8
+foreach ($data as $radek) {
+    fputcsv($f, $radek, ';', '"', '');
+}
+fclose($f);
+echo substr(file_get_contents('export.csv'), 3);</pre>
+<pre class="res">Jméno;Třída;Průměr
+"Žofie Černá";IT3;1,5
+"Jan ""Honza"" Novák";IT3;2,25</pre>
+  <p class="muted">Česky nastavený Excel očekává oddělovač <code>;</code> a desetinnou čárku. Bez BOM zobrazí diakritiku rozsypanou.</p>
+</article>
+
+<article class="card c6"><h2>Zpracování: průměry podle žáka</h2>
+<pre class="php">$radky = array_map(
+    fn($r) =&gt; str_getcsv($r, ';', '"', ''),
+    file('znamky.csv', FILE_IGNORE_NEW_LINES)
+);
+array_shift($radky);                         // pryč s hlavičkou
+
+$podleZaka = [];
+foreach ($radky as [$jmeno, , $znamka]) {    // předmět přeskočit
+    $podleZaka[$jmeno][] = (int) $znamka;
+}
+foreach ($podleZaka as $jmeno =&gt; $z) {
+    printf("%-5s %.2f\n", $jmeno, array_sum($z) / count($z));
+}</pre>
+<pre class="res">Anna  1.50
+Petr  2.00
+Eva   2.00</pre>
+</article>
+<article class="card c6"><h2>JSON: čtení</h2>
+<pre class="php">$json = file_get_contents('config.json');
+
+$cfg = json_decode($json, true);             // true = asociativní pole
+echo $cfg['nazev'], ' v', $cfg['verze'], "\n";
+echo implode(', ', $cfg['moduly']), "\n";
+
+$obj = json_decode($json);                   // bez true = objekt stdClass
+echo $obj-&gt;nazev, "\n";
+
+try {
+    json_decode('{chyba}', flags: JSON_THROW_ON_ERROR);
+} catch (JsonException $e) {
+    echo 'Neplatný JSON: ', $e-&gt;getMessage(), "\n";
+}</pre>
+<pre class="res">Školní web v3
+rozvrh, suplovani
+Školní web
+Neplatný JSON: Syntax error</pre>
+</article>
+
+<article class="card c6"><h2>JSON: zápis</h2>
+<pre class="php">$zak = ['jmeno' =&gt; 'Žofie', 'znamky' =&gt; [1, 2], 'aktivni' =&gt; true, 'pozn' =&gt; null];
+
+echo json_encode($zak), "\n";
+echo json_encode($zak, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE
+                     | JSON_UNESCAPED_SLASHES | JSON_THROW_ON_ERROR), "\n";
+
+file_put_contents('zak.json', json_encode($zak, JSON_UNESCAPED_UNICODE));</pre>
+<pre class="res">{"jmeno":"\u017dofie","znamky":[1,2],"aktivni":true,"pozn":null}
+{
+    "jmeno": "Žofie",
+    "znamky": [
+        1,
+        2
+    ],
+    "aktivni": true,
+    "pozn": null
+}</pre>
+</article>
+<article class="card c6"><h2>Převody typů v JSON</h2>
+<div class="tbl"><table>
+  <tr><th>PHP</th><th>JSON</th></tr>
+  <tr><td><code>['a', 'b']</code> (seznam)</td><td><code>["a","b"]</code></td></tr>
+  <tr><td><code>['x' => 1]</code></td><td><code>{"x":1}</code></td></tr>
+  <tr><td><code>[]</code></td><td><code>[]</code> (s <code>JSON_FORCE_OBJECT</code> <code>{}</code>)</td></tr>
+  <tr><td><code>true</code>, <code>null</code></td><td><code>true</code>, <code>null</code></td></tr>
+  <tr><td><code>1.0</code></td><td><code>1.0</code> (s <code>serialize_precision=-1</code>)</td></tr>
+  <tr><td>objekt</td><td>veřejné vlastnosti jako <code>{}</code></td></tr>
+</table></div>
+<pre class="php">var_dump(json_validate('{"a":1}'), json_validate('{a:1}'));   // 8.3</pre>
+<pre class="res">bool(true)
+bool(false)</pre>
+  <div class="task"><b>Zkuste si</b>Načtěte <code>znamky.csv</code> a uložte do <code>prumery.json</code> objekt <code>{"Anna": 1.5, …}</code> s průměry zaokrouhlenými na dvě desetinná místa.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="k9" class="view wrap chapter" data-title="Cesty k souborům">
+<header class="ch-head">
+  <div class="kicker">Kapitola 9 / 11 · Adresáře</div>
+  <h1>Cesty k souborům</h1>
+  <p class="lead">Relativní cesta se počítá od <b>aktuálního pracovního adresáře</b>, ne od skriptu. Spolehlivé cesty proto stavte od <code>__DIR__</code>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Rozklad cesty</h2>
+<pre class="php">$cesta = '/var/www/skola/data/foto.profil.jpg';
+
+echo basename($cesta), "\n";            // foto.profil.jpg
+echo basename($cesta, '.jpg'), "\n";    // foto.profil
+echo dirname($cesta), "\n";             // /var/www/skola/data
+echo dirname($cesta, 2), "\n";          // o dvě úrovně výš
+print_r(pathinfo($cesta));</pre>
+<pre class="res">foto.profil.jpg
+foto.profil
+/var/www/skola/data
+/var/www/skola
+Array
+(
+    [dirname] =&gt; /var/www/skola/data
+    [basename] =&gt; foto.profil.jpg
+    [extension] =&gt; jpg
+    [filename] =&gt; foto.profil
+)</pre>
+</article>
+<article class="card c6"><h2>Pracovní adresář × __DIR__</h2>
+<pre class="php">echo basename(getcwd()) === basename(__DIR__) ? "zde stejné\n" : "liší se\n";
+chdir('data');                        // změna pracovního adresáře
+echo basename(getcwd()), "\n";
+var_dump(is_file('zaci.txt'));          // hledá data/zaci.txt
+var_dump(is_file(__DIR__ . '/zaci.txt'));</pre>
+<pre class="res">zde stejné
+data
+bool(false)
+bool(true)</pre>
+  <p class="muted">V CLI je pracovní adresář složka, odkud skript spouštíte. Na webu je to obvykle složka skriptu, ale spoléhat na to nelze.</p>
+</article>
+
+<article class="card c6"><h2>Skládání a normalizace</h2>
+<pre class="php">$zaklad = __DIR__ . '/data';
+$soubor = $zaklad . DIRECTORY_SEPARATOR . 'poznamky.txt';
+var_dump(is_file($soubor));
+
+echo basename(realpath('data/../data/archiv/../poznamky.txt') ?: 'neexistuje'), "\n";
+echo realpath('data/archiv') === __DIR__ . '/data/archiv' ? "absolutní cesta\n" : '';
+var_dump(realpath('data/neexistuje.txt'));  // false</pre>
+<pre class="res">bool(true)
+poznamky.txt
+absolutní cesta
+bool(false)</pre>
+  <p class="muted"><code>realpath</code> vyřeší <code>..</code>, <code>.</code> i symbolické odkazy a vrátí absolutní cestu, nebo <code>false</code>, když soubor neexistuje.</p>
+</article>
+<article class="card c6"><h2>Windows × Linux</h2>
+<div class="tbl"><table>
+  <tr><th></th><th>Windows</th><th>Linux</th></tr>
+  <tr><td>oddělovač</td><td><code>\</code> (PHP zvládne i <code>/</code>)</td><td><code>/</code></td></tr>
+  <tr><td>absolutní cesta</td><td><code>C:\xampp\htdocs</code></td><td><code>/var/www/html</code></td></tr>
+  <tr><td>velikost písmen</td><td><code>Foto.JPG</code> = <code>foto.jpg</code></td><td>rozlišuje</td></tr>
+  <tr><td>konec řádku</td><td><code>\r\n</code></td><td><code>\n</code></td></tr>
+  <tr><td><code>DIRECTORY_SEPARATOR</code></td><td><code>\</code></td><td><code>/</code></td></tr>
+</table></div>
+  <div class="callout">Pište cesty s <code>/</code>, fungují všude. Soubor <code>Logo.png</code> načítaný jako <code>logo.png</code> projde ve Windows, ale na linuxovém serveru ne.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="k10" class="view wrap chapter" data-title="Práce s adresáři">
+<header class="ch-head">
+  <div class="kicker">Kapitola 10 / 11 · Adresáře</div>
+  <h1>Práce s adresáři</h1>
+  <p class="lead">Složky se vytvářejí, procházejí a mažou podobně jako soubory. Pro celé stromy podsložek má PHP iterátory ze SPL.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Vytvoření a smazání</h2>
+<pre class="php">$cesta = 'uploads/2026/10';
+if (!is_dir($cesta)) {
+    mkdir($cesta, 0775, recursive: true);   // i rodičovské složky
+}
+var_dump(is_dir($cesta));
+
+rmdir('uploads/2026/10');                   // jen prázdnou složku
+var_dump(is_dir('uploads/2026/10'), is_dir('uploads/2026'));</pre>
+<pre class="res">bool(true)
+bool(false)
+bool(true)</pre>
+  <p class="muted">Práva <code>0775</code> se uplatní jen na Linuxu a ještě je upraví <code>umask</code>. Ve Windows se ignorují.</p>
+</article>
+<article class="card c6"><h2>Výpis obsahu: scandir</h2>
+<pre class="php">$polozky = scandir('data');
+print_r($polozky);
+
+foreach (array_diff(scandir('data'), ['.', '..']) as $p) {
+    $typ = is_dir("data/$p") ? 'složka' : filesize("data/$p") . ' B';
+    echo "$p ($typ)\n";
+}</pre>
+<pre class="res">Array
+(
+    [0] =&gt; .
+    [1] =&gt; ..
+    [2] =&gt; archiv
+    [3] =&gt; foto1.jpg
+    [4] =&gt; foto2.png
+    [5] =&gt; poznamky.txt
+)
+archiv (složka)
+foto1.jpg (1 B)
+foto2.png (2 B)
+poznamky.txt (21 B)</pre>
+</article>
+
+<article class="card c6"><h2>Hledání podle masky: glob</h2>
+<pre class="php">print_r(glob('data/*.txt'));
+print_r(glob('data/*.{jpg,png}', GLOB_BRACE));
+print_r(glob('data/*', GLOB_ONLYDIR));
+echo count(glob('*.csv')), " CSV soubor(y)\n";</pre>
+<pre class="res">Array
+(
+    [0] =&gt; data/poznamky.txt
+)
+Array
+(
+    [0] =&gt; data/foto1.jpg
+    [1] =&gt; data/foto2.png
+)
+Array
+(
+    [0] =&gt; data/archiv
+)
+1 CSV soubor(y)</pre>
+  <p class="muted"><code>*</code> libovolné znaky, <code>?</code> jeden znak, <code>[abc]</code> jeden z výčtu. <code>GLOB_BRACE</code> na některých systémech (Alpine Linux) chybí.</p>
+</article>
+<article class="card c6"><h2>Rekurzivní procházení</h2>
+<pre class="php">$it = new RecursiveIteratorIterator(
+    new RecursiveDirectoryIterator('data', FilesystemIterator::SKIP_DOTS),
+    RecursiveIteratorIterator::SELF_FIRST
+);
+$celkem = 0;
+foreach ($it as $cesta =&gt; $info) {               // $info je SplFileInfo
+    echo str_repeat('  ', $it-&gt;getDepth()),
+         $info-&gt;getFilename(), $info-&gt;isDir() ? '/' : '', "\n";
+    $celkem += $info-&gt;isFile() ? $info-&gt;getSize() : 0;
+}
+echo "Celkem $celkem B\n";</pre>
+<pre class="res">foto2.png
+foto1.jpg
+poznamky.txt
+archiv/
+  2025.txt
+Celkem 29 B</pre>
+</article>
+
+<article class="card c6"><h2>Smazání celé složky</h2>
+<pre class="php">function smazStrom(string $slozka): void
+{
+    $it = new RecursiveIteratorIterator(
+        new RecursiveDirectoryIterator($slozka, FilesystemIterator::SKIP_DOTS),
+        RecursiveIteratorIterator::CHILD_FIRST      // nejdřív obsah, pak složka
+    );
+    foreach ($it as $info) {
+        $info-&gt;isDir() ? rmdir($info-&gt;getPathname()) : unlink($info-&gt;getPathname());
+    }
+    rmdir($slozka);
+}
+
+mkdir('tmp/a/b', recursive: true);
+touch('tmp/a/b/x.txt');
+smazStrom('tmp');
+var_dump(is_dir('tmp'));</pre>
+<pre class="res">bool(false)</pre>
+</article>
+<article class="card c6"><h2>Dočasné soubory a místo na disku</h2>
+<pre class="php">$tmp = tempnam(sys_get_temp_dir(), 'exp');   // unikátní jméno
+file_put_contents($tmp, 'dočasná data');
+echo strlen(file_get_contents($tmp)), " B\n";
+unlink($tmp);
+
+$f = tmpfile();                // smaže se sám po fclose
+fwrite($f, 'abc');
+fclose($f);
+
+// volné místo v bajtech: disk_free_space('.')</pre>
+<pre class="res">14 B</pre>
+  <div class="task"><b>Zkuste si</b>Galerie: skript najde všechny obrázky (<code>jpg</code>, <code>png</code>, <code>webp</code>) ve složce <code>foto/</code> a vypíše je jako HTML <code>&lt;img&gt;</code> seřazené podle data změny, nejnovější první.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="k11" class="view wrap chapter" data-title="Oprávnění, bezpečnost a úlohy">
+<header class="ch-head">
+  <div class="kicker">Kapitola 11 / 11 · Adresáře</div>
+  <h1>Oprávnění, bezpečnost a úlohy</h1>
+  <p class="lead">Skript na serveru běží pod uživatelem webového serveru (Debian: <code>www-data</code>). Smí jen to, co tento uživatel. Cesty složené ze vstupu jsou nejčastějším zdrojem děr.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Práva na Linuxu</h2>
+<pre class="php">touch('soubor.txt');
+chmod('soubor.txt', 0640);                      // rw- r-- ---
+printf("%o\n", fileperms('soubor.txt') &amp; 0777);
+echo substr(sprintf('%o', fileperms('data')), -4), "\n";
+var_dump(is_readable('soubor.txt'), is_writable('soubor.txt'));</pre>
+<pre class="res">640
+0755
+bool(true)
+bool(true)</pre>
+<pre class="sh">$ sudo chown -R www-data:www-data /var/www/app/uploads
+$ sudo chmod 775 /var/www/app/uploads
+$ ls -l /var/www/app
+drwxrwxr-x 2 www-data www-data 4096 uploads</pre>
+  <p class="muted">Zápis povolte jen do složek, kde je opravdu potřeba (uploads, cache, logy), ne do celého webu.</p>
+</article>
+<article class="card c6"><h2>Útok: path traversal</h2>
+<pre class="php">// stahni.php?soubor=../../../etc/passwd   ✗ NEBEZPEČNÉ
+readfile(__DIR__ . '/dokumenty/' . $_GET['soubor']);</pre>
+<pre class="php">function bezpecnaCesta(string $zaklad, string $jmeno): ?string
+{
+    $zaklad = realpath($zaklad);
+    $cesta = realpath($zaklad . '/' . $jmeno);
+    // musí existovat a ležet uvnitř základní složky
+    return ($cesta !== false &amp;&amp; str_starts_with($cesta, $zaklad . DIRECTORY_SEPARATOR))
+        ? $cesta : null;
+}
+
+foreach (['poznamky.txt', '../config.json', 'archiv/2025.txt', 'neni.txt'] as $j) {
+    printf("%-16s → %s\n", $j, bezpecnaCesta('data', $j) ? 'povoleno' : 'zamítnuto');
+}</pre>
+<pre class="res">poznamky.txt     → povoleno
+../config.json   → zamítnuto
+archiv/2025.txt  → povoleno
+neni.txt         → zamítnuto</pre>
+</article>
+
+<article class="card c6"><h2>Další ochrany</h2>
+  <ul>
+    <li><b>whitelist</b>: povolená jména v poli, <code>in_array($jmeno, $povolene, true)</code></li>
+    <li><code>basename($vstup)</code> odstraní z cesty složky</li>
+    <li>soubory s daty ukládejte <b>mimo</b> DocumentRoot, ať nejsou dostupné přes URL</li>
+    <li><code>open_basedir</code> v <code>php.ini</code> omezí, kam PHP vůbec smí</li>
+    <li><code>disable_functions</code> zakáže <code>exec</code>, <code>shell_exec</code>, <code>system</code></li>
+  </ul>
+<pre class="sh">; php.ini nebo pool PHP-FPM
+open_basedir = /var/www/app:/tmp
+disable_functions = exec,shell_exec,system,passthru</pre>
+</article>
+<article class="card c6"><h2>Shrnutí funkcí</h2>
+<div class="tbl"><table>
+  <tr><th>Úkol</th><th>Funkce</th></tr>
+  <tr><td>celý soubor</td><td><code>file_get_contents</code>, <code>file_put_contents</code>, <code>file</code></td></tr>
+  <tr><td>po řádcích</td><td><code>fopen</code>, <code>fgets</code>, <code>fwrite</code>, <code>fclose</code></td></tr>
+  <tr><td>CSV / JSON</td><td><code>fgetcsv</code>, <code>fputcsv</code>, <code>json_decode</code>, <code>json_encode</code></td></tr>
+  <tr><td>test</td><td><code>is_file</code>, <code>is_dir</code>, <code>file_exists</code>, <code>is_readable</code></td></tr>
+  <tr><td>správa</td><td><code>copy</code>, <code>rename</code>, <code>unlink</code>, <code>mkdir</code>, <code>rmdir</code></td></tr>
+  <tr><td>výpis složky</td><td><code>scandir</code>, <code>glob</code>, <code>RecursiveDirectoryIterator</code></td></tr>
+  <tr><td>cesty</td><td><code>__DIR__</code>, <code>basename</code>, <code>dirname</code>, <code>pathinfo</code>, <code>realpath</code></td></tr>
+</table></div>
+</article>
+
+<article class="card c4"><h2>Úloha 1: Návštěvní kniha</h2>
+  <p>Formulář (jméno, vzkaz) ukládá záznamy do <code>kniha.json</code>. Pod formulářem se zobrazí všechny vzkazy od nejnovějšího. Ošetřete validaci, <code>htmlspecialchars</code> a zámek při zápisu.</p>
+</article>
+<article class="card c4"><h2>Úloha 2: Analýza logu</h2>
+  <p>CLI skript dostane jako argument cestu k přístupovému logu Apache, čte ho po řádcích a vypíše 5 nejčastějších IP adres a počet odpovědí 404. Chybu hlásí na <code>STDERR</code> s kódem 1.</p>
+</article>
+<article class="card c4"><h2>Úloha 3: Záloha složky</h2>
+  <p>Skript projde zadanou složku rekurzivně, zkopíruje do <code>zaloha/RRRR-MM-DD/</code> soubory změněné za posledních 7 dní (zachová podsložky) a vypíše jejich počet a celkovou velikost.</p>
+</article>
+
+</div>
+</section>
+
+<div class="wrap"><nav class="pager" id="pager" hidden></nav></div>
+<footer>Výuková prezentace 2 · Vstup a výstup, soubory a adresáře · vizuální styl vychází z design systému VOŠ, SPŠ a SOŠ Varnsdorf. Výstupy ukázek vygenerovalo PHP 8.3.6; ukázky označené 8.4+ a 8.5+ vyžadují novější verzi.</footer>
+<script>
+function hlPHP(src){
+  var KW = ('abstract and as break callable case catch class clone const continue declare default do echo else elseif empty enddeclare endfor endforeach endif endswitch endwhile enum exit extends final finally fn for foreach function global goto if implements include include_once instanceof insteadof interface isset list match namespace new or print private protected public readonly require require_once return static switch throw trait try unset use var while xor yield from parent self').split(' ');
+  var TY = ('int float string bool array object mixed void never null true false iterable callable').split(' ');
+  var re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#(?!\[)[^\n]*)|(<<<[ \t]*(['"]?)([A-Za-z_]\w*)\3\n[\s\S]*?\n[ \t]*\4\b)|('(?:\\[\s\S]|[^'\\])*'|"(?:\\[\s\S]|[^"\\])*")|(<\?php|<\?=|\?>)|(#\[[^\]\n]*\])|(\$[A-Za-z_\u00C0-\u024F][\w\u00C0-\u024F]*)|(\b(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?)\b)|([A-Za-z_\\][\w\\]*)/g;
+  var out = '', last = 0, m;
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function w(cls, s){ return '<span class="'+cls+'">'+esc(s)+'</span>'; }
+  while ((m = re.exec(src))){
+    out += esc(src.slice(last, m.index));
+    var t = m[0];
+    if (m[1]) out += w('c', t);
+    else if (m[2] || m[5]) out += w('s', t);
+    else if (m[6]) out += w('tg', t);
+    else if (m[7]) out += w('a', t);
+    else if (m[8]) out += w('v', t);
+    else if (m[9]) out += w('n', t);
+    else {
+      var low = t.toLowerCase(), rest = src.slice(re.lastIndex);
+      var prev = src.slice(0, m.index).replace(/\s+$/,'');
+      if (/(->|\?->|::)$/.test(prev)) out += /^\s*\(/.test(rest) ? w('f', t) : esc(t);
+      else if (KW.indexOf(low) > -1) out += w('k', t);
+      else if (TY.indexOf(low) > -1) out += w('t', t);
+      else if (/^\s*\(/.test(rest)) out += w('f', t);
+      else if (/^[A-Z][A-Z0-9_]+$/.test(t) || /^__[A-Z]+__$/.test(t)) out += w('co', t);
+      else out += esc(t);
+    }
+    last = re.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+document.querySelectorAll('pre.php').forEach(function(pre){
+  var src = pre.textContent;
+  pre.innerHTML = hlPHP(src);
+  var b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = 'kopírovat';
+  b.addEventListener('click', function(){
+    try { navigator.clipboard.writeText(src).then(function(){ b.textContent = 'zkopírováno'; setTimeout(function(){ b.textContent = 'kopírovat'; }, 1200); }); } catch(e){}
+  });
+  pre.appendChild(b);
+});
+document.querySelectorAll('pre.sh').forEach(function(pre){
+  pre.innerHTML = pre.innerHTML.split('\n').map(function(l){
+    var cm = l.match(/^(.*?)(\s#\s.*)$/);
+    var tail = '';
+    if (cm && /^(\$|PS&gt;) /.test(l)) { l = cm[1]; tail = '<span class="cm">'+cm[2]+'</span>'; }
+    else if (/^\s*#/.test(l)) return '<span class="cm">'+l+'</span>';
+    if (/^\$ /.test(l)) return '<span class="pr">$</span>'+l.slice(1)+tail;
+    if (/^PS&gt; /.test(l)) return '<span class="pr">PS&gt;</span>'+l.slice(5)+tail;
+    if (/^&gt; /.test(l)) return '<span class="pr">&gt;</span>'+l.slice(4)+tail;
+    return '<span class="out">'+l+'</span>'+tail;
+  }).join('\n');
+});
+
+
+(function(){
+  var DECK = "Vstup a výstup, soubory a adresáře";
+  var NEXT_DECK = {"href": "03-datove-typy.html", "title": "Datové typy a přetypování"};
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var chapters = views.filter(function(v){ return v.classList.contains('chapter'); });
+  var pager = document.getElementById('pager');
+  var barTitle = document.getElementById('barTitle');
+  var barPrev = document.getElementById('barPrev');
+  var barNext = document.getElementById('barNext');
+  function setLink(a, target){
+    if (target){ a.href = '#'+target.id; a.removeAttribute('aria-disabled'); }
+    else { a.href = '#prehled'; a.setAttribute('aria-disabled','true'); }
+  }
+  function show(){
+    var id = (location.hash || '').replace('#','') || 'prehled';
+    var current = document.getElementById(id);
+    if (!current || !current.classList.contains('view')) current = document.getElementById('prehled');
+    views.forEach(function(v){ v.hidden = (v !== current); });
+    var i = chapters.indexOf(current);
+    if (i === -1){
+      barTitle.textContent = 'Přehled kapitol';
+      setLink(barPrev, null); setLink(barNext, chapters[0]);
+      pager.hidden = true;
+    } else {
+      barTitle.textContent = (i+1) + ' / ' + chapters.length + ' · ' + current.dataset.title;
+      var prev = chapters[i-1], next = chapters[i+1];
+      setLink(barPrev, prev || document.getElementById('prehled'));
+      setLink(barNext, next);
+      var nextHtml;
+      if (next) nextHtml = '<a class="btn next" href="#'+next.id+'"><span><small>Kapitola '+(i+2)+'</small>'+next.dataset.title+' →</span></a>';
+      else if (NEXT_DECK) nextHtml = '<a class="btn next" href="'+NEXT_DECK.href+'"><span><small>Další prezentace</small>'+NEXT_DECK.title+' →</span></a>';
+      else nextHtml = '<a class="btn next" href="index.html"><span><small>Konec</small>Přehled kurzu →</span></a>';
+      pager.innerHTML =
+        (prev ? '<a class="btn" href="#'+prev.id+'"><span>← <small>Kapitola '+i+'</small>'+prev.dataset.title+'</span></a>'
+              : '<a class="btn" href="#prehled"><span>← <small>Zpět</small>Přehled kapitol</span></a>') + nextHtml;
+      pager.hidden = false;
+    }
+    document.title = (i === -1 ? '' : current.dataset.title + ' · ') + DECK;
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+  document.addEventListener('keydown', function(e){
+    if (e.target.closest('input,textarea,select,summary') || e.altKey || e.ctrlKey || e.metaKey) return;
+    var cur = document.getElementById((location.hash || '#prehled').slice(1));
+    var i = chapters.indexOf(cur);
+    if (e.key === 'ArrowRight'){ var n = i === -1 ? chapters[0] : chapters[i+1]; if (n) location.hash = n.id; }
+    else if (e.key === 'ArrowLeft'){ if (i > 0) location.hash = chapters[i-1].id; else if (i === 0) location.hash = 'prehled'; }
+    else if (e.key === 'Escape'){ location.hash = 'prehled'; }
+  });
+  show();
+})();
+</script>
+</body>
+</html>

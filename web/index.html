@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>PHP – přehled kurzu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: přehled kapitol PHP (dashboard) → jedna kapitola na obrazovku, mřížka 12 sloupců s průsvitnými panely.
+   Design: vizuální systém VOŠ, SPŠ a SOŠ Varnsdorf — jeden tmavý svět (záměrně bez světlého režimu). */
+:root{
+  color-scheme:dark;
+  --bg1:#003b4b;--bg2:#006783;--panel:rgba(0,27,34,.48);--panel-2:rgba(0,0,0,.2);
+  --cyan:#41d7ff;--blue:#00c0f3;--yellow:#ffd400;--green:#a6ce39;--red:#ff7a6b;
+  --muted:rgba(255,255,255,.62);--white:#fff;--line:rgba(255,255,255,.1);
+  --code-bg:#001820;--code-fg:#eaffff;--code-hl:#ffea80;
+  --font:Raleway,"Segoe UI",system-ui,sans-serif;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;font-family:var(--font);color:var(--white);background:var(--bg1);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;line-height:1.45;font-size:15px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 85% 10%,rgba(65,215,255,.12),transparent 30%),
+  radial-gradient(circle at 10% 90%,rgba(166,206,57,.08),transparent 30%)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* horní lišta */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(0,30,38,.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+.bar-in{max-width:1450px;margin:auto;padding:.55rem 5vw;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{color:#fff;text-decoration:none;font-weight:800;letter-spacing:.04em;font-size:.82rem;text-transform:uppercase}
+.brand span{color:var(--cyan)}
+.bar-ch{color:var(--muted);font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-nav{display:flex;gap:.35rem}
+.btn{display:inline-flex;align-items:center;gap:.35rem;color:#fff;text-decoration:none;background:rgba(0,20,26,.55);
+  padding:.42rem .7rem;font-size:.75rem;font-weight:600;letter-spacing:.04em;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(65,215,255,.15);color:var(--cyan)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.btn[aria-disabled="true"]{opacity:.35;pointer-events:none}
+
+/* společné */
+.wrap{position:relative;z-index:1;max-width:1450px;margin:auto;padding-inline:5vw}
+header.hero{padding-block:3rem 1.5rem}
+.kicker{color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(2.2rem,5vw,4.5rem);line-height:1.05;margin:.35rem 0 .7rem;letter-spacing:-.03em;text-wrap:balance;font-weight:800}
+.lead{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:200;max-width:62ch;color:rgba(255,255,255,.9);margin:0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1rem}
+.card{background:var(--panel);backdrop-filter:blur(12px);padding:1.25rem 1.35rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+h2{font-size:1.1rem;margin:0 0 .85rem;color:var(--cyan);text-wrap:balance}
+h3{font-size:.82rem;margin:.9rem 0 .35rem;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase}
+h3:first-child{margin-top:0}
+p{margin:.35rem 0 .65rem;overflow-wrap:anywhere}
+.muted{color:var(--muted);font-size:.82rem}
+ul,ol{margin:.4rem 0 0;padding-left:1.15rem} li{margin:.25rem 0}
+.tag{display:inline-block;padding:.18rem .45rem;margin:.12rem;background:rgba(65,215,255,.1);color:var(--cyan);font-size:.72rem;font-family:var(--mono)}
+.tag.g{background:rgba(166,206,57,.12);color:var(--green)}
+.tag.y{background:rgba(255,212,0,.1);color:var(--yellow)}
+pre{margin:.5rem 0 0;padding:.75rem .85rem;background:var(--code-bg);color:var(--code-fg);overflow:auto;font:.78rem/1.55 var(--mono);tab-size:4}
+pre .pr{color:var(--green);user-select:none}
+pre .cm{color:#7fb3c2;font-style:italic}
+pre .out{color:rgba(234,255,255,.62)}
+code{font-family:var(--mono);color:var(--code-hl);font-size:.92em}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;color:var(--cyan);padding:.45rem;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:.45rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;overflow-wrap:anywhere}
+.perms{font-family:var(--mono);font-size:1rem;color:var(--yellow)}
+.callout{border-left:4px solid var(--yellow);background:rgba(255,212,0,.07);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.callout.warn{border-color:var(--red);background:rgba(255,122,107,.08)}
+.callout.ok{border-color:var(--green);background:rgba(166,206,57,.08)}
+.syntax{font-family:var(--mono);font-size:1rem;background:var(--panel-2);padding:.7rem .85rem;border-left:3px solid var(--cyan);overflow-x:auto;white-space:nowrap}
+.syntax b{color:#fff}.syntax i{color:var(--cyan);font-style:normal}.syntax em{color:var(--yellow);font-style:normal}
+.arch{display:grid;gap:.35rem}.layer{padding:.55rem .75rem;background:var(--panel-2);border-left:3px solid var(--cyan)}
+.layer:nth-child(2){border-color:var(--blue)}.layer:nth-child(3){border-color:var(--green)}.layer:nth-child(4){border-color:var(--yellow)}.layer:nth-child(5){border-color:var(--muted)}
+.layer b{display:block;font-size:.82rem}.layer span{font-size:.74rem;color:var(--muted)}
+.timeline{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}.time{background:var(--panel-2);padding:.65rem}.time b{color:var(--yellow);font-size:.78rem}.time div{font-size:.78rem;margin-top:.25rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:.45rem;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:.6rem;align-items:start;margin:0;background:var(--panel-2);padding:.55rem .65rem;font-size:.84rem}
+.steps li:before{content:counter(s);font-weight:800;color:var(--bg1);background:var(--cyan);width:1.6rem;height:1.6rem;display:grid;place-items:center;font-size:.8rem}
+.kbd{font-family:var(--mono);font-size:.78rem;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(255,255,255,.25);padding:.05rem .35rem;color:#fff;white-space:nowrap}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.mode{background:var(--panel-2);padding:.65rem;border-top:3px solid var(--cyan)}
+.mode:nth-child(2){border-color:var(--green)}.mode:nth-child(3){border-color:var(--yellow)}.mode:nth-child(4){border-color:var(--blue)}
+.mode b{display:block;font-size:.85rem}.mode span{font-size:.76rem;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.8rem;margin:.4rem 0}
+.flow span{background:var(--panel-2);padding:.35rem .55rem;border:1px solid var(--line)}
+.flow i{color:var(--yellow);font-style:normal;font-weight:700}
+
+/* dashboard */
+.dash-meta{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+.dash-meta b{display:block;color:#fff;font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.part{margin-top:1.6rem}
+.part-h{display:flex;align-items:baseline;gap:.8rem;margin:0 0 .7rem;flex-wrap:wrap}
+.part-h h2{margin:0;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow)}
+.part-h span{color:var(--muted);font-size:.8rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.tile{display:flex;flex-direction:column;gap:.45rem;text-decoration:none;color:#fff;background:var(--panel);backdrop-filter:blur(12px);
+  padding:1.1rem 1.2rem 1rem;border-bottom:3px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.tile:hover{background:rgba(0,27,34,.7);border-color:var(--cyan);transform:translateY(-2px)}
+.tile .n{font-size:2.2rem;font-weight:200;color:var(--cyan);line-height:1;font-variant-numeric:tabular-nums}
+.tile .t{font-weight:700;font-size:1rem;line-height:1.25;text-wrap:balance}
+.tile .d{font-size:.8rem;color:var(--muted);flex:1}
+.tile .k{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.2rem}
+.tile .k span{font-family:var(--mono);font-size:.68rem;color:var(--code-hl);background:rgba(0,0,0,.25);padding:.12rem .38rem}
+.p2 .tile .n{color:var(--green)} .p2 .tile:hover{border-color:var(--green)}
+.p3 .tile .n{color:var(--yellow)} .p3 .tile:hover{border-color:var(--yellow)}
+.hint{margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+
+/* kapitola */
+.ch-head{padding-block:2.4rem 1.3rem}
+.ch-head h1{font-size:clamp(2rem,4.4vw,3.8rem)}
+.pager{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;padding-block:.6rem 2.5rem}
+.pager a{max-width:48%}
+.pager .next{margin-left:auto;text-align:right}
+.pager small{display:block;color:var(--muted);font-weight:400;letter-spacing:0;font-size:.7rem}
+footer{position:relative;z-index:1;max-width:1450px;margin:auto;padding:0 5vw 2rem;color:var(--muted);font-size:.7rem}
+
+@media(max-width:950px){
+  .c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 6}
+}
+@media(max-width:720px){
+  .c3,.c4,.c5,.c6,.c7,.c8,.c12{grid-column:span 12}
+  .modes,.timeline{grid-template-columns:1fr}
+  .grid{gap:.75rem}.card{padding:1rem}
+  .bar-ch{display:none}
+  .pager a{max-width:100%;flex:1 1 100%}.pager .next{text-align:left}
+}
+@media print{.bar,.pager{display:none}}
+
+/* ---- doplňky pro navazující prezentace ---- */
+.bar-nav .btn.kurz{color:var(--yellow)}
+pre.php,pre.sh,pre.res{position:relative}
+pre.php{border-left:3px solid var(--cyan)}
+pre.res{margin-top:0;background:rgba(0,0,0,.32);color:rgba(234,255,255,.78);border-left:3px solid var(--green);padding-top:1.35rem}
+pre.res:before{content:"výstup";position:absolute;top:.3rem;left:.85rem;font:700 .58rem/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+pre.php + pre.res{margin-top:2px}
+pre.sh{border-left:3px solid var(--muted)}
+pre .k{color:#41d7ff}
+pre .t{color:#7ee0c3}
+pre .v{color:#ffd76a}
+pre .s{color:#b8e986}
+pre .n{color:#ffa77a}
+pre .c{color:#7fb3c2;font-style:italic}
+pre .f{color:#9fd8ff}
+pre .tg{color:#ff8f80;font-weight:700}
+pre .a{color:#d7a6ff}
+pre .co{color:#ffc7f0}
+pre .hl{background:rgba(255,212,0,.16);display:inline-block;width:100%}
+.copy{position:absolute;top:.3rem;right:.3rem;opacity:0;transition:opacity .15s;font:600 .62rem/1 var(--font);letter-spacing:.06em;
+  background:rgba(65,215,255,.15);color:var(--cyan);border:0;padding:.35rem .5rem;cursor:pointer}
+pre:hover .copy,.copy:focus-visible{opacity:1}
+.v8{display:inline-block;font:700 .62rem/1 var(--font);letter-spacing:.06em;padding:.22rem .4rem;background:var(--yellow);color:#00222c;vertical-align:middle;margin-left:.35rem}
+.v8.g{background:var(--green)}
+.v8.r{background:var(--red)}
+.task{border-left:4px solid var(--green);background:rgba(166,206,57,.08);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.task b:first-child{color:var(--green);letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;display:block;margin-bottom:.2rem}
+.task details{margin-top:.4rem}
+.task summary{cursor:pointer;color:var(--cyan);font-size:.78rem;font-weight:600}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.cols2 > div{min-width:0}
+.big{font-size:1.05rem}
+.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}
+td code,th code{white-space:nowrap}
+.prev-deck{color:var(--muted);font-size:.8rem;margin-top:1rem}
+.prev-deck a{color:var(--cyan)}
+@media(max-width:720px){.cols2{grid-template-columns:1fr}}
+
+.deck-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}
+.deck{display:flex;flex-direction:column;gap:.6rem;background:var(--panel);backdrop-filter:blur(12px);padding:1.3rem 1.4rem 1.2rem;border-top:3px solid var(--cyan)}
+.deck.intro{border-color:var(--muted)}
+.deck:nth-child(3n+3){border-color:var(--green)}
+.deck:nth-child(3n+1):not(.intro){border-color:var(--yellow)}
+.deck-h{display:flex;gap:1rem;align-items:flex-start}
+.deck-n{flex:none;min-width:3.2rem;font-size:2.6rem;font-weight:200;line-height:.9;color:var(--cyan);font-variant-numeric:tabular-nums}
+.deck.intro .deck-n{color:var(--muted)}
+.deck-h h2{margin:0 0 .25rem;color:#fff;font-size:1.25rem;line-height:1.2}
+.deck-h h2 a{color:inherit;text-decoration:none}
+.deck-h h2 a:hover{color:var(--cyan)}
+.deck-h p{margin:0;font-size:.84rem;color:rgba(255,255,255,.78)}
+.deck-meta{display:flex;gap:1rem;font-size:.74rem;color:var(--muted)}
+.deck-meta b{color:#fff;font-variant-numeric:tabular-nums}
+.chlist{list-style:none;margin:0;padding:0;columns:2;column-gap:1.2rem;font-size:.8rem}
+.chlist li{margin:0 0 .2rem;break-inside:avoid;display:flex;gap:.45rem}
+.chlist li span{color:var(--muted);font-variant-numeric:tabular-nums;min-width:1.3rem;text-align:right}
+.chlist a{color:#fff;text-decoration:none;border-bottom:1px solid transparent}
+.chlist a:hover{color:var(--cyan);border-color:var(--cyan)}
+.deck .open{margin-top:auto;align-self:flex-start}
+.side{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;margin-top:1rem}
+.side a{color:var(--cyan)}
+.filter{display:flex;gap:.5rem;align-items:center;margin:1.4rem 0 1rem;flex-wrap:wrap}
+.filter input{flex:1;min-width:200px;max-width:420px;font:inherit;font-size:.9rem;color:#fff;background:rgba(0,20,26,.6);border:1px solid var(--line);padding:.55rem .75rem}
+.filter input:focus{outline:2px solid var(--yellow);outline-offset:1px}
+.filter span{font-size:.78rem;color:var(--muted)}
+.chlist li.hit a{color:var(--yellow)}
+.deck.nohit{display:none}
+@media(max-width:950px){.deck-list{grid-template-columns:1fr}.side{grid-template-columns:1fr}}
+@media(max-width:520px){.chlist{columns:1}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="index.html">Kurz <span>PHP</span></a>
+  <div class="bar-ch">Přehled prezentací</div>
+  <div class="bar-nav"><a class="btn" href="00-uvod-do-php.html">Začít úvodem →</a></div>
+</div></div>
+<main class="wrap">
+  <header class="hero">
+    <div class="kicker">Programování webových aplikací</div>
+    <h1>PHP: přehled kurzu</h1>
+    <p class="lead">Navazující výukové prezentace od instalace PHP přes syntaxi, vstup a výstup a datové typy až po pole a operátory. Každá kapitola je samostatná obrazovka s ukázkami kódu a úlohami.</p>
+    <div class="dash-meta">
+      <div><b>6</b>prezentací</div>
+      <div><b>64</b>kapitol</div>
+      <div><b>271</b>ukázek kódu</div>
+      <div><b>8.2+</b>cílová verze PHP</div>
+    </div>
+  </header>
+
+  <div class="filter">
+    <input id="q" type="search" placeholder="Hledat téma, např. foreach, json, strict_types…" aria-label="Hledat kapitolu">
+    <span id="qinfo"></span>
+  </div>
+
+  <section class="deck-list">
+  <article class="deck intro" data-q="úvod do php">
+    <div class="deck-h"><div class="deck-n">00</div><div>
+      <h2><a href="00-uvod-do-php.html">Úvod do PHP</a></h2>
+      <p>Jak PHP nainstalovat samostatně i jako součást balíčku typu XAMPP, kde a jak ho konfigurovat, jak přidat rozšíření a jak spouštět skripty v shellu i přes webový server.</p>
+    </div></div>
+    <div class="deck-meta"><span><b>7</b> kapitol</span></div>
+    <ol class="chlist"><li data-q="co je php a jak funguje skriptování na straně serveru, cesta http požadavku, verze a režimy běhu (sapi)."><span>1</span><a href="00-uvod-do-php.html#k1" title="Skriptování na straně serveru, cesta HTTP požadavku, verze a režimy běhu (SAPI).">Co je PHP a jak funguje</a></li><li data-q="samostatná instalace windows ze zip archivu, debian přes apt, macos přes homebrew, docker."><span>2</span><a href="00-uvod-do-php.html#k2" title="Windows ze ZIP archivu, Debian přes apt, macOS přes Homebrew, Docker.">Samostatná instalace</a></li><li data-q="balíčky xampp, wamp a další hotové sady web server + php + databáze. srovnání, struktura xampp a časté problémy."><span>3</span><a href="00-uvod-do-php.html#k3" title="Hotové sady web server + PHP + databáze. Srovnání, struktura XAMPP a časté problémy.">Balíčky XAMPP, WAMP a další</a></li><li data-q="konfigurační soubory kde je php.ini, důležité direktivy, vývojové a produkční nastavení, přepisování hodnot."><span>4</span><a href="00-uvod-do-php.html#k4" title="Kde je php.ini, důležité direktivy, vývojové a produkční nastavení, přepisování hodnot.">Konfigurační soubory</a></li><li data-q="rozšíření (extensions) zapnutí rozšíření ve windows a v debianu, xdebug, opcache, pecl."><span>5</span><a href="00-uvod-do-php.html#k5" title="Zapnutí rozšíření ve Windows a v Debianu, Xdebug, OPcache, PECL.">Rozšíření (extensions)</a></li><li data-q="php v shellu (cli) spuštění skriptu, interaktivní režim, argumenty, vstup z klávesnice, cron."><span>6</span><a href="00-uvod-do-php.html#k6" title="Spuštění skriptu, interaktivní režim, argumenty, vstup z klávesnice, cron.">PHP v shellu (CLI)</a></li><li data-q="php přes http server vestavěný server, apache s mod_php, nginx s php-fpm a řešení častých chyb."><span>7</span><a href="00-uvod-do-php.html#k7" title="Vestavěný server, Apache s mod_php, Nginx s PHP-FPM a řešení častých chyb.">PHP přes HTTP server</a></li></ol>
+    <a class="btn open" href="00-uvod-do-php.html">Otevřít prezentaci →</a>
+  </article>
+  <article class="deck" data-q="základy syntaxe php">
+    <div class="deck-h"><div class="deck-n">01</div><div>
+      <h2><a href="01-zaklady-syntaxe.html">Základy syntaxe PHP</a></h2>
+      <p>Jak se píše PHP skript: značky, příkazy, proměnné, konstanty, řetězce, podmínky, cykly, funkce, vkládání souborů a výjimky. Vše v moderní podobě pro PHP 8.2 a novější.</p>
+    </div></div>
+    <div class="deck-meta"><span><b>13</b> kapitol</span><span><b>64</b> ukázek kódu</span></div>
+    <ol class="chlist"><li data-q="struktura skriptu otevírací značka, příkazy a středníky, bloky, komentáře, výpis a mixování s html."><span>1</span><a href="01-zaklady-syntaxe.html#k1" title="Otevírací značka, příkazy a středníky, bloky, komentáře, výpis a mixování s HTML.">Struktura skriptu</a></li><li data-q="proměnné pojmenování, přiřazení hodnotou a odkazem, nedefinované proměnné, isset a unset."><span>2</span><a href="01-zaklady-syntaxe.html#k2" title="Pojmenování, přiřazení hodnotou a odkazem, nedefinované proměnné, isset a unset.">Proměnné</a></li><li data-q="konstanty vlastní konstanty, vestavěné konstanty a magické konstanty jako __dir__ a __line__."><span>3</span><a href="01-zaklady-syntaxe.html#k3" title="Vlastní konstanty, vestavěné konstanty a magické konstanty jako __DIR__ a __LINE__.">Konstanty</a></li><li data-q="řetězce jednoduché a dvojité uvozovky, vkládání proměnných, escape sekvence, heredoc, spojování a základní funkce."><span>4</span><a href="01-zaklady-syntaxe.html#k4" title="Jednoduché a dvojité uvozovky, vkládání proměnných, escape sekvence, heredoc, spojování a základní funkce.">Řetězce</a></li><li data-q="podmínky if, elseif, else, ternární operátor, operátor ??, switch a alternativní syntaxe pro šablony."><span>5</span><a href="01-zaklady-syntaxe.html#k5" title="if, elseif, else, ternární operátor, operátor ??, switch a alternativní syntaxe pro šablony.">Podmínky</a></li><li data-q="výraz match moderní náhrada switch od php 8.0: vrací hodnotu, porovnává striktně, nepropadá."><span>6</span><a href="01-zaklady-syntaxe.html#k6" title="Moderní náhrada switch od PHP 8.0: vrací hodnotu, porovnává striktně, nepropadá.">Výraz match</a></li><li data-q="cykly for, while, do-while a foreach. přerušení cyklu, vnořené cykly a cykly v šablonách."><span>7</span><a href="01-zaklady-syntaxe.html#k7" title="for, while, do-while a foreach. Přerušení cyklu, vnořené cykly a cykly v šablonách.">Cykly</a></li><li data-q="funkce definice, parametry s typy, výchozí hodnoty, návratový typ, pojmenované argumenty a proměnný počet argumentů."><span>8</span><a href="01-zaklady-syntaxe.html#k8" title="Definice, parametry s typy, výchozí hodnoty, návratový typ, pojmenované argumenty a proměnný počet argumentů.">Funkce</a></li><li data-q="anonymní funkce a rozsah platnosti closures, arrow funkce, first-class callable syntaxe, viditelnost proměnných, global a static."><span>9</span><a href="01-zaklady-syntaxe.html#k9" title="Closures, arrow funkce, first-class callable syntaxe, viditelnost proměnných, global a static.">Anonymní funkce a rozsah platnosti</a></li><li data-q="vkládání souborů rozdělení kódu do souborů, rozdíl include a require, varianta _once, návratová hodnota a cesty."><span>10</span><a href="01-zaklady-syntaxe.html#k10" title="Rozdělení kódu do souborů, rozdíl include a require, varianta _once, návratová hodnota a cesty.">Vkládání souborů</a></li><li data-q="chyby a výjimky druhy chyb, hierarchie throwable, zachytávání výjimek, vlastní výjimky a throw jako výraz."><span>11</span><a href="01-zaklady-syntaxe.html#k11" title="Druhy chyb, hierarchie Throwable, zachytávání výjimek, vlastní výjimky a throw jako výraz.">Chyby a výjimky</a></li><li data-q="novinky php 8.2 až 8.5 co nového přinesla každá verze od 8.2: typy, readonly třídy, property hooks, pipe operátor a nové funkce."><span>12</span><a href="01-zaklady-syntaxe.html#k12" title="Co nového přinesla každá verze od 8.2: typy, readonly třídy, property hooks, pipe operátor a nové funkce.">Novinky PHP 8.2 až 8.5</a></li><li data-q="styl kódu a opakování doporučený styl zápisu, tahák syntaxe na jednu obrazovku a úlohy na procvičení."><span>13</span><a href="01-zaklady-syntaxe.html#k13" title="Doporučený styl zápisu, tahák syntaxe na jednu obrazovku a úlohy na procvičení.">Styl kódu a opakování</a></li></ol>
+    <a class="btn open" href="01-zaklady-syntaxe.html">Otevřít prezentaci →</a>
+  </article>
+  <article class="deck" data-q="vstup a výstup, soubory a adresáře">
+    <div class="deck-h"><div class="deck-n">02</div><div>
+      <h2><a href="02-vstup-vystup-soubory.html">Vstup a výstup, soubory a adresáře</a></h2>
+      <p>Jak PHP vypisuje data do terminálu i prohlížeče, jak čte vstup z klávesnice, z příkazové řádky a z formulářů, a jak pracuje se soubory, CSV, JSON a adresáři.</p>
+    </div></div>
+    <div class="deck-meta"><span><b>11</b> kapitol</span><span><b>60</b> ukázek kódu</span></div>
+    <ol class="chlist"><li data-q="formátovaný výstup echo a print, formátovací řetězce printf/sprintf, čísla po česku, zarovnání a ladicí výpisy."><span>1</span><a href="02-vstup-vystup-soubory.html#k1" title="echo a print, formátovací řetězce printf/sprintf, čísla po česku, zarovnání a ladicí výpisy.">Formátovaný výstup</a></li><li data-q="výstup do prohlížeče bezpečný výpis do html, http hlavičky, přesměrování, stažení souboru a výstupní buffer."><span>2</span><a href="02-vstup-vystup-soubory.html#k2" title="Bezpečný výpis do HTML, HTTP hlavičky, přesměrování, stažení souboru a výstupní buffer.">Výstup do prohlížeče</a></li><li data-q="vstup v příkazové řádce čtení z klávesnice, argumenty skriptu, přepínače, chybový výstup a návratový kód."><span>3</span><a href="02-vstup-vystup-soubory.html#k3" title="Čtení z klávesnice, argumenty skriptu, přepínače, chybový výstup a návratový kód.">Vstup v příkazové řádce</a></li><li data-q="vstup z webu: get a post formuláře, metody get a post, superglobální pole, zpracování formuláře a json v těle požadavku."><span>4</span><a href="02-vstup-vystup-soubory.html#k4" title="Formuláře, metody GET a POST, superglobální pole, zpracování formuláře a JSON v těle požadavku.">Vstup z webu: GET a POST</a></li><li data-q="validace vstupu a nahrávání souborů kontrola a převod vstupních hodnot přes filtry a bezpečné přijetí souboru z formuláře."><span>5</span><a href="02-vstup-vystup-soubory.html#k5" title="Kontrola a převod vstupních hodnot přes filtry a bezpečné přijetí souboru z formuláře.">Validace vstupu a nahrávání souborů</a></li><li data-q="celé soubory najednou nejjednodušší čtení a zápis, připisování na konec, soubor jako pole řádků, informace o souboru."><span>6</span><a href="02-vstup-vystup-soubory.html#k6" title="Nejjednodušší čtení a zápis, připisování na konec, soubor jako pole řádků, informace o souboru.">Celé soubory najednou</a></li><li data-q="práce se souborem po částech režimy otevření, čtení po řádcích, zápis, zamykání a splfileobject pro velké soubory."><span>7</span><a href="02-vstup-vystup-soubory.html#k7" title="Režimy otevření, čtení po řádcích, zápis, zamykání a SplFileObject pro velké soubory.">Práce se souborem po částech</a></li><li data-q="csv a json tabulková data z excelu a strukturovaná data pro konfiguraci a api."><span>8</span><a href="02-vstup-vystup-soubory.html#k8" title="Tabulková data z Excelu a strukturovaná data pro konfiguraci a API.">CSV a JSON</a></li><li data-q="cesty k souborům absolutní a relativní cesty, pracovní adresář, rozklad cesty na části, rozdíly windows a linux."><span>9</span><a href="02-vstup-vystup-soubory.html#k9" title="Absolutní a relativní cesty, pracovní adresář, rozklad cesty na části, rozdíly Windows a Linux.">Cesty k souborům</a></li><li data-q="práce s adresáři vytvoření a smazání složky, výpis obsahu, hledání podle masky a rekurzivní procházení stromu."><span>10</span><a href="02-vstup-vystup-soubory.html#k10" title="Vytvoření a smazání složky, výpis obsahu, hledání podle masky a rekurzivní procházení stromu.">Práce s adresáři</a></li><li data-q="oprávnění, bezpečnost a úlohy práva souborů na serveru, útok přes ../ v cestě, nastavení open_basedir a závěrečné úlohy."><span>11</span><a href="02-vstup-vystup-soubory.html#k11" title="Práva souborů na serveru, útok přes ../ v cestě, nastavení open_basedir a závěrečné úlohy.">Oprávnění, bezpečnost a úlohy</a></li></ol>
+    <a class="btn open" href="02-vstup-vystup-soubory.html">Otevřít prezentaci →</a>
+  </article>
+  <article class="deck" data-q="datové typy a přetypování">
+    <div class="deck-h"><div class="deck-n">03</div><div>
+      <h2><a href="03-datove-typy.html">Datové typy a přetypování</a></h2>
+      <p>Jaké typy hodnot PHP zná, jak se chovají celá a desetinná čísla, řetězce, bool a null, kdy PHP převádí typy samo a jak je převést ručně. Na závěr typové deklarace a režim strict_types.</p>
+    </div></div>
+    <div class="deck-meta"><span><b>12</b> kapitol</span><span><b>48</b> ukázek kódu</span></div>
+    <ol class="chlist"><li data-q="typový systém php přehled všech typů, dynamické typování a funkce, kterými zjistíte typ hodnoty."><span>1</span><a href="03-datove-typy.html#k1" title="Přehled všech typů, dynamické typování a funkce, kterými zjistíte typ hodnoty.">Typový systém PHP</a></li><li data-q="logický typ bool pravdivostní hodnoty, které hodnoty se chovají jako false a na co si dát pozor."><span>2</span><a href="03-datove-typy.html#k2" title="Pravdivostní hodnoty, které hodnoty se chovají jako false a na co si dát pozor.">Logický typ bool</a></li><li data-q="celá čísla int zápisy v různých soustavách, rozsah, přetečení do float, celočíselné dělení a zbytek."><span>3</span><a href="03-datove-typy.html#k3" title="Zápisy v různých soustavách, rozsah, přetečení do float, celočíselné dělení a zbytek.">Celá čísla int</a></li><li data-q="desetinná čísla float binární reprezentace, zaokrouhlovací chyby, porovnávání, zaokrouhlování, inf a nan, práce s penězi."><span>4</span><a href="03-datove-typy.html#k4" title="Binární reprezentace, zaokrouhlovací chyby, porovnávání, zaokrouhlování, INF a NAN, práce s penězi.">Desetinná čísla float</a></li><li data-q="řetězce jako typ řetězec jako posloupnost bajtů, kódování utf-8, číselné řetězce a jejich pravidla v php 8."><span>5</span><a href="03-datove-typy.html#k5" title="Řetězec jako posloupnost bajtů, kódování UTF-8, číselné řetězce a jejich pravidla v PHP 8.">Řetězce jako typ</a></li><li data-q="hodnota null kdy je proměnná null, nullovatelné typy, operátory ?? a ?-&gt; a rozdíl mezi null a prázdnou hodnotou."><span>6</span><a href="03-datove-typy.html#k6" title="Kdy je proměnná null, nullovatelné typy, operátory ?? a ?-&gt; a rozdíl mezi null a prázdnou hodnotou.">Hodnota null</a></li><li data-q="automatické převody kdy php převádí typy samo: aritmetika, spojování řetězců, podmínky, klíče polí a porovnání."><span>7</span><a href="03-datove-typy.html#k7" title="Kdy PHP převádí typy samo: aritmetika, spojování řetězců, podmínky, klíče polí a porovnání.">Automatické převody</a></li><li data-q="explicitní přetypování operátory přetypování, převodní funkce, tabulka výsledků a změny v php 8.5."><span>8</span><a href="03-datove-typy.html#k8" title="Operátory přetypování, převodní funkce, tabulka výsledků a změny v PHP 8.5.">Explicitní přetypování</a></li><li data-q="čísla a text tam a zpět bezpečný převod vstupu na číslo, česká desetinná čárka, formátování čísel na text."><span>9</span><a href="03-datove-typy.html#k9" title="Bezpečný převod vstupu na číslo, česká desetinná čárka, formátování čísel na text.">Čísla a text tam a zpět</a></li><li data-q="typové deklarace a strict_types deklarace typů parametrů, návratu a vlastností, režim převodu × striktní režim, sjednocené a dnf typy."><span>10</span><a href="03-datove-typy.html#k10" title="Deklarace typů parametrů, návratu a vlastností, režim převodu × striktní režim, sjednocené a DNF typy.">Typové deklarace a strict_types</a></li><li data-q="složené typy a výčty stručně o polích, objektech, callable a výčtovém typu enum. kopírování hodnotou a odkazem."><span>11</span><a href="03-datove-typy.html#k11" title="Stručně o polích, objektech, callable a výčtovém typu enum. Kopírování hodnotou a odkazem.">Složené typy a výčty</a></li><li data-q="shrnutí a úlohy pravidla pro práci s typy na jedné obrazovce a úlohy na procvičení."><span>12</span><a href="03-datove-typy.html#k12" title="Pravidla pro práci s typy na jedné obrazovce a úlohy na procvičení.">Shrnutí a úlohy</a></li></ol>
+    <a class="btn open" href="03-datove-typy.html">Otevřít prezentaci →</a>
+  </article>
+  <article class="deck" data-q="pole a asociativní pole">
+    <div class="deck-h"><div class="deck-n">04</div><div>
+      <h2><a href="04-pole.html">Pole a asociativní pole</a></h2>
+      <p>Pole je v PHP univerzální datová struktura: seznam, slovník, tabulka, zásobník i fronta. Jak pole vytvořit, procházet, třídit, filtrovat a převádět a které funkce se vyplatí znát.</p>
+    </div></div>
+    <div class="deck-meta"><span><b>11</b> kapitol</span><span><b>57</b> ukázek kódu</span></div>
+    <ol class="chlist"><li data-q="co je pole v php uspořádaná mapa klíč → hodnota. indexovaná a asociativní pole, automatické klíče, pravidla pro klíče."><span>1</span><a href="04-pole.html#k1" title="Uspořádaná mapa klíč → hodnota. Indexovaná a asociativní pole, automatické klíče, pravidla pro klíče.">Co je pole v PHP</a></li><li data-q="přístup a úpravy čtení prvků, chybějící klíče, test existence, mazání a přidávání na začátek a konec."><span>2</span><a href="04-pole.html#k2" title="Čtení prvků, chybějící klíče, test existence, mazání a přidávání na začátek a konec.">Přístup a úpravy</a></li><li data-q="procházení polí foreach s klíčem i bez, úprava přes referenci a její past, for s indexem, vnořené procházení."><span>3</span><a href="04-pole.html#k3" title="foreach s klíčem i bez, úprava přes referenci a její past, for s indexem, vnořené procházení.">Procházení polí</a></li><li data-q="vícerozměrná pole matice, seznam záznamů (tabulka), výběr sloupce, indexace podle klíče a seskupování."><span>4</span><a href="04-pole.html#k4" title="Matice, seznam záznamů (tabulka), výběr sloupce, indexace podle klíče a seskupování.">Vícerozměrná pole</a></li><li data-q="destrukturace, spread a slučování rozbalení pole do proměnných, operátor ... a rozdíly mezi array_merge a operátorem +."><span>5</span><a href="04-pole.html#k5" title="Rozbalení pole do proměnných, operátor ... a rozdíly mezi array_merge a operátorem +.">Destrukturace, spread a slučování</a></li><li data-q="hledání a testy je hodnota v poli? na jakém klíči? splňuje některý nebo každý prvek podmínku?"><span>6</span><a href="04-pole.html#k6" title="Je hodnota v poli? Na jakém klíči? Splňuje některý nebo každý prvek podmínku?">Hledání a testy</a></li><li data-q="transformace: map, filter, reduce převod každého prvku, výběr prvků podle podmínky a sloučení pole do jedné hodnoty."><span>7</span><a href="04-pole.html#k7" title="Převod každého prvku, výběr prvků podle podmínky a sloučení pole do jedné hodnoty.">Transformace: map, filter, reduce</a></li><li data-q="výřezy, generování a převody části pole, rozdělení na kousky, generování polí a převody mezi poli a řetězci."><span>8</span><a href="04-pole.html#k8" title="Části pole, rozdělení na kousky, generování polí a převody mezi poli a řetězci.">Výřezy, generování a převody</a></li><li data-q="řazení rodina funkcí sort, zachování klíčů, vlastní porovnání přes , řazení podle více sloupců a česká abeceda."><span>9</span><a href="04-pole.html#k9" title="Rodina funkcí sort, zachování klíčů, vlastní porovnání přes , řazení podle více sloupců a česká abeceda.">Řazení</a></li><li data-q="množinové operace a porovnání rozdíl, průnik a sjednocení polí, varianty podle klíčů a porovnání dvou polí."><span>10</span><a href="04-pole.html#k10" title="Rozdíl, průnik a sjednocení polí, varianty podle klíčů a porovnání dvou polí.">Množinové operace a porovnání</a></li><li data-q="pole v praxi a úlohy pole jako zásobník a fronta, konfigurační soubor, uložení pole do json, výkon a závěrečné úlohy."><span>11</span><a href="04-pole.html#k11" title="Pole jako zásobník a fronta, konfigurační soubor, uložení pole do JSON, výkon a závěrečné úlohy.">Pole v praxi a úlohy</a></li></ol>
+    <a class="btn open" href="04-pole.html">Otevřít prezentaci →</a>
+  </article>
+  <article class="deck" data-q="výrazy a operátory">
+    <div class="deck-h"><div class="deck-n">05</div><div>
+      <h2><a href="05-vyrazy-operatory.html">Výrazy a operátory</a></h2>
+      <p>Výrazy jsou základem každého příkazu. Operátory aritmetické, přiřazovací, unární, relační, logické, bitové a další, jejich priority a pasti, do kterých se často padá.</p>
+    </div></div>
+    <div class="deck-meta"><span><b>10</b> kapitol</span><span><b>42</b> ukázek kódu</span></div>
+    <ol class="chlist"><li data-q="výrazy a příkazy co je výraz, operand a operátor, arita operátorů, výrazy s vedlejším efektem a pořadí vyhodnocení."><span>1</span><a href="05-vyrazy-operatory.html#k1" title="Co je výraz, operand a operátor, arita operátorů, výrazy s vedlejším efektem a pořadí vyhodnocení.">Výrazy a příkazy</a></li><li data-q="aritmetické operátory sčítání až umocňování, typ výsledku, dělení, zbytek po dělení, záporná čísla a matematické funkce."><span>2</span><a href="05-vyrazy-operatory.html#k2" title="Sčítání až umocňování, typ výsledku, dělení, zbytek po dělení, záporná čísla a matematické funkce.">Aritmetické operátory</a></li><li data-q="přiřazovací operátory prosté přiřazení, kombinované operátory, přiřazení odkazem a přiřazení do pole."><span>3</span><a href="05-vyrazy-operatory.html#k3" title="Prosté přiřazení, kombinované operátory, přiřazení odkazem a přiřazení do pole.">Přiřazovací operátory</a></li><li data-q="unární operátory inkrement a dekrement v prefixové a postfixové podobě, negace, přetypování, potlačení chyb a další."><span>4</span><a href="05-vyrazy-operatory.html#k4" title="Inkrement a dekrement v prefixové a postfixové podobě, negace, přetypování, potlačení chyb a další.">Unární operátory</a></li><li data-q="relační operátory volné a striktní porovnání, pravidla php 8 pro řetězce a čísla, porovnání řetězců, null, polí a floatů."><span>5</span><a href="05-vyrazy-operatory.html#k5" title="Volné a striktní porovnání, pravidla PHP 8 pro řetězce a čísla, porovnání řetězců, null, polí a floatů.">Relační operátory</a></li><li data-q="logické operátory konjunkce, disjunkce, negace a xor, zkrácené vyhodnocení, pravdivostní tabulka a past and/or."><span>6</span><a href="05-vyrazy-operatory.html#k6" title="Konjunkce, disjunkce, negace a xor, zkrácené vyhodnocení, pravdivostní tabulka a past and/or.">Logické operátory</a></li><li data-q="bitové operátory práce s jednotlivými bity, bitové příznaky a masky, posuny. kde se s nimi v php setkáte."><span>7</span><a href="05-vyrazy-operatory.html#k7" title="Práce s jednotlivými bity, bitové příznaky a masky, posuny. Kde se s nimi v PHP setkáte.">Bitové operátory</a></li><li data-q="řetězcové a ostatní operátory spojování řetězců, podmíněné operátory, nullsafe, instanceof, spread, pipe a další."><span>8</span><a href="05-vyrazy-operatory.html#k8" title="Spojování řetězců, podmíněné operátory, nullsafe, instanceof, spread, pipe a další.">Řetězcové a ostatní operátory</a></li><li data-q="priorita a asociativita kompletní tabulka priorit operátorů, směr vyhodnocení a ukázky, jak závorky mění výsledek."><span>9</span><a href="05-vyrazy-operatory.html#k9" title="Kompletní tabulka priorit operátorů, směr vyhodnocení a ukázky, jak závorky mění výsledek.">Priorita a asociativita</a></li><li data-q="pasti a úlohy nejčastější chyby s operátory, zásady čitelných výrazů a úlohy na procvičení."><span>10</span><a href="05-vyrazy-operatory.html#k10" title="Nejčastější chyby s operátory, zásady čitelných výrazů a úlohy na procvičení.">Pasti a úlohy</a></li></ol>
+    <a class="btn open" href="05-vyrazy-operatory.html">Otevřít prezentaci →</a>
+  </article>
+  </section>
+
+  <section class="side">
+    <article class="card"><h2>Jak prezentace ovládat</h2>
+      <p>Šipky <span class="kbd">←</span> <span class="kbd">→</span> přepínají kapitoly, <span class="kbd">Esc</span> vrací na přehled prezentace. Tlačítko <b>Kurz</b> v horní liště vede sem. Odkaz na kapitolu (např. <code>04-pole.html#k9</code>) lze poslat žákům.</p>
+    </article>
+    <article class="card"><h2>Kde zkoušet kód</h2>
+      <ul>
+        <li><code>php ukazka.php</code> v terminálu (Úvod, kap. 6)</li>
+        <li><code>php -S localhost:8000</code> pro webové ukázky (Úvod, kap. 7)</li>
+        <li><a href="https://3v4l.org/" target="_blank" rel="noopener">3v4l.org</a>: online, porovná výstup napříč verzemi PHP</li>
+      </ul>
+    </article>
+    <article class="card"><h2>Dokumentace</h2>
+      <ul>
+        <li><a href="https://www.php.net/manual/en/" target="_blank" rel="noopener">Manuál PHP</a> (php.net)</li>
+        <li><a href="https://www.php.net/manual/en/language.operators.precedence.php" target="_blank" rel="noopener">Priorita operátorů</a></li>
+        <li><a href="https://www.php.net/supported-versions.php" target="_blank" rel="noopener">Podporované verze</a></li>
+        <li><a href="https://www.php-fig.org/per/coding-style/" target="_blank" rel="noopener">PER Coding Style</a></li>
+      </ul>
+    </article>
+  </section>
+</main>
+<footer>Výukové prezentace · Programování webových aplikací · vizuální styl vychází z design systému VOŠ, SPŠ a SOŠ Varnsdorf.</footer>
+<script>
+(function(){
+  var q = document.getElementById('q'), info = document.getElementById('qinfo');
+  var decks = Array.prototype.slice.call(document.querySelectorAll('.deck'));
+  function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, ''); }
+  function run(){
+    var t = norm(q.value.trim()), hits = 0;
+    decks.forEach(function(d){
+      var any = false;
+      d.querySelectorAll('.chlist li').forEach(function(li){
+        var hit = t !== '' && norm(li.dataset.q).indexOf(t) > -1;
+        li.classList.toggle('hit', hit); if (hit){ any = true; hits++; }
+      });
+      if (t !== '' && norm(d.dataset.q).indexOf(t) > -1) any = true;
+      d.classList.toggle('nohit', t !== '' && !any);
+    });
+    info.textContent = t === '' ? '' : (hits ? hits + ' kapitol' : 'nic nenalezeno');
+  }
+  q.addEventListener('input', run);
+  try { var last = sessionStorage.getItem('php-q'); if (last){ q.value = last; run(); } } catch(e){}
+  q.addEventListener('change', function(){ try { sessionStorage.setItem('php-q', q.value); } catch(e){} });
+})();
+</script>
+</body>
+</html>

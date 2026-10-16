@@ -1,0 +1,1540 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Základy syntaxe PHP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: přehled kapitol PHP (dashboard) → jedna kapitola na obrazovku, mřížka 12 sloupců s průsvitnými panely.
+   Design: vizuální systém VOŠ, SPŠ a SOŠ Varnsdorf — jeden tmavý svět (záměrně bez světlého režimu). */
+:root{
+  color-scheme:dark;
+  --bg1:#003b4b;--bg2:#006783;--panel:rgba(0,27,34,.48);--panel-2:rgba(0,0,0,.2);
+  --cyan:#41d7ff;--blue:#00c0f3;--yellow:#ffd400;--green:#a6ce39;--red:#ff7a6b;
+  --muted:rgba(255,255,255,.62);--white:#fff;--line:rgba(255,255,255,.1);
+  --code-bg:#001820;--code-fg:#eaffff;--code-hl:#ffea80;
+  --font:Raleway,"Segoe UI",system-ui,sans-serif;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;font-family:var(--font);color:var(--white);background:var(--bg1);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;line-height:1.45;font-size:15px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 85% 10%,rgba(65,215,255,.12),transparent 30%),
+  radial-gradient(circle at 10% 90%,rgba(166,206,57,.08),transparent 30%)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* horní lišta */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(0,30,38,.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+.bar-in{max-width:1450px;margin:auto;padding:.55rem 5vw;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{color:#fff;text-decoration:none;font-weight:800;letter-spacing:.04em;font-size:.82rem;text-transform:uppercase}
+.brand span{color:var(--cyan)}
+.bar-ch{color:var(--muted);font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-nav{display:flex;gap:.35rem}
+.btn{display:inline-flex;align-items:center;gap:.35rem;color:#fff;text-decoration:none;background:rgba(0,20,26,.55);
+  padding:.42rem .7rem;font-size:.75rem;font-weight:600;letter-spacing:.04em;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(65,215,255,.15);color:var(--cyan)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.btn[aria-disabled="true"]{opacity:.35;pointer-events:none}
+
+/* společné */
+.wrap{position:relative;z-index:1;max-width:1450px;margin:auto;padding-inline:5vw}
+header.hero{padding-block:3rem 1.5rem}
+.kicker{color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(2.2rem,5vw,4.5rem);line-height:1.05;margin:.35rem 0 .7rem;letter-spacing:-.03em;text-wrap:balance;font-weight:800}
+.lead{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:200;max-width:62ch;color:rgba(255,255,255,.9);margin:0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1rem}
+.card{background:var(--panel);backdrop-filter:blur(12px);padding:1.25rem 1.35rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+h2{font-size:1.1rem;margin:0 0 .85rem;color:var(--cyan);text-wrap:balance}
+h3{font-size:.82rem;margin:.9rem 0 .35rem;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase}
+h3:first-child{margin-top:0}
+p{margin:.35rem 0 .65rem;overflow-wrap:anywhere}
+.muted{color:var(--muted);font-size:.82rem}
+ul,ol{margin:.4rem 0 0;padding-left:1.15rem} li{margin:.25rem 0}
+.tag{display:inline-block;padding:.18rem .45rem;margin:.12rem;background:rgba(65,215,255,.1);color:var(--cyan);font-size:.72rem;font-family:var(--mono)}
+.tag.g{background:rgba(166,206,57,.12);color:var(--green)}
+.tag.y{background:rgba(255,212,0,.1);color:var(--yellow)}
+pre{margin:.5rem 0 0;padding:.75rem .85rem;background:var(--code-bg);color:var(--code-fg);overflow:auto;font:.78rem/1.55 var(--mono);tab-size:4}
+pre .pr{color:var(--green);user-select:none}
+pre .cm{color:#7fb3c2;font-style:italic}
+pre .out{color:rgba(234,255,255,.62)}
+code{font-family:var(--mono);color:var(--code-hl);font-size:.92em}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;color:var(--cyan);padding:.45rem;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:.45rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;overflow-wrap:anywhere}
+.perms{font-family:var(--mono);font-size:1rem;color:var(--yellow)}
+.callout{border-left:4px solid var(--yellow);background:rgba(255,212,0,.07);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.callout.warn{border-color:var(--red);background:rgba(255,122,107,.08)}
+.callout.ok{border-color:var(--green);background:rgba(166,206,57,.08)}
+.syntax{font-family:var(--mono);font-size:1rem;background:var(--panel-2);padding:.7rem .85rem;border-left:3px solid var(--cyan);overflow-x:auto;white-space:nowrap}
+.syntax b{color:#fff}.syntax i{color:var(--cyan);font-style:normal}.syntax em{color:var(--yellow);font-style:normal}
+.arch{display:grid;gap:.35rem}.layer{padding:.55rem .75rem;background:var(--panel-2);border-left:3px solid var(--cyan)}
+.layer:nth-child(2){border-color:var(--blue)}.layer:nth-child(3){border-color:var(--green)}.layer:nth-child(4){border-color:var(--yellow)}.layer:nth-child(5){border-color:var(--muted)}
+.layer b{display:block;font-size:.82rem}.layer span{font-size:.74rem;color:var(--muted)}
+.timeline{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}.time{background:var(--panel-2);padding:.65rem}.time b{color:var(--yellow);font-size:.78rem}.time div{font-size:.78rem;margin-top:.25rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:.45rem;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:.6rem;align-items:start;margin:0;background:var(--panel-2);padding:.55rem .65rem;font-size:.84rem}
+.steps li:before{content:counter(s);font-weight:800;color:var(--bg1);background:var(--cyan);width:1.6rem;height:1.6rem;display:grid;place-items:center;font-size:.8rem}
+.kbd{font-family:var(--mono);font-size:.78rem;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(255,255,255,.25);padding:.05rem .35rem;color:#fff;white-space:nowrap}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.mode{background:var(--panel-2);padding:.65rem;border-top:3px solid var(--cyan)}
+.mode:nth-child(2){border-color:var(--green)}.mode:nth-child(3){border-color:var(--yellow)}.mode:nth-child(4){border-color:var(--blue)}
+.mode b{display:block;font-size:.85rem}.mode span{font-size:.76rem;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.8rem;margin:.4rem 0}
+.flow span{background:var(--panel-2);padding:.35rem .55rem;border:1px solid var(--line)}
+.flow i{color:var(--yellow);font-style:normal;font-weight:700}
+
+/* dashboard */
+.dash-meta{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+.dash-meta b{display:block;color:#fff;font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.part{margin-top:1.6rem}
+.part-h{display:flex;align-items:baseline;gap:.8rem;margin:0 0 .7rem;flex-wrap:wrap}
+.part-h h2{margin:0;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow)}
+.part-h span{color:var(--muted);font-size:.8rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.tile{display:flex;flex-direction:column;gap:.45rem;text-decoration:none;color:#fff;background:var(--panel);backdrop-filter:blur(12px);
+  padding:1.1rem 1.2rem 1rem;border-bottom:3px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.tile:hover{background:rgba(0,27,34,.7);border-color:var(--cyan);transform:translateY(-2px)}
+.tile .n{font-size:2.2rem;font-weight:200;color:var(--cyan);line-height:1;font-variant-numeric:tabular-nums}
+.tile .t{font-weight:700;font-size:1rem;line-height:1.25;text-wrap:balance}
+.tile .d{font-size:.8rem;color:var(--muted);flex:1}
+.tile .k{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.2rem}
+.tile .k span{font-family:var(--mono);font-size:.68rem;color:var(--code-hl);background:rgba(0,0,0,.25);padding:.12rem .38rem}
+.p2 .tile .n{color:var(--green)} .p2 .tile:hover{border-color:var(--green)}
+.p3 .tile .n{color:var(--yellow)} .p3 .tile:hover{border-color:var(--yellow)}
+.hint{margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+
+/* kapitola */
+.ch-head{padding-block:2.4rem 1.3rem}
+.ch-head h1{font-size:clamp(2rem,4.4vw,3.8rem)}
+.pager{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;padding-block:.6rem 2.5rem}
+.pager a{max-width:48%}
+.pager .next{margin-left:auto;text-align:right}
+.pager small{display:block;color:var(--muted);font-weight:400;letter-spacing:0;font-size:.7rem}
+footer{position:relative;z-index:1;max-width:1450px;margin:auto;padding:0 5vw 2rem;color:var(--muted);font-size:.7rem}
+
+@media(max-width:950px){
+  .c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 6}
+}
+@media(max-width:720px){
+  .c3,.c4,.c5,.c6,.c7,.c8,.c12{grid-column:span 12}
+  .modes,.timeline{grid-template-columns:1fr}
+  .grid{gap:.75rem}.card{padding:1rem}
+  .bar-ch{display:none}
+  .pager a{max-width:100%;flex:1 1 100%}.pager .next{text-align:left}
+}
+@media print{.bar,.pager{display:none}}
+
+/* ---- doplňky pro navazující prezentace ---- */
+.bar-nav .btn.kurz{color:var(--yellow)}
+pre.php,pre.sh,pre.res{position:relative}
+pre.php{border-left:3px solid var(--cyan)}
+pre.res{margin-top:0;background:rgba(0,0,0,.32);color:rgba(234,255,255,.78);border-left:3px solid var(--green);padding-top:1.35rem}
+pre.res:before{content:"výstup";position:absolute;top:.3rem;left:.85rem;font:700 .58rem/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+pre.php + pre.res{margin-top:2px}
+pre.sh{border-left:3px solid var(--muted)}
+pre .k{color:#41d7ff}
+pre .t{color:#7ee0c3}
+pre .v{color:#ffd76a}
+pre .s{color:#b8e986}
+pre .n{color:#ffa77a}
+pre .c{color:#7fb3c2;font-style:italic}
+pre .f{color:#9fd8ff}
+pre .tg{color:#ff8f80;font-weight:700}
+pre .a{color:#d7a6ff}
+pre .co{color:#ffc7f0}
+pre .hl{background:rgba(255,212,0,.16);display:inline-block;width:100%}
+.copy{position:absolute;top:.3rem;right:.3rem;opacity:0;transition:opacity .15s;font:600 .62rem/1 var(--font);letter-spacing:.06em;
+  background:rgba(65,215,255,.15);color:var(--cyan);border:0;padding:.35rem .5rem;cursor:pointer}
+pre:hover .copy,.copy:focus-visible{opacity:1}
+.v8{display:inline-block;font:700 .62rem/1 var(--font);letter-spacing:.06em;padding:.22rem .4rem;background:var(--yellow);color:#00222c;vertical-align:middle;margin-left:.35rem}
+.v8.g{background:var(--green)}
+.v8.r{background:var(--red)}
+.task{border-left:4px solid var(--green);background:rgba(166,206,57,.08);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.task b:first-child{color:var(--green);letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;display:block;margin-bottom:.2rem}
+.task details{margin-top:.4rem}
+.task summary{cursor:pointer;color:var(--cyan);font-size:.78rem;font-weight:600}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.cols2 > div{min-width:0}
+.big{font-size:1.05rem}
+.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}
+td code,th code{white-space:nowrap}
+.prev-deck{color:var(--muted);font-size:.8rem;margin-top:1rem}
+.prev-deck a{color:var(--cyan)}
+@media(max-width:720px){.cols2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#prehled">Syntaxe <span>PHP</span></a>
+  <div class="bar-ch" id="barTitle">Přehled kapitol</div>
+  <div class="bar-nav">
+    <a class="btn kurz" href="index.html" title="Přehled všech prezentací kurzu">Kurz</a>
+    <a class="btn" id="barPrev" href="#prehled" aria-label="Předchozí kapitola">←</a>
+    <a class="btn" href="#prehled">Přehled</a>
+    <a class="btn" id="barNext" href="#k1" aria-label="Další kapitola">→</a>
+  </div>
+</div></div>
+
+<section id="prehled" class="view wrap" data-title="Přehled kapitol">
+  <header class="hero">
+    <div class="kicker">Prezentace 1 · Programování webových aplikací</div>
+    <h1>Základy syntaxe PHP</h1>
+    <p class="lead">Jak se píše PHP skript: značky, příkazy, proměnné, konstanty, řetězce, podmínky, cykly, funkce, vkládání souborů a výjimky. Vše v moderní podobě pro PHP 8.2 a novější.</p>
+    <div class="dash-meta"><div><b>13</b>kapitol</div><div><b>64</b>ukázek kódu</div><div><b>8.2+</b>cílová verze PHP</div></div>
+  </header>
+<div class="part p1"><div class="part-h"><h2>Stavba skriptu</h2><span>značky, příkazy, proměnné a konstanty</span></div><div class="tiles"><a class="tile" href="#k1"><span class="n">01</span><span class="t">Struktura skriptu</span><span class="d">Otevírací značka, příkazy a středníky, bloky, komentáře, výpis a mixování s HTML.</span><span class="k"><span>&lt;?php</span><span>;</span><span>//</span><span>echo</span></span></a><a class="tile" href="#k2"><span class="n">02</span><span class="t">Proměnné</span><span class="d">Pojmenování, přiřazení hodnotou a odkazem, nedefinované proměnné, isset a unset.</span><span class="k"><span>$nazev</span><span>=</span><span>isset</span><span>&amp;</span></span></a><a class="tile" href="#k3"><span class="n">03</span><span class="t">Konstanty</span><span class="d">Vlastní konstanty, vestavěné konstanty a magické konstanty jako __DIR__ a __LINE__.</span><span class="k"><span>const</span><span>define</span><span>PHP_EOL</span><span>__DIR__</span></span></a></div></div>
+<div class="part p2"><div class="part-h"><h2>Text a rozhodování</h2><span>řetězce, podmínky, match a cykly</span></div><div class="tiles"><a class="tile" href="#k4"><span class="n">04</span><span class="t">Řetězce</span><span class="d">Jednoduché a dvojité uvozovky, vkládání proměnných, escape sekvence, heredoc, spojování a základní funkce.</span><span class="k"><span>&#x27;…&#x27;</span><span>&quot;…&quot;</span><span>.</span><span>&lt;&lt;&lt;</span></span></a><a class="tile" href="#k5"><span class="n">05</span><span class="t">Podmínky</span><span class="d">if, elseif, else, ternární operátor, operátor ??, switch a alternativní syntaxe pro šablony.</span><span class="k"><span>if</span><span>elseif</span><span>?:</span><span>switch</span></span></a><a class="tile" href="#k6"><span class="n">06</span><span class="t">Výraz match</span><span class="d">Moderní náhrada switch od PHP 8.0: vrací hodnotu, porovnává striktně, nepropadá.</span><span class="k"><span>match</span><span>=&gt;</span><span>default</span><span>UnhandledMatchError</span></span></a><a class="tile" href="#k7"><span class="n">07</span><span class="t">Cykly</span><span class="d">for, while, do-while a foreach. Přerušení cyklu, vnořené cykly a cykly v šablonách.</span><span class="k"><span>for</span><span>while</span><span>foreach</span><span>break</span></span></a></div></div>
+<div class="part p3"><div class="part-h"><h2>Funkce, soubory a chyby</h2><span>jak kód rozdělit a jak ošetřit chyby</span></div><div class="tiles"><a class="tile" href="#k8"><span class="n">08</span><span class="t">Funkce</span><span class="d">Definice, parametry s typy, výchozí hodnoty, návratový typ, pojmenované argumenty a proměnný počet argumentů.</span><span class="k"><span>function</span><span>: int</span><span>?string</span><span>name:</span></span></a><a class="tile" href="#k9"><span class="n">09</span><span class="t">Anonymní funkce a rozsah platnosti</span><span class="d">Closures, arrow funkce, first-class callable syntaxe, viditelnost proměnných, global a static.</span><span class="k"><span>function()</span><span>fn() =&gt;</span><span>use</span><span>strlen(...)</span></span></a><a class="tile" href="#k10"><span class="n">10</span><span class="t">Vkládání souborů</span><span class="d">Rozdělení kódu do souborů, rozdíl include a require, varianta _once, návratová hodnota a cesty.</span><span class="k"><span>require</span><span>include</span><span>_once</span><span>__DIR__</span></span></a><a class="tile" href="#k11"><span class="n">11</span><span class="t">Chyby a výjimky</span><span class="d">Druhy chyb, hierarchie Throwable, zachytávání výjimek, vlastní výjimky a throw jako výraz.</span><span class="k"><span>try</span><span>catch</span><span>finally</span><span>throw</span></span></a></div></div>
+<div class="part p1"><div class="part-h"><h2>Moderní PHP</h2><span>co přinesly verze 8.2 až 8.5</span></div><div class="tiles"><a class="tile" href="#k12"><span class="n">12</span><span class="t">Novinky PHP 8.2 až 8.5</span><span class="d">Co nového přinesla každá verze od 8.2: typy, readonly třídy, property hooks, pipe operátor a nové funkce.</span><span class="k"><span>readonly</span><span>|&gt;</span><span>array_find</span><span>DNF</span></span></a><a class="tile" href="#k13"><span class="n">13</span><span class="t">Styl kódu a opakování</span><span class="d">Doporučený styl zápisu, tahák syntaxe na jednu obrazovku a úlohy na procvičení.</span><span class="k"><span>PER-CS</span><span>strict_types</span><span>tahák</span><span>úlohy</span></span></a></div></div>
+
+  <p class="hint">Při promítání se mezi kapitolami posouváte šipkami <span class="kbd">←</span> <span class="kbd">→</span>, klávesa <span class="kbd">Esc</span> vrací na přehled. Ukázky kódu jdou zkopírovat tlačítkem v rohu, výstupy pod nimi jsou z reálného běhu PHP.</p>
+  <p class="prev-deck">Navazuje na prezentaci <a href="00-uvod-do-php.html">Úvod do PHP</a> (instalace a spouštění). Datové typy rozebírá prezentace 3, pole prezentace 4 a operátory prezentace 5.</p>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="k1" class="view wrap chapter" data-title="Struktura skriptu">
+<header class="ch-head">
+  <div class="kicker">Kapitola 1 / 13 · Stavba skriptu</div>
+  <h1>Struktura skriptu</h1>
+  <p class="lead">PHP soubor je obyčejný textový soubor s příponou <code>.php</code>. Interpret vykonává jen kód mezi značkami <code>&lt;?php</code> a <code>?&gt;</code>. Všechno mimo ně pošle beze změny na výstup.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Čistý PHP soubor</h2>
+<pre class="php">&lt;?php
+declare(strict_types=1);   // volitelně: přísná kontrola typů
+
+$jmeno = 'Petr';
+echo "Ahoj, $jmeno!\n";
+echo 'Dnes je ', date('l'), ".\n";</pre>
+<pre class="res">Ahoj, Petr!
+Dnes je Friday.</pre>
+  <ul>
+    <li>Každý příkaz končí <b>středníkem</b> <code>;</code>.</li>
+    <li>Soubor, který obsahuje jen PHP, <b>nemá uzavírací</b> <code>?&gt;</code>. Zabráníte tím nechtěnému odeslání mezer či odřádkování za ním.</li>
+    <li><code>declare(strict_types=1);</code> musí být úplně první příkaz souboru (víc v prezentaci 3).</li>
+  </ul>
+</article>
+<article class="card c6"><h2>PHP uvnitř HTML (šablona)</h2>
+<pre class="php">&lt;?php $nadpis = 'Rozvrh'; $hodin = 6; ?&gt;
+&lt;h1&gt;&lt;?= $nadpis ?&gt;&lt;/h1&gt;
+&lt;p&gt;Dnes máte &lt;?= $hodin ?&gt; hodin.&lt;/p&gt;
+&lt;?php if ($hodin &gt; 5): ?&gt;
+  &lt;p&gt;Bude to dlouhý den.&lt;/p&gt;
+&lt;?php endif; ?&gt;</pre>
+<pre class="res">&lt;h1&gt;Rozvrh&lt;/h1&gt;
+&lt;p&gt;Dnes máte 6 hodin.&lt;/p&gt;
+  &lt;p&gt;Bude to dlouhý den.&lt;/p&gt;</pre>
+  <p><code>&lt;?= výraz ?&gt;</code> je zkratka za <code>&lt;?php echo výraz; ?&gt;</code>. Za posledním příkazem před <code>?&gt;</code> středník být nemusí.</p>
+  <div class="callout warn">Krátkou značku <code>&lt;?</code> (bez <code>php</code>) nepoužívejte. Funguje jen se zapnutým <code>short_open_tag</code>. <code>&lt;?=</code> funguje vždy.</div>
+</article>
+
+<article class="card c4"><h2>Komentáře</h2>
+<pre class="php">// jednořádkový komentář
+# také jednořádkový (méně obvyklý)
+
+/* víceřádkový
+   komentář */
+
+/**
+ * Dokumentační komentář (PHPDoc)
+ * čtou ho editory a nástroje.
+ * @param int $a první sčítanec
+ */
+function secti(int $a, int $b): int { return $a + $b; }
+
+#[\Deprecated]   // tohle NENÍ komentář, ale atribut</pre>
+</article>
+<article class="card c4"><h2>Bloky a odsazení</h2>
+<pre class="php">$teplota = 23;
+
+if ($teplota &gt; 20) {          // blok = složené závorky
+    echo "Teplo\n";
+    echo "Vezmi si tričko\n";
+}
+
+// mezery a odřádkování PHP ignoruje:
+echo   1 +
+       2   ;</pre>
+<pre class="res">Teplo
+Vezmi si tričko
+3</pre>
+  <p class="muted">Odsazujte 4 mezerami. Doporučuje to styl PER Coding Style (dříve PSR-12).</p>
+</article>
+<article class="card c4"><h2>Velikost písmen</h2>
+<div class="tbl"><table>
+  <tr><th>Rozlišuje</th><th>Nerozlišuje</th></tr>
+  <tr><td>proměnné <code>$a</code> ≠ <code>$A</code></td><td>klíčová slova <code>IF</code>, <code>Echo</code></td></tr>
+  <tr><td>konstanty <code>MAX</code> ≠ <code>max</code></td><td>názvy funkcí <code>STRLEN()</code></td></tr>
+  <tr><td>klíče polí <code>'a'</code> ≠ <code>'A'</code></td><td>názvy tříd <code>DateTime</code></td></tr>
+</table></div>
+<pre class="php">$x = 1; $X = 2;
+ECHO StrLen('abc'), ' ', $x + $X;</pre>
+<pre class="res">3 3</pre>
+  <p class="muted">Funguje to, ale pište funkce a klíčová slova vždy malými písmeny.</p>
+</article>
+
+<article class="card c6"><h2>Výpis: echo a print</h2>
+<pre class="php">echo 'Jeden', ' ', 'dva', "\n";   // echo bere víc argumentů
+print "Tři\n";                     // print jen jeden, vrací 1
+echo 'Výsledek: ' . 6 * 7, PHP_EOL;
+
+printf("%s má %d bodů (%.1f %%)\n", 'Jana', 42, 87.456);</pre>
+<pre class="res">Jeden dva
+Tři
+Výsledek: 42
+Jana má 42 bodů (87.5 %)</pre>
+  <p class="muted">Formátovaný výstup, ladicí výpisy a čtení vstupu podrobně rozebírá prezentace 2.</p>
+</article>
+<article class="card c6"><h2>Ladicí výpis hodnot</h2>
+<pre class="php">$zak = ['jmeno' =&gt; 'Eva', 'body' =&gt; 18.5, 'aktivni' =&gt; true];
+var_dump($zak['body'], $zak['aktivni']);
+print_r($zak);</pre>
+<pre class="res">float(18.5)
+bool(true)
+Array
+(
+    [jmeno] =&gt; Eva
+    [body] =&gt; 18.5
+    [aktivni] =&gt; 1
+)</pre>
+  <div class="task"><b>Zkuste si</b>Vytvořte <code>vizitka.php</code>, která do HTML stránky vypíše vaše jméno, třídu a aktuální rok pomocí <code>&lt;?= date('Y') ?&gt;</code>. Spusťte ji přes <code>php -S localhost:8000</code>.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="k2" class="view wrap chapter" data-title="Proměnné">
+<header class="ch-head">
+  <div class="kicker">Kapitola 2 / 13 · Stavba skriptu</div>
+  <h1>Proměnné</h1>
+  <p class="lead">Proměnná začíná znakem <code>$</code>. Nedeklaruje se, vznikne prvním přiřazením. Typ se určuje podle hodnoty a může se během běhu změnit.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Vytvoření a přiřazení</h2>
+<pre class="php">$vek = 17;               // int
+$jmeno = 'Adam';         // string
+$prumer = 1.85;          // float
+$plnolety = $vek &gt;= 18;  // bool
+
+var_dump($vek, $plnolety);
+
+$vek = 'sedmnáct';       // stejná proměnná, jiný typ
+var_dump($vek);</pre>
+<pre class="res">int(17)
+bool(false)
+string(9) "sedmnáct"</pre>
+  <h3>Pravidla pro názvy</h3>
+  <ul>
+    <li>začíná písmenem nebo <code>_</code>, pak písmena, číslice, <code>_</code></li>
+    <li><code>$pocetZaku</code> <span class="yes">✓</span> &nbsp; <code>$_tmp</code> <span class="yes">✓</span> &nbsp; <code>$2trida</code> <span class="no">✗</span> &nbsp; <code>$pocet-zaku</code> <span class="no">✗</span></li>
+    <li>konvence: <b>camelCase</b>, anglicky nebo česky bez diakritiky, ale jednotně</li>
+    <li><code>$this</code> je vyhrazené</li>
+  </ul>
+</article>
+<article class="card c6"><h2>Kopie × odkaz (reference)</h2>
+<pre class="php">$a = 10;
+$b = $a;      // kopie hodnoty
+$b++;
+echo "a=$a, b=$b\n";
+
+$c = &amp;$a;     // $c je jiné jméno pro $a
+$c++;
+echo "a=$a, c=$c\n";
+
+unset($c);    // zruší jen jméno $c, $a zůstává
+echo "a=$a\n";</pre>
+<pre class="res">a=10, b=11
+a=11, c=11
+a=11</pre>
+  <div class="callout">Reference používejte střídmě. Typicky jen u <code>foreach (... as &amp;$v)</code> nebo u parametru funkce, který má funkce změnit.</div>
+</article>
+
+<article class="card c6"><h2>Nedefinovaná proměnná</h2>
+<pre class="php">echo $neexistuje;
+echo "\nkonec\n";</pre>
+<pre class="res">Warning: Undefined variable $neexistuje in ukazka.php on line 1
+
+konec</pre>
+  <p>Od PHP 8.0 je čtení nedefinované proměnné <b>Warning</b> (dříve Notice). Skript sice pokračuje, ale je to chyba v kódu.</p>
+<pre class="php">$prezdivka = $_GET['nick'] ?? 'host';   // výchozí hodnota
+echo $prezdivka;</pre>
+<pre class="res">host</pre>
+</article>
+<article class="card c6"><h2>isset, empty, unset, is_null</h2>
+<pre class="php">$a = 0; $b = null; $c = 'text';
+
+var_dump(isset($a), isset($b), isset($nic));   // existuje a není null?
+var_dump(empty($a), empty($c));                 // je „prázdná“?
+unset($c);
+var_dump(isset($c));</pre>
+<pre class="res">bool(true)
+bool(false)
+bool(false)
+bool(true)
+bool(false)
+bool(false)</pre>
+  <div class="tbl"><table>
+    <tr><th>Hodnota</th><th><code>isset()</code></th><th><code>empty()</code></th><th><code>is_null()</code></th></tr>
+    <tr><td>nedefinovaná</td><td>false</td><td>true</td><td>Warning, true</td></tr>
+    <tr><td><code>null</code></td><td>false</td><td>true</td><td>true</td></tr>
+    <tr><td><code>0</code>, <code>''</code>, <code>'0'</code>, <code>[]</code></td><td>true</td><td>true</td><td>false</td></tr>
+    <tr><td><code>'abc'</code>, <code>1</code></td><td>true</td><td>false</td><td>false</td></tr>
+  </table></div>
+</article>
+
+<article class="card c12"><h2>Proměnné proměnné a interpolace jmen</h2>
+<div class="cols2"><div>
+<pre class="php">$pole = 'barva';
+$$pole = 'modrá';       // vytvoří $barva
+echo $barva, "\n";
+echo ${'bar' . 'va'};</pre>
+<pre class="res">modrá
+modrá</pre>
+</div><div>
+  <div class="callout warn">Proměnné proměnné (<code>$$nazev</code>) dělají kód nečitelným a nebezpečným, zvlášť s daty od uživatele. Místo nich použijte <b>pole</b>: <code>$hodnoty['barva'] = 'modrá';</code></div>
+  <div class="task"><b>Zkuste si</b>Prohoďte hodnoty dvou proměnných <code>$x = 3</code> a <code>$y = 8</code> pomocí pomocné proměnné. Pak totéž jedním řádkem <code>[$x, $y] = [$y, $x];</code> (destrukturace, prezentace 4).</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="k3" class="view wrap chapter" data-title="Konstanty">
+<header class="ch-head">
+  <div class="kicker">Kapitola 3 / 13 · Stavba skriptu</div>
+  <h1>Konstanty</h1>
+  <p class="lead">Konstanta má hodnotu, kterou nelze změnit. Píše se bez dolaru a podle konvence VELKÝMI_PÍSMENY. Je viditelná všude, i uvnitř funkcí.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>const a define()</h2>
+<pre class="php">const SKOLA = 'SPŠ Varnsdorf';
+const MAX_ZAKU = 30;
+const PREDMETY = ['PRG', 'WEB', 'DBS'];   // i pole
+
+define('DEBUG', true);                    // funkce, za běhu
+if (!defined('VERZE')) {
+    define('VERZE', '1.' . date('n'));     // výraz se vyhodnotí za běhu
+}
+
+echo SKOLA, ' – max. ', MAX_ZAKU, " žáků\n";
+echo PREDMETY[1], "\n";
+var_dump(DEBUG);</pre>
+<pre class="res">SPŠ Varnsdorf – max. 30 žáků
+WEB
+bool(true)</pre>
+</article>
+<article class="card c6"><h2>Rozdíl const × define</h2>
+<div class="tbl"><table>
+  <tr><th></th><th><code>const</code></th><th><code>define()</code></th></tr>
+  <tr><td>kdy vzniká</td><td>při překladu</td><td>za běhu</td></tr>
+  <tr><td>uvnitř <code>if</code> / funkce</td><td><span class="no">nelze</span></td><td><span class="yes">lze</span></td></tr>
+  <tr><td>v třídě (<code>class A { const X = 1; }</code>)</td><td><span class="yes">ano</span></td><td><span class="no">ne</span></td></tr>
+  <tr><td>jméno složené za běhu</td><td><span class="no">ne</span></td><td><span class="yes">ano</span></td></tr>
+</table></div>
+<pre class="php">const PI2 = 6.28;
+PI2 = 7;   // pokus o změnu</pre>
+<pre class="res">Parse error: syntax error, unexpected token "=" in ukazka.php on line 2</pre>
+  <p class="muted">Změna konstanty je chyba už při překladu: celý skript se vůbec nespustí.</p>
+</article>
+
+<article class="card c6"><h2>Vestavěné konstanty</h2>
+<pre class="php">echo PHP_VERSION, "\n";       // verze PHP
+echo PHP_OS_FAMILY, "\n";     // Windows / Linux / Darwin
+echo PHP_INT_MAX, "\n";       // největší int
+echo M_PI, "\n";              // π
+echo 'řádek', PHP_EOL;        // konec řádku podle OS
+var_dump(PHP_VERSION_ID &gt;= 80200);</pre>
+<pre class="res">8.3.6
+Linux
+9223372036854775807
+3.1415926535898
+řádek
+bool(true)</pre>
+</article>
+<article class="card c6"><h2>Magické konstanty</h2>
+<p>Hodnota závisí na tom, <b>kde</b> v kódu jsou zapsané.</p>
+<pre class="php">function info(): void
+{
+    echo __FUNCTION__, ' na řádku ', __LINE__, "\n";
+}
+info();
+echo basename(__FILE__), "\n";   // tento soubor
+echo basename(__DIR__) !== '' ? "__DIR__ = složka skriptu\n" : '';</pre>
+<pre class="res">info na řádku 3
+ukazka.php
+__DIR__ = složka skriptu</pre>
+  <p><code>__DIR__</code> je klíčová pro spolehlivé vkládání souborů: <code>require __DIR__ . '/config.php';</code> (kapitola 10).</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="k4" class="view wrap chapter" data-title="Řetězce">
+<header class="ch-head">
+  <div class="kicker">Kapitola 4 / 13 · Řízení běhu</div>
+  <h1>Řetězce</h1>
+  <p class="lead">Řetězec (string) je posloupnost bajtů. V PHP ho zapíšete čtyřmi způsoby. Liší se tím, zda se uvnitř nahrazují proměnné a escape sekvence.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Apostrofy × uvozovky</h2>
+<pre class="php">$jmeno = 'Jana';
+
+echo 'Ahoj $jmeno\n', "\n";   // nic se nenahrazuje
+echo "Ahoj $jmeno\n";          // proměnná i \n se nahradí
+echo 'It\'s OK', "\n";         // v '…' jen \' a \\
+echo "Cena: \$20, \"citát\"\n";</pre>
+<pre class="res">Ahoj $jmeno\n
+Ahoj Jana
+It's OK
+Cena: $20, "citát"</pre>
+  <div class="tbl"><table>
+    <tr><th>Sekvence v "…"</th><th>Význam</th></tr>
+    <tr><td><code>\n</code> <code>\r</code> <code>\t</code></td><td>nový řádek, návrat vozíku, tabulátor</td></tr>
+    <tr><td><code>\\</code> <code>\$</code> <code>\"</code></td><td>zpětné lomítko, dolar, uvozovka</td></tr>
+    <tr><td><code>\u{1F418}</code></td><td>znak Unicode podle kódu (🐘)</td></tr>
+    <tr><td><code>\x41</code></td><td>bajt šestnáctkově (A)</td></tr>
+  </table></div>
+</article>
+<article class="card c6"><h2>Vkládání složitějších výrazů</h2>
+<pre class="php">$zak = ['jmeno' =&gt; 'Eva', 'trida' =&gt; 'IT3'];
+$pocet = 3;
+
+echo "Žák: $zak[jmeno]\n";              // jednoduchý klíč bez uvozovek
+echo "Žák: {$zak['jmeno']} ({$zak['trida']})\n";  // doporučený zápis
+echo "{$pocet}. ročník\n";              // oddělení od textu
+echo "Bude {$pocet}x\n";</pre>
+<pre class="res">Žák: Eva
+Žák: Eva (IT3)
+3. ročník
+Bude 3x</pre>
+<pre class="php">$kusu = 3;
+echo "$kusu× rohlík\n";     // × patří do jména proměnné!
+echo "{$kusu}× rohlík\n";</pre>
+<pre class="res">Warning: Undefined variable $kusu× in ukazka.php on line 2
+ rohlík
+3× rohlík</pre>
+  <div class="callout warn"><span class="v8 r">8.2</span> Zápis <code>"${promenna}"</code> je zastaralý (deprecated). Používejte <code>"{$promenna}"</code>.</div>
+  <p class="muted">Znaky mimo ASCII (<code>×</code>, <code>č</code>, <code>–</code>) PHP bere jako součást jména proměnné, proto <code>{…}</code>. Ve <code>{…}</code> může být proměnná, prvek pole, vlastnost objektu i volání metody, ale ne libovolný výraz (např. <code>{$a + 1}</code> nejde).</p>
+</article>
+
+<article class="card c6"><h2>Spojování řetězců</h2>
+<pre class="php">$a = 'Hello';
+$b = $a . ' world';     // tečka = spojení
+$b .= '!';              // připojení na konec
+echo $b, "\n";
+
+echo 'Součet: ' . (2 + 3), "\n";   // závorky pro jistotu
+echo 'Rok ' . 2026 . "\n";         // číslo se převede na text
+echo implode(', ', ['PHP', 'JS', 'SQL']), "\n";</pre>
+<pre class="res">Hello world!
+Součet: 5
+Rok 2026
+PHP, JS, SQL</pre>
+</article>
+<article class="card c6"><h2>Heredoc a nowdoc</h2>
+<pre class="php">$titul = 'Zpráva';
+$html = &lt;&lt;&lt;HTML
+    &lt;article&gt;
+      &lt;h2&gt;$titul&lt;/h2&gt;
+      &lt;p&gt;Text může mít "uvozovky" i 'apostrofy'.&lt;/p&gt;
+    &lt;/article&gt;
+    HTML;            // odsazení uzavírací značky se z textu odstraní
+echo $html, "\n";
+
+echo &lt;&lt;&lt;'TXT'
+    Nowdoc: $titul se nenahradí
+    TXT;</pre>
+<pre class="res">&lt;article&gt;
+  &lt;h2&gt;Zpráva&lt;/h2&gt;
+  &lt;p&gt;Text může mít "uvozovky" i 'apostrofy'.&lt;/p&gt;
+&lt;/article&gt;
+Nowdoc: $titul se nenahradí</pre>
+</article>
+
+<article class="card c7"><h2>Nejpoužívanější funkce</h2>
+<pre class="php">$s = '  Programování v PHP  ';
+$t = trim($s);                            // ořízne mezery
+echo strlen($t), ' bajtů, ', mb_strlen($t), " znaků\n";
+echo mb_strtoupper($t), "\n";
+echo str_replace('PHP', 'PHP 8', $t), "\n";
+var_dump(str_contains($t, 'PHP'), str_starts_with($t, 'Pro'));
+echo mb_substr($t, 0, 5), '… ', ucfirst('ahoj'), "\n";
+echo str_pad('7', 3, '0', STR_PAD_LEFT), ' ', str_repeat('=', 10), "\n";
+print_r(explode(';', 'a;b;c'));</pre>
+<pre class="res">20 bajtů, 18 znaků
+PROGRAMOVÁNÍ V PHP
+Programování v PHP 8
+bool(true)
+bool(true)
+Progr… Ahoj
+007 ==========
+Array
+(
+    [0] =&gt; a
+    [1] =&gt; b
+    [2] =&gt; c
+)</pre>
+</article>
+<article class="card c5"><h2>Bajty × znaky (UTF-8)</h2>
+  <p>Funkce bez předpony <code>mb_</code> pracují s <b>bajty</b>. Česká písmena mají v UTF-8 dva bajty, emoji čtyři.</p>
+<pre class="php">$slovo = 'Žluťoučký';
+echo strlen($slovo), ' × ', mb_strlen($slovo), "\n";
+echo strtoupper($slovo), "\n";     // špatně
+echo mb_strtoupper($slovo), "\n";  // správně
+echo substr($slovo, 0, 1), "|\n";  // půlka znaku!</pre>
+<pre class="res">13 × 9
+ŽLUťOUčKý
+ŽLUŤOUČKÝ
+�|</pre>
+  <div class="task"><b>Zkuste si</b>Vypište jméno a příjmení tak, aby příjmení bylo celé velkými písmeny a jméno začínalo velkým písmenem (<code>mb_convert_case(…, MB_CASE_TITLE)</code>).</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="k5" class="view wrap chapter" data-title="Podmínky">
+<header class="ch-head">
+  <div class="kicker">Kapitola 5 / 13 · Řízení běhu</div>
+  <h1>Podmínky</h1>
+  <p class="lead">Podmínka vyhodnotí výraz jako <code>true</code>, nebo <code>false</code> a podle toho vybere větev. Hodnoty jiného typu převede na bool (pravidla v prezentaci 3).</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>if / elseif / else</h2>
+<pre class="php">$body = 74;
+
+if ($body &gt;= 90) {
+    $znamka = 1;
+} elseif ($body &gt;= 75) {
+    $znamka = 2;
+} elseif ($body &gt;= 50) {
+    $znamka = 3;
+} else {
+    $znamka = 5;
+}
+echo "Známka: $znamka\n";</pre>
+<pre class="res">Známka: 3</pre>
+  <p class="muted">Pište <code>elseif</code> dohromady. <code>else if</code> funguje také, ale v alternativní syntaxi ne.</p>
+</article>
+<article class="card c6"><h2>Složené podmínky</h2>
+<pre class="php">$vek = 17; $souhlas = true; $role = 'student';
+
+if ($vek &gt;= 18 || $souhlas) {
+    echo "Může se přihlásit\n";
+}
+if ($role === 'admin' &amp;&amp; $vek &gt;= 18) {
+    echo "Správce\n";
+}
+if (!in_array($role, ['admin', 'ucitel'], true)) {
+    echo "Bez oprávnění\n";
+}</pre>
+<pre class="res">Může se přihlásit
+Bez oprávnění</pre>
+  <div class="callout">Pro porovnání používejte <code>===</code> (hodnota <b>i typ</b>), ne <code>==</code>. Rozdíl ukazují prezentace 3 a 5.</div>
+</article>
+
+<article class="card c6"><h2>Ternární operátor a ??</h2>
+<pre class="php">$vek = 20;
+$text = $vek &gt;= 18 ? 'dospělý' : 'nezletilý';
+echo $text, "\n";
+
+$jmeno = '';
+echo $jmeno ?: 'anonym', "\n";      // zkrácený: když je levá strana „nepravdivá“
+
+$data = ['mesto' =&gt; null];
+echo $data['mesto'] ?? 'neuvedeno', "\n";   // když neexistuje nebo je null
+echo $data['psc'] ?? 'neuvedeno', "\n";</pre>
+<pre class="res">dospělý
+anonym
+neuvedeno
+neuvedeno</pre>
+  <div class="callout warn">Vnořený ternární operátor bez závorek <code>a ? b : c ? d : e</code> je od PHP 8.0 chyba. Pro víc větví použijte <code>match</code>.</div>
+</article>
+<article class="card c6"><h2>switch</h2>
+<pre class="php">$den = 'so';
+switch ($den) {
+    case 'so':
+    case 'ne':
+        echo "Víkend\n";
+        break;          // bez break propadne do další větve!
+    case 'pa':
+        echo "Skoro víkend\n";
+        break;
+    default:
+        echo "Pracovní den\n";
+}</pre>
+<pre class="res">Víkend</pre>
+  <p class="muted"><code>switch</code> porovnává volně (<code>==</code>). Moderní náhradou je <code>match</code> (další kapitola).</p>
+</article>
+
+<article class="card c12"><h2>Alternativní syntaxe v šablonách</h2>
+<div class="cols2"><div>
+<pre class="php">&lt;?php $prihlasen = true; $jmeno = 'Eva'; ?&gt;
+&lt;nav&gt;
+&lt;?php if ($prihlasen): ?&gt;
+  &lt;a href="/profil"&gt;Profil (&lt;?= htmlspecialchars($jmeno) ?&gt;)&lt;/a&gt;
+&lt;?php else: ?&gt;
+  &lt;a href="/login"&gt;Přihlásit&lt;/a&gt;
+&lt;?php endif; ?&gt;
+&lt;/nav&gt;</pre>
+<pre class="res">&lt;nav&gt;
+  &lt;a href="/profil"&gt;Profil (Eva)&lt;/a&gt;
+&lt;/nav&gt;</pre>
+</div><div>
+  <p>Místo <code>{</code> se píše <code>:</code> a blok se ukončí <code>endif;</code>, <code>endforeach;</code>, <code>endfor;</code>, <code>endwhile;</code>, <code>endswitch;</code>. V HTML je pak zřejmé, co se kde uzavírá.</p>
+  <p>Vypisované texty vždy prožeňte <code>htmlspecialchars()</code>, aby se do stránky nedal propašovat HTML ani JavaScript (prezentace 2).</p>
+  <div class="task"><b>Zkuste si</b>Napište skript, který podle hodiny z <code>date('G')</code> pozdraví „Dobré ráno“ (do 10), „Dobrý den“ (do 18) nebo „Dobrý večer“.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="k6" class="view wrap chapter" data-title="Výraz match">
+<header class="ch-head">
+  <div class="kicker">Kapitola 6 / 13 · Řízení běhu</div>
+  <h1>Výraz match</h1>
+  <p class="lead"><code>match</code> je výraz, ne příkaz. Vrací hodnotu, kterou lze rovnou přiřadit. Porovnává přes <code>===</code> a když žádná větev nesedí, vyhodí chybu, místo aby tiše pokračoval.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Základní použití</h2>
+<pre class="php">$kod = 404;
+
+$zprava = match ($kod) {
+    200, 204 =&gt; 'OK',
+    301, 302 =&gt; 'Přesměrování',
+    404      =&gt; 'Nenalezeno',
+    500      =&gt; 'Chyba serveru',
+    default  =&gt; 'Neznámý stav',
+};
+echo $zprava, "\n";</pre>
+<pre class="res">Nenalezeno</pre>
+  <ul>
+    <li>více hodnot v jedné větvi oddělte čárkou</li>
+    <li>každá větev je <b>jeden výraz</b> (ne blok příkazů)</li>
+    <li>za poslední větví smí být čárka</li>
+  </ul>
+</article>
+<article class="card c6"><h2>switch × match</h2>
+<div class="tbl"><table>
+  <tr><th></th><th><code>switch</code></th><th><code>match</code></th></tr>
+  <tr><td>porovnání</td><td><code>==</code> (volné)</td><td><code>===</code> (striktní)</td></tr>
+  <tr><td>vrací hodnotu</td><td>ne</td><td>ano</td></tr>
+  <tr><td>propadání bez <code>break</code></td><td>ano</td><td>ne</td></tr>
+  <tr><td>nic nesedí</td><td>nic se nestane</td><td><code>UnhandledMatchError</code></td></tr>
+</table></div>
+<pre class="php">$vstup = '1';            // řetězec, ne číslo
+echo match ($vstup) {
+    1 =&gt; 'číslo jedna',
+    '1' =&gt; 'text jedna',
+}, "\n";</pre>
+<pre class="res">text jedna</pre>
+</article>
+
+<article class="card c6"><h2>match (true): rozsahy a podmínky</h2>
+<pre class="php">$body = 82;
+
+$znamka = match (true) {
+    $body &gt;= 90 =&gt; 1,
+    $body &gt;= 75 =&gt; 2,
+    $body &gt;= 60 =&gt; 3,
+    $body &gt;= 45 =&gt; 4,
+    default     =&gt; 5,
+};
+echo "Známka $znamka\n";</pre>
+<pre class="res">Známka 2</pre>
+  <p class="muted">Vyhodnocuje se shora a vybere se první větev, jejíž výraz je <code>=== true</code>.</p>
+</article>
+<article class="card c6"><h2>Když nic nesedí</h2>
+<pre class="php">$den = 8;
+echo match ($den) {
+    1, 2, 3, 4, 5 =&gt; 'všední den',
+    6, 7          =&gt; 'víkend',
+};</pre>
+<pre class="res">Fatal error: Uncaught UnhandledMatchError: Unhandled match case 8 in ukazka.php:2
+Stack trace:
+#0 {main}
+  thrown in ukazka.php on line 2</pre>
+  <p>Chyba je tu výhoda: zapomenutý případ se ukáže hned, ne až jako podivná prázdná hodnota.</p>
+  <div class="task"><b>Zkuste si</b>Pomocí <code>match</code> převeďte číslo měsíce (1–12) na roční období. Zkuste i neplatnou hodnotu 13 a odchyťte chybu (<code>try/catch</code>, kapitola 11).</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="k7" class="view wrap chapter" data-title="Cykly">
+<header class="ch-head">
+  <div class="kicker">Kapitola 7 / 13 · Řízení běhu</div>
+  <h1>Cykly</h1>
+  <p class="lead">Cyklus opakuje blok příkazů. <code>for</code> se hodí pro známý počet opakování, <code>while</code> pro neznámý a <code>foreach</code> pro procházení pole.</p>
+</header>
+<div class="grid">
+
+<article class="card c4"><h2>for</h2>
+<pre class="php">for ($i = 1; $i &lt;= 5; $i++) {
+    echo $i, ' ';
+}
+echo "\n";
+
+for ($i = 10; $i &gt; 0; $i -= 3) {
+    echo $i, ' ';
+}</pre>
+<pre class="res">1 2 3 4 5 
+10 7 4 1 </pre>
+  <p class="muted">inicializace; podmínka; krok</p>
+</article>
+<article class="card c4"><h2>while</h2>
+<pre class="php">$n = 37;
+$kroku = 0;
+while ($n !== 1) {               // Collatzova posloupnost
+    $n = $n % 2 === 0 ? $n / 2 : 3 * $n + 1;
+    $kroku++;
+}
+echo "Kroků: $kroku";</pre>
+<pre class="res">Kroků: 21</pre>
+  <p class="muted">podmínka se testuje <b>před</b> každým průchodem</p>
+</article>
+<article class="card c4"><h2>do … while</h2>
+<pre class="php">mt_srand(7);       // pevné „náhodné“ hodnoty
+do {
+    $hod = mt_rand(1, 6);
+    echo $hod, ' ';
+} while ($hod !== 6);</pre>
+<pre class="res">4 5 2 3 2 4 6 </pre>
+  <p class="muted">tělo proběhne <b>aspoň jednou</b>, podmínka je až na konci</p>
+</article>
+
+<article class="card c6"><h2>foreach: procházení pole</h2>
+<pre class="php">$zaci = ['Anna', 'Petr', 'Eva'];
+foreach ($zaci as $zak) {
+    echo "- $zak\n";
+}
+
+$znamky = ['Anna' =&gt; 1, 'Petr' =&gt; 3, 'Eva' =&gt; 2];
+foreach ($znamky as $jmeno =&gt; $znamka) {
+    echo "$jmeno: $znamka\n";
+}</pre>
+<pre class="res">- Anna
+- Petr
+- Eva
+Anna: 1
+Petr: 3
+Eva: 2</pre>
+  <p class="muted">Další možnosti <code>foreach</code> (reference, destrukturace) ukazuje prezentace 4.</p>
+</article>
+<article class="card c6"><h2>break a continue</h2>
+<pre class="php">for ($i = 1; $i &lt;= 10; $i++) {
+    if ($i % 3 === 0) {
+        continue;          // přeskoč zbytek tohoto průchodu
+    }
+    if ($i &gt; 7) {
+        break;             // ukonči celý cyklus
+    }
+    echo $i, ' ';
+}
+echo "\n";
+
+// break 2 vyskočí ze dvou vnořených cyklů
+foreach ([1, 2, 3] as $a) {
+    foreach ([1, 2, 3] as $b) {
+        if ($a * $b === 4) { echo "našel {$a}×{$b}\n"; break 2; }
+    }
+}</pre>
+<pre class="res">1 2 4 5 7 
+našel 2×2</pre>
+</article>
+
+<article class="card c6"><h2>Vnořené cykly: malá násobilka</h2>
+<pre class="php">for ($r = 1; $r &lt;= 4; $r++) {
+    for ($s = 1; $s &lt;= 6; $s++) {
+        echo str_pad((string) ($r * $s), 4, ' ', STR_PAD_LEFT);
+    }
+    echo "\n";
+}</pre>
+<pre class="res">   1   2   3   4   5   6
+   2   4   6   8  10  12
+   3   6   9  12  15  18
+   4   8  12  16  20  24</pre>
+</article>
+<article class="card c6"><h2>Cyklus v šabloně</h2>
+<pre class="php">&lt;?php $predmety = ['PRG' =&gt; 4, 'WEB' =&gt; 3, 'DBS' =&gt; 2]; ?&gt;
+&lt;ul&gt;
+&lt;?php foreach ($predmety as $zkratka =&gt; $hodin): ?&gt;
+  &lt;li&gt;&lt;?= $zkratka ?&gt;: &lt;?= $hodin ?&gt; h týdně&lt;/li&gt;
+&lt;?php endforeach; ?&gt;
+&lt;/ul&gt;</pre>
+<pre class="res">&lt;ul&gt;
+  &lt;li&gt;PRG: 4 h týdně&lt;/li&gt;
+  &lt;li&gt;WEB: 3 h týdně&lt;/li&gt;
+  &lt;li&gt;DBS: 2 h týdně&lt;/li&gt;
+&lt;/ul&gt;</pre>
+  <div class="task"><b>Zkuste si</b>Vypište čísla 1–30. Místo násobků 3 napište „Fizz“, místo násobků 5 „Buzz“ a místo násobků 15 „FizzBuzz“.
+  <details><summary>Řešení</summary>
+<pre class="php">for ($i = 1; $i &lt;= 30; $i++) {
+    echo match (true) {
+        $i % 15 === 0 =&gt; 'FizzBuzz',
+        $i % 3 === 0  =&gt; 'Fizz',
+        $i % 5 === 0  =&gt; 'Buzz',
+        default       =&gt; $i,
+    }, PHP_EOL;
+}</pre></details></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="k8" class="view wrap chapter" data-title="Funkce">
+<header class="ch-head">
+  <div class="kicker">Kapitola 8 / 13 · Funkce a chyby</div>
+  <h1>Funkce</h1>
+  <p class="lead">Funkce pojmenuje kus kódu, aby šel použít opakovaně. V moderním PHP má každý parametr i návratová hodnota uvedený <b>typ</b>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Definice a volání</h2>
+<pre class="php">function obsahObdelniku(float $a, float $b): float
+{
+    return $a * $b;
+}
+
+echo obsahObdelniku(3, 4.5), "\n";
+
+function pozdrav(string $jmeno = 'světe'): void   // výchozí hodnota
+{
+    echo "Ahoj, $jmeno!\n";
+}
+pozdrav();
+pozdrav('Petře');</pre>
+<pre class="res">13.5
+Ahoj, světe!
+Ahoj, Petře!</pre>
+  <p class="muted">Funkci lze volat i před její definicí v souboru. PHP ji zná předem.</p>
+</article>
+<article class="card c6"><h2>Typy parametrů a návratu</h2>
+<div class="tbl"><table>
+  <tr><th>Zápis</th><th>Znamená</th></tr>
+  <tr><td><code>int $x</code></td><td>celé číslo</td></tr>
+  <tr><td><code>?string $s</code></td><td>string nebo null</td></tr>
+  <tr><td><code>int|float $n</code></td><td>sjednocení typů (8.0)</td></tr>
+  <tr><td><code>array $a</code>, <code>callable $f</code></td><td>pole, volatelná hodnota</td></tr>
+  <tr><td><code>mixed $v</code></td><td>cokoli</td></tr>
+  <tr><td><code>: void</code></td><td>nic nevrací</td></tr>
+  <tr><td><code>: never</code></td><td>nikdy se nevrátí (vždy <code>exit</code> nebo výjimka)</td></tr>
+  <tr><td><code>: static</code>, <code>: self</code></td><td>objekt téže třídy</td></tr>
+  <tr><td><code>: true</code>, <code>: false</code>, <code>: null</code></td><td>samostatné typy <span class="v8">8.2</span></td></tr>
+</table></div>
+  <p class="muted">Jak PHP převádí hodnoty na požadovaný typ a co dělá <code>strict_types</code>, vysvětluje prezentace 3.</p>
+</article>
+
+<article class="card c6"><h2>Pojmenované argumenty (8.0)</h2>
+<pre class="php">function objednavka(string $zbozi, int $kusu = 1,
+                    bool $darek = false, ?string $poznamka = null): string
+{
+    return "{$kusu}× $zbozi" . ($darek ? ' (dárek)' : '') . ($poznamka ? " – $poznamka" : '');
+}
+
+echo objednavka('hrnek', darek: true), "\n";        // přeskočí $kusu
+echo objednavka(poznamka: 'modrý', zbozi: 'hrnek'), "\n";
+
+echo str_pad('5', 3, pad_type: STR_PAD_LEFT, pad_string: '0'), "\n";</pre>
+<pre class="res">1× hrnek (dárek)
+1× hrnek – modrý
+005</pre>
+  <p class="muted">Funguje i u vestavěných funkcí. Pořadí pojmenovaných argumentů je libovolné.</p>
+</article>
+<article class="card c6"><h2>Proměnný počet argumentů</h2>
+<pre class="php">function prumer(float ...$cisla): float   // variadický parametr
+{
+    if ($cisla === []) {
+        return 0;
+    }
+    return array_sum($cisla) / count($cisla);
+}
+
+echo prumer(1, 2, 3, 4), "\n";
+
+$znamky = [1, 2, 2, 3];
+echo prumer(...$znamky), "\n";   // rozbalení pole do argumentů</pre>
+<pre class="res">2.5
+2</pre>
+</article>
+
+<article class="card c6"><h2>Předání odkazem</h2>
+<pre class="php">function pridejDph(float &amp;$cena, float $sazba = 0.21): void
+{
+    $cena = round($cena * (1 + $sazba), 2);
+}
+
+$c = 100;
+pridejDph($c);
+echo $c, "\n";</pre>
+<pre class="res">121</pre>
+  <p class="muted">Funkce změní proměnnou volajícího. Čitelnější bývá novou hodnotu vrátit přes <code>return</code>.</p>
+</article>
+<article class="card c6"><h2>Rekurze</h2>
+<pre class="php">function faktorial(int $n): int
+{
+    return $n &lt;= 1 ? 1 : $n * faktorial($n - 1);
+}
+echo faktorial(10), "\n";</pre>
+<pre class="res">3628800</pre>
+  <div class="task"><b>Zkuste si</b>Napište funkci <code>jePrvocislo(int $n): bool</code> a vypište pomocí ní všechna prvočísla do 50.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="k9" class="view wrap chapter" data-title="Anonymní funkce a rozsah platnosti">
+<header class="ch-head">
+  <div class="kicker">Kapitola 9 / 13 · Funkce a chyby</div>
+  <h1>Anonymní funkce a rozsah platnosti</h1>
+  <p class="lead">Funkce je v PHP i hodnota: lze ji uložit do proměnné a předat jiné funkci. Proměnné uvnitř funkce jsou lokální, zvenku je funkce nevidí, pokud je výslovně nepřevezme.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Rozsah platnosti</h2>
+<pre class="php">$skola = 'SPŠ';
+
+function vypis(): void
+{
+    echo $skola;           // lokální proměnná, neexistuje
+}
+vypis();</pre>
+<pre class="res">Warning: Undefined variable $skola in ukazka.php on line 5</pre>
+<pre class="php">$skola = 'SPŠ';
+function vypis2(string $skola): void   // správně: předat parametrem
+{
+    echo $skola, "\n";
+}
+vypis2($skola);</pre>
+<pre class="res">SPŠ</pre>
+  <p class="muted">Existuje i <code>global $skola;</code>, ale vede ke špatně testovatelnému kódu. Předávejte hodnoty parametry.</p>
+</article>
+<article class="card c6"><h2>static: paměť mezi voláními</h2>
+<pre class="php">function citac(): int
+{
+    static $pocet = 0;    // inicializuje se jen jednou
+    return ++$pocet;
+}
+citac(); citac();
+echo citac(), "\n";</pre>
+<pre class="res">3</pre>
+  <h3>Anonymní funkce (closure)</h3>
+<pre class="php">$sleva = 0.1;
+$cenaPoSleve = function (float $cena) use ($sleva): float {
+    return $cena * (1 - $sleva);       // $sleva převzatá přes use
+};
+echo $cenaPoSleve(250), "\n";</pre>
+<pre class="res">225</pre>
+</article>
+
+<article class="card c6"><h2>Arrow funkce fn (7.4)</h2>
+<pre class="php">$sleva = 0.2;
+$poSleve = fn(float $c): float =&gt; $c * (1 - $sleva);   // vnější proměnné vidí sama
+echo $poSleve(250), "\n";
+
+$cisla = [3, 8, 1, 6];
+$dvojnasobky = array_map(fn($n) =&gt; $n * 2, $cisla);
+$suda = array_filter($cisla, fn($n) =&gt; $n % 2 === 0);
+echo implode(', ', $dvojnasobky), ' | ', implode(', ', $suda), "\n";</pre>
+<pre class="res">200
+6, 16, 2, 12 | 8, 6</pre>
+  <p class="muted">Tělo arrow funkce je jediný výraz, jeho hodnota se vrací. Vnější proměnné se převezmou hodnotou automaticky.</p>
+</article>
+<article class="card c6"><h2>Funkce jako argument</h2>
+<pre class="php">$slova = ['PHP', 'je', 'super'];
+
+$delky = array_map(strlen(...), $slova);        // first-class callable (8.1)
+echo implode(' ', $delky), "\n";
+
+usort($slova, fn($a, $b) =&gt; strlen($a) &lt;=&gt; strlen($b));
+echo implode(' ', $slova), "\n";
+
+function proved(callable $f, int $x): int { return $f($x); }
+echo proved(fn($x) =&gt; $x ** 2, 7), "\n";</pre>
+<pre class="res">3 2 5
+je PHP super
+49</pre>
+  <p><code>strlen(...)</code> vytvoří z existující funkce hodnotu typu <code>Closure</code>. Starší zápis přes řetězec <code>'strlen'</code> funguje taky, ale editor ho nezkontroluje.</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="k10" class="view wrap chapter" data-title="Vkládání souborů">
+<header class="ch-head">
+  <div class="kicker">Kapitola 10 / 13 · Funkce a chyby</div>
+  <h1>Vkládání souborů</h1>
+  <p class="lead">Větší aplikace se dělí do souborů: konfigurace, funkce, šablony. Vložený soubor se vykoná, jako by jeho kód stál na místě vložení.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Čtyři varianty</h2>
+<div class="tbl"><table>
+  <tr><th>Příkaz</th><th>Soubor chybí</th><th>Vloží znovu?</th></tr>
+  <tr><td><code>include</code></td><td>Warning, pokračuje</td><td>ano</td></tr>
+  <tr><td><code>require</code></td><td><b>fatální chyba</b>, končí</td><td>ano</td></tr>
+  <tr><td><code>include_once</code></td><td>Warning, pokračuje</td><td>ne</td></tr>
+  <tr><td><code>require_once</code></td><td><b>fatální chyba</b>, končí</td><td>ne</td></tr>
+</table></div>
+  <ul>
+    <li><code>require_once</code> pro soubory s funkcemi a třídami (druhá definice téže funkce = chyba)</li>
+    <li><code>require</code> pro konfiguraci, bez které aplikace nemůže běžet</li>
+    <li><code>include</code> pro nepovinné části šablony</li>
+  </ul>
+</article>
+<article class="card c6"><h2>Typická struktura projektu</h2>
+<pre class="sh">web/
+├── index.php            # vstupní bod
+├── config.php           # return [ ... ];
+├── src/
+│   └── funkce.php       # function ...
+└── sablony/
+    ├── hlavicka.php
+    └── paticka.php</pre>
+<pre class="php">&lt;?php // index.php
+declare(strict_types=1);
+
+$config = require __DIR__ . '/config.php';
+require_once __DIR__ . '/src/funkce.php';
+
+include __DIR__ . '/sablony/hlavicka.php';
+echo '&lt;p&gt;Obsah stránky&lt;/p&gt;';
+include __DIR__ . '/sablony/paticka.php';</pre>
+</article>
+
+<article class="card c6"><h2>Soubor, který vrací hodnotu</h2>
+<pre class="php">&lt;?php // config.php
+return [
+    'db_host' =&gt; 'localhost',
+    'db_name' =&gt; 'skola',
+    'debug'   =&gt; true,
+];</pre>
+<pre class="php">$config = require __DIR__ . '/config.php';
+echo $config['db_name'];   // skola</pre>
+  <p class="muted">Bez <code>return</code> vrací úspěšný <code>include</code> číslo 1.</p>
+</article>
+<article class="card c6"><h2>Proč __DIR__</h2>
+  <p>Relativní cesta <code>'config.php'</code> se hledá podle <code>include_path</code> a <b>aktuálního pracovního adresáře</b>. Ten závisí na tom, odkud byl skript spuštěn (jiný v CLI, jiný na webu). <code>__DIR__</code> je vždy složka souboru, ve kterém je zapsán.</p>
+<pre class="sh">$ cd /tmp
+$ php /var/www/app/index.php
+# 'config.php'           → hledá /tmp/config.php ✗
+# __DIR__.'/config.php'  → /var/www/app/config.php ✓</pre>
+  <div class="callout warn">Nikdy nevkládejte soubor podle vstupu od uživatele (<code>include $_GET['stranka']</code>). Je to klasická díra typu <i>file inclusion</i>.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="k11" class="view wrap chapter" data-title="Chyby a výjimky">
+<header class="ch-head">
+  <div class="kicker">Kapitola 11 / 13 · Funkce a chyby</div>
+  <h1>Chyby a výjimky</h1>
+  <p class="lead">Moderní PHP hlásí většinu závažných chyb <b>výjimkou</b>. Výjimku lze zachytit a rozumně na ni zareagovat, místo aby skript skončil prázdnou stránkou.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>try / catch / finally</h2>
+<pre class="php">function vydel(int $a, int $b): float
+{
+    if ($b === 0) {
+        throw new InvalidArgumentException('Dělitel nesmí být 0');
+    }
+    return $a / $b;
+}
+
+try {
+    echo vydel(10, 4), "\n";
+    echo vydel(1, 0), "\n";          // sem se už nedostane
+    echo "nikdy\n";
+} catch (InvalidArgumentException $e) {
+    echo 'Chyba: ', $e-&gt;getMessage(), "\n";
+} finally {
+    echo "finally proběhne vždy\n";
+}</pre>
+<pre class="res">2.5
+Chyba: Dělitel nesmí být 0
+finally proběhne vždy</pre>
+</article>
+<article class="card c6"><h2>Hierarchie</h2>
+<pre class="sh">Throwable
+├── Error               # chyby v kódu (PHP je hází samo)
+│   ├── TypeError
+│   ├── ValueError
+│   ├── ArithmeticError
+│   │   └── DivisionByZeroError
+│   └── UnhandledMatchError
+└── Exception           # výjimky aplikace (hází je kód)
+    ├── InvalidArgumentException
+    ├── RuntimeException
+    ├── JsonException
+    └── ... vlastní třídy</pre>
+<pre class="php">try {
+    echo intdiv(1, 0);
+} catch (DivisionByZeroError | TypeError $e) {   // více typů
+    echo get_class($e), ': ', $e-&gt;getMessage(), "\n";
+}</pre>
+<pre class="res">DivisionByZeroError: Division by zero</pre>
+</article>
+
+<article class="card c6"><h2>Vlastní výjimka a throw jako výraz</h2>
+<pre class="php">class NeplatnaZnamka extends Exception {}
+
+function nactiZnamku(?string $vstup): int
+{
+    $z = (int) ($vstup ?? throw new NeplatnaZnamka('Chybí známka'));
+    return ($z &gt;= 1 &amp;&amp; $z &lt;= 5) ? $z : throw new NeplatnaZnamka("Známka $z neexistuje");
+}
+
+foreach (['2', '7', null] as $v) {
+    try {
+        echo nactiZnamku($v), "\n";
+    } catch (NeplatnaZnamka $e) {
+        echo '⚠ ', $e-&gt;getMessage(), "\n";
+    }
+}</pre>
+<pre class="res">2
+⚠ Známka 7 neexistuje
+⚠ Chybí známka</pre>
+  <p class="muted">Od PHP 8.0 je <code>throw</code> výraz: smí stát za <code>??</code>, <code>?:</code> nebo v arrow funkci.</p>
+</article>
+<article class="card c6"><h2>Varování × výjimky</h2>
+<pre class="php">$pole = [1, 2];
+echo $pole[5] ?? 'žádný', "\n";   // tiché: ??
+echo $pole[5];                     // Warning: Undefined array key
+echo "\npokračuje\n";
+echo strlen([]);                   // TypeError: skript skončí</pre>
+<pre class="res">žádný
+
+Warning: Undefined array key 5 in ukazka.php on line 3
+
+pokračuje
+
+Fatal error: Uncaught TypeError: strlen(): Argument #1 ($string) must be of type string, array given in ukazka.php:5
+Stack trace:
+#0 {main}
+  thrown in ukazka.php on line 5</pre>
+  <div class="tbl"><table>
+    <tr><th>Úroveň</th><th>Co se stane</th></tr>
+    <tr><td><code>E_DEPRECATED</code></td><td>funguje, ale v příští verzi nebude</td></tr>
+    <tr><td><code>E_WARNING</code></td><td>problém, skript pokračuje</td></tr>
+    <tr><td><code>Error</code> / <code>Exception</code></td><td>nezachycená výjimka ukončí skript</td></tr>
+  </table></div>
+  <p class="muted">Při vývoji: <code>error_reporting = E_ALL</code> a <code>display_errors = On</code> (viz Úvod do PHP, kapitola 4).</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 12 ============ -->
+<section id="k12" class="view wrap chapter" data-title="Novinky PHP 8.2 až 8.5">
+<header class="ch-head">
+  <div class="kicker">Kapitola 12 / 13 · Moderní PHP</div>
+  <h1>Novinky PHP 8.2 až 8.5</h1>
+  <p class="lead">Přehled syntaktických novinek, se kterými se v aktuálním kódu potkáte. Ukázky označené 8.4+ a 8.5+ vyžadují novější PHP (zjistíte přes <code>php -v</code>).</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>PHP 8.2 <span class="v8">8.2</span></h2>
+<pre class="php">// samostatné typy true / false / null a DNF typy
+function jeAktivni(): true { return true; }
+function najdi(int $id): (Countable&amp;ArrayAccess)|null { return null; }
+
+// readonly třída: všechny vlastnosti jdou nastavit jen jednou
+readonly class Bod
+{
+    public function __construct(public int $x, public int $y) {}
+}
+$b = new Bod(2, 3);
+echo "[$b-&gt;x, $b-&gt;y]\n";
+
+// rozšíření Random: generátor jako objekt
+$r = new Random\Randomizer(new Random\Engine\Mt19937(42));   // pevné semínko
+echo $r-&gt;getInt(1, 6), ' ', implode('', $r-&gt;shuffleArray(['a', 'b', 'c'])), "\n";</pre>
+<pre class="res">[2, 3]
+1 bac</pre>
+  <p class="muted">Zastaralé (deprecated) v 8.2: dynamické vlastnosti objektů a zápis <code>"${x}"</code>.</p>
+</article>
+<article class="card c6"><h2>PHP 8.3 <span class="v8">8.3</span></h2>
+<pre class="php">class Nastaveni
+{
+    const string VERZE = '2.1';      // typované konstanty tříd
+}
+$c = 'VERZE';
+echo Nastaveni::{$c}, "\n";          // dynamický přístup ke konstantě
+
+var_dump(json_validate('{"a": 1}'));  // kontrola JSON bez dekódování
+echo mb_str_pad('Žák', 6, '.'), "|\n";
+echo str_increment('Az'), "\n";
+
+// #[\Override]: chyba, pokud metoda rodiče neexistuje
+class A { public function test(): void {} }
+class B extends A { #[\Override] public function test(): void {} }</pre>
+<pre class="res">2.1
+bool(true)
+Žák...|
+Ba</pre>
+</article>
+
+<article class="card c6"><h2>PHP 8.4 <span class="v8">8.4+</span></h2>
+<pre class="php">class Uzivatel
+{
+    // asymetrická viditelnost: číst všichni, zapisovat jen třída
+    public private(set) string $jmeno;
+
+    // property hooks: logika přímo u vlastnosti
+    public string $email {
+        set =&gt; strtolower(trim($value));
+    }
+    public function __construct(string $jmeno) { $this-&gt;jmeno = $jmeno; }
+}
+
+$u = new Uzivatel('Eva');
+$u-&gt;email = '  Eva@Skola.CZ ';
+echo $u-&gt;email;                               // eva@skola.cz
+
+echo new DateTime()-&gt;format('Y');             // new bez závorek kolem
+
+$prvniSude = array_find([3, 7, 8, 9], fn($n) =&gt; $n % 2 === 0);  // 8
+var_dump(array_any([1, 2], fn($n) =&gt; $n &gt; 1)); // true
+echo mb_trim('  text  '), mb_ucfirst('čau');</pre>
+  <p class="muted">8.4 zastaralo implicitně nullovatelný parametr <code>function f(int $x = null)</code>. Pište <code>?int $x = null</code>.</p>
+</article>
+<article class="card c6"><h2>PHP 8.5 <span class="v8">8.5+</span></h2>
+<pre class="php">// pipe operátor |&gt; předá výsledek další funkci
+$slug = ' Novinky v PHP 8.5 '
+    |&gt; trim(...)
+    |&gt; (fn($s) =&gt; str_replace([' ', '.'], ['-', ''], $s))
+    |&gt; strtolower(...);
+echo $slug;                        // novinky-v-php-85
+
+$posledni = array_last([3, 5, 8]);  // 8
+$prvni = array_first([]);           // null
+
+#[\NoDiscard]
+function spocitej(): int { return 42; }
+spocitej();           // Warning: výsledek se nepoužil
+(void) spocitej();    // záměrně zahozeno
+
+// clone with: kopie readonly objektu se změnou (uvnitř třídy)
+// public function withX(int $x): static { return clone($this, ['x' =&gt; $x]); }</pre>
+  <p class="muted">Zastaralé v 8.5: zpětné apostrofy <code>`ls`</code> místo <code>shell_exec()</code>, přetypování <code>(integer)</code>, <code>(boolean)</code>, <code>(double)</code>.</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 13 ============ -->
+<section id="k13" class="view wrap chapter" data-title="Styl kódu a opakování">
+<header class="ch-head">
+  <div class="kicker">Kapitola 13 / 13 · Moderní PHP</div>
+  <h1>Styl kódu a opakování</h1>
+  <p class="lead">Kód čtou hlavně lidé. Jednotný styl podle PER Coding Style (nástupce PSR-12) usnadní čtení i spolupráci. Kontrolovat a opravovat ho umí nástroje <code>php-cs-fixer</code> nebo <code>phpcs</code>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Vzorový soubor</h2>
+<pre class="php">&lt;?php
+
+declare(strict_types=1);
+
+const LIMIT = 3;
+
+function formatujZaka(string $jmeno, int $body): string
+{
+    $hodnoceni = match (true) {
+        $body &gt;= 80 =&gt; 'výborně',
+        $body &gt;= 50 =&gt; 'dobře',
+        default     =&gt; 'nedostatečně',
+    };
+
+    return sprintf('%-6s %3d b. – %s', $jmeno, $body, $hodnoceni);
+}
+
+$vysledky = ['Anna' =&gt; 91, 'Bořek' =&gt; 47, 'Cyril' =&gt; 66, 'Dana' =&gt; 80];
+
+$i = 0;
+foreach ($vysledky as $jmeno =&gt; $body) {
+    if (++$i &gt; LIMIT) {
+        break;
+    }
+    echo formatujZaka($jmeno, $body), PHP_EOL;
+}</pre>
+<pre class="res">Anna    91 b. – výborně
+Bořek  47 b. – nedostatečně
+Cyril   66 b. – dobře</pre>
+</article>
+<article class="card c6"><h2>Pravidla, která se vyplatí</h2>
+  <ul>
+    <li>každý soubor začíná <code>&lt;?php</code>, prázdný řádek a <code>declare(strict_types=1);</code></li>
+    <li>odsazení 4 mezery, řádek do 120 znaků</li>
+    <li><code>{</code> u funkcí a tříd na novém řádku, u <code>if</code>/<code>for</code> na stejném</li>
+    <li>mezera za <code>if</code>, <code>foreach</code>, kolem operátorů, ne za názvem funkce</li>
+    <li>proměnné a funkce <code>camelCase</code>, třídy <code>PascalCase</code>, konstanty <code>VELKA_PISMENA</code></li>
+    <li>typy u všech parametrů a návratových hodnot</li>
+    <li><code>===</code> místo <code>==</code>, <code>match</code> místo <code>switch</code></li>
+    <li>bez uzavíracího <code>?&gt;</code> v čistě PHP souborech</li>
+  </ul>
+<pre class="sh">$ composer global require friendsofphp/php-cs-fixer
+$ php-cs-fixer fix src --rules=@PER-CS</pre>
+</article>
+
+<article class="card c12"><h2>Tahák</h2>
+<div class="tbl"><table>
+  <tr><th>Téma</th><th>Zápis</th><th>Téma</th><th>Zápis</th></tr>
+  <tr><td>proměnná</td><td><code>$x = 5;</code></td><td>konstanta</td><td><code>const MAX = 10;</code></td></tr>
+  <tr><td>řetězec s proměnnou</td><td><code>"Ahoj {$jmeno}"</code></td><td>spojení</td><td><code>$a . $b</code>, <code>$a .= $b</code></td></tr>
+  <tr><td>výchozí hodnota</td><td><code>$x ?? 'výchozí'</code></td><td>ternární</td><td><code>$a ? $b : $c</code></td></tr>
+  <tr><td>podmínka</td><td><code>if (…) { } elseif (…) { } else { }</code></td><td>výběr hodnoty</td><td><code>match ($x) { 1, 2 => 'a', default => 'b' }</code></td></tr>
+  <tr><td>cyklus s počtem</td><td><code>for ($i = 0; $i &lt; $n; $i++) { }</code></td><td>pole</td><td><code>foreach ($pole as $klic => $hodnota) { }</code></td></tr>
+  <tr><td>funkce</td><td><code>function f(int $a = 1): string { }</code></td><td>arrow funkce</td><td><code>fn($x) => $x * 2</code></td></tr>
+  <tr><td>vložení souboru</td><td><code>require_once __DIR__ . '/f.php';</code></td><td>výjimka</td><td><code>try { } catch (Exception $e) { } finally { }</code></td></tr>
+</table></div>
+</article>
+
+<article class="card c4"><h2>Úloha 1: Kalkulačka BMI</h2>
+  <p>Funkce <code>bmi(float $vahaKg, float $vyskaCm): float</code> a druhá funkce, která přes <code>match (true)</code> vrátí slovní kategorii (podváha &lt; 18,5, norma &lt; 25, nadváha &lt; 30, obezita).</p>
+</article>
+<article class="card c4"><h2>Úloha 2: Šachovnice</h2>
+  <p>Dvěma vnořenými cykly vygenerujte HTML tabulku 8×8 se střídáním tříd <code>bila</code>/<code>cerna</code>. Použijte alternativní syntaxi <code>for: … endfor;</code>.</p>
+</article>
+<article class="card c4"><h2>Úloha 3: Validace</h2>
+  <p>Funkce <code>overHeslo(string $h): void</code> vyhodí <code>InvalidArgumentException</code>, když heslo nemá aspoň 8 znaků, číslici a velké písmeno. Vyzkoušejte ji na pěti heslech v <code>try/catch</code>.</p>
+</article>
+
+</div>
+</section>
+
+<div class="wrap"><nav class="pager" id="pager" hidden></nav></div>
+<footer>Výuková prezentace 1 · Základy syntaxe PHP · vizuální styl vychází z design systému VOŠ, SPŠ a SOŠ Varnsdorf. Výstupy ukázek vygenerovalo PHP 8.3.6; ukázky označené 8.4+ a 8.5+ vyžadují novější verzi.</footer>
+<script>
+function hlPHP(src){
+  var KW = ('abstract and as break callable case catch class clone const continue declare default do echo else elseif empty enddeclare endfor endforeach endif endswitch endwhile enum exit extends final finally fn for foreach function global goto if implements include include_once instanceof insteadof interface isset list match namespace new or print private protected public readonly require require_once return static switch throw trait try unset use var while xor yield from parent self').split(' ');
+  var TY = ('int float string bool array object mixed void never null true false iterable callable').split(' ');
+  var re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#(?!\[)[^\n]*)|(<<<[ \t]*(['"]?)([A-Za-z_]\w*)\3\n[\s\S]*?\n[ \t]*\4\b)|('(?:\\[\s\S]|[^'\\])*'|"(?:\\[\s\S]|[^"\\])*")|(<\?php|<\?=|\?>)|(#\[[^\]\n]*\])|(\$[A-Za-z_\u00C0-\u024F][\w\u00C0-\u024F]*)|(\b(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?)\b)|([A-Za-z_\\][\w\\]*)/g;
+  var out = '', last = 0, m;
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function w(cls, s){ return '<span class="'+cls+'">'+esc(s)+'</span>'; }
+  while ((m = re.exec(src))){
+    out += esc(src.slice(last, m.index));
+    var t = m[0];
+    if (m[1]) out += w('c', t);
+    else if (m[2] || m[5]) out += w('s', t);
+    else if (m[6]) out += w('tg', t);
+    else if (m[7]) out += w('a', t);
+    else if (m[8]) out += w('v', t);
+    else if (m[9]) out += w('n', t);
+    else {
+      var low = t.toLowerCase(), rest = src.slice(re.lastIndex);
+      var prev = src.slice(0, m.index).replace(/\s+$/,'');
+      if (/(->|\?->|::)$/.test(prev)) out += /^\s*\(/.test(rest) ? w('f', t) : esc(t);
+      else if (KW.indexOf(low) > -1) out += w('k', t);
+      else if (TY.indexOf(low) > -1) out += w('t', t);
+      else if (/^\s*\(/.test(rest)) out += w('f', t);
+      else if (/^[A-Z][A-Z0-9_]+$/.test(t) || /^__[A-Z]+__$/.test(t)) out += w('co', t);
+      else out += esc(t);
+    }
+    last = re.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+document.querySelectorAll('pre.php').forEach(function(pre){
+  var src = pre.textContent;
+  pre.innerHTML = hlPHP(src);
+  var b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = 'kopírovat';
+  b.addEventListener('click', function(){
+    try { navigator.clipboard.writeText(src).then(function(){ b.textContent = 'zkopírováno'; setTimeout(function(){ b.textContent = 'kopírovat'; }, 1200); }); } catch(e){}
+  });
+  pre.appendChild(b);
+});
+document.querySelectorAll('pre.sh').forEach(function(pre){
+  pre.innerHTML = pre.innerHTML.split('\n').map(function(l){
+    var cm = l.match(/^(.*?)(\s#\s.*)$/);
+    var tail = '';
+    if (cm && /^(\$|PS&gt;) /.test(l)) { l = cm[1]; tail = '<span class="cm">'+cm[2]+'</span>'; }
+    else if (/^\s*#/.test(l)) return '<span class="cm">'+l+'</span>';
+    if (/^\$ /.test(l)) return '<span class="pr">$</span>'+l.slice(1)+tail;
+    if (/^PS&gt; /.test(l)) return '<span class="pr">PS&gt;</span>'+l.slice(5)+tail;
+    if (/^&gt; /.test(l)) return '<span class="pr">&gt;</span>'+l.slice(4)+tail;
+    return '<span class="out">'+l+'</span>'+tail;
+  }).join('\n');
+});
+
+
+(function(){
+  var DECK = "Základy syntaxe PHP";
+  var NEXT_DECK = {"href": "02-vstup-vystup-soubory.html", "title": "Vstup a výstup, soubory a adresáře"};
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var chapters = views.filter(function(v){ return v.classList.contains('chapter'); });
+  var pager = document.getElementById('pager');
+  var barTitle = document.getElementById('barTitle');
+  var barPrev = document.getElementById('barPrev');
+  var barNext = document.getElementById('barNext');
+  function setLink(a, target){
+    if (target){ a.href = '#'+target.id; a.removeAttribute('aria-disabled'); }
+    else { a.href = '#prehled'; a.setAttribute('aria-disabled','true'); }
+  }
+  function show(){
+    var id = (location.hash || '').replace('#','') || 'prehled';
+    var current = document.getElementById(id);
+    if (!current || !current.classList.contains('view')) current = document.getElementById('prehled');
+    views.forEach(function(v){ v.hidden = (v !== current); });
+    var i = chapters.indexOf(current);
+    if (i === -1){
+      barTitle.textContent = 'Přehled kapitol';
+      setLink(barPrev, null); setLink(barNext, chapters[0]);
+      pager.hidden = true;
+    } else {
+      barTitle.textContent = (i+1) + ' / ' + chapters.length + ' · ' + current.dataset.title;
+      var prev = chapters[i-1], next = chapters[i+1];
+      setLink(barPrev, prev || document.getElementById('prehled'));
+      setLink(barNext, next);
+      var nextHtml;
+      if (next) nextHtml = '<a class="btn next" href="#'+next.id+'"><span><small>Kapitola '+(i+2)+'</small>'+next.dataset.title+' →</span></a>';
+      else if (NEXT_DECK) nextHtml = '<a class="btn next" href="'+NEXT_DECK.href+'"><span><small>Další prezentace</small>'+NEXT_DECK.title+' →</span></a>';
+      else nextHtml = '<a class="btn next" href="index.html"><span><small>Konec</small>Přehled kurzu →</span></a>';
+      pager.innerHTML =
+        (prev ? '<a class="btn" href="#'+prev.id+'"><span>← <small>Kapitola '+i+'</small>'+prev.dataset.title+'</span></a>'
+              : '<a class="btn" href="#prehled"><span>← <small>Zpět</small>Přehled kapitol</span></a>') + nextHtml;
+      pager.hidden = false;
+    }
+    document.title = (i === -1 ? '' : current.dataset.title + ' · ') + DECK;
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+  document.addEventListener('keydown', function(e){
+    if (e.target.closest('input,textarea,select,summary') || e.altKey || e.ctrlKey || e.metaKey) return;
+    var cur = document.getElementById((location.hash || '#prehled').slice(1));
+    var i = chapters.indexOf(cur);
+    if (e.key === 'ArrowRight'){ var n = i === -1 ? chapters[0] : chapters[i+1]; if (n) location.hash = n.id; }
+    else if (e.key === 'ArrowLeft'){ if (i > 0) location.hash = chapters[i-1].id; else if (i === 0) location.hash = 'prehled'; }
+    else if (e.key === 'Escape'){ location.hash = 'prehled'; }
+  });
+  show();
+})();
+</script>
+</body>
+</html>

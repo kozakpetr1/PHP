@@ -1,0 +1,1608 @@
+<!doctype html>
+<html lang="cs">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pole a asociativní pole</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@200;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Layout: přehled kapitol PHP (dashboard) → jedna kapitola na obrazovku, mřížka 12 sloupců s průsvitnými panely.
+   Design: vizuální systém VOŠ, SPŠ a SOŠ Varnsdorf — jeden tmavý svět (záměrně bez světlého režimu). */
+:root{
+  color-scheme:dark;
+  --bg1:#003b4b;--bg2:#006783;--panel:rgba(0,27,34,.48);--panel-2:rgba(0,0,0,.2);
+  --cyan:#41d7ff;--blue:#00c0f3;--yellow:#ffd400;--green:#a6ce39;--red:#ff7a6b;
+  --muted:rgba(255,255,255,.62);--white:#fff;--line:rgba(255,255,255,.1);
+  --code-bg:#001820;--code-fg:#eaffff;--code-hl:#ffea80;
+  --font:Raleway,"Segoe UI",system-ui,sans-serif;
+  --mono:Consolas,"Cascadia Mono","DejaVu Sans Mono",Menlo,monospace;
+}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;overflow-x:hidden}
+body{margin:0;font-family:var(--font);color:var(--white);background:var(--bg1);
+  background:linear-gradient(180deg,var(--bg1),var(--bg2)) fixed;line-height:1.45;font-size:15px;overflow-x:hidden}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:radial-gradient(circle at 85% 10%,rgba(65,215,255,.12),transparent 30%),
+  radial-gradient(circle at 10% 90%,rgba(166,206,57,.08),transparent 30%)}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important;animation:none!important}}
+
+/* horní lišta */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:rgba(0,30,38,.82);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--line)}
+.bar-in{max-width:1450px;margin:auto;padding:.55rem 5vw;display:flex;align-items:center;gap:1rem;flex-wrap:wrap}
+.brand{color:#fff;text-decoration:none;font-weight:800;letter-spacing:.04em;font-size:.82rem;text-transform:uppercase}
+.brand span{color:var(--cyan)}
+.bar-ch{color:var(--muted);font-size:.78rem;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-nav{display:flex;gap:.35rem}
+.btn{display:inline-flex;align-items:center;gap:.35rem;color:#fff;text-decoration:none;background:rgba(0,20,26,.55);
+  padding:.42rem .7rem;font-size:.75rem;font-weight:600;letter-spacing:.04em;border:1px solid transparent;cursor:pointer;font-family:inherit}
+.btn:hover{background:rgba(65,215,255,.15);color:var(--cyan)}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+.btn[aria-disabled="true"]{opacity:.35;pointer-events:none}
+
+/* společné */
+.wrap{position:relative;z-index:1;max-width:1450px;margin:auto;padding-inline:5vw}
+header.hero{padding-block:3rem 1.5rem}
+.kicker{color:var(--cyan);font-size:.78rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase}
+h1{font-size:clamp(2.2rem,5vw,4.5rem);line-height:1.05;margin:.35rem 0 .7rem;letter-spacing:-.03em;text-wrap:balance;font-weight:800}
+.lead{font-size:clamp(1rem,1.6vw,1.25rem);font-weight:200;max-width:62ch;color:rgba(255,255,255,.9);margin:0}
+.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:1rem;margin-bottom:1rem}
+.card{background:var(--panel);backdrop-filter:blur(12px);padding:1.25rem 1.35rem}
+.c3{grid-column:span 3}.c4{grid-column:span 4}.c5{grid-column:span 5}.c6{grid-column:span 6}.c7{grid-column:span 7}.c8{grid-column:span 8}.c12{grid-column:span 12}
+h2{font-size:1.1rem;margin:0 0 .85rem;color:var(--cyan);text-wrap:balance}
+h3{font-size:.82rem;margin:.9rem 0 .35rem;color:var(--yellow);letter-spacing:.06em;text-transform:uppercase}
+h3:first-child{margin-top:0}
+p{margin:.35rem 0 .65rem;overflow-wrap:anywhere}
+.muted{color:var(--muted);font-size:.82rem}
+ul,ol{margin:.4rem 0 0;padding-left:1.15rem} li{margin:.25rem 0}
+.tag{display:inline-block;padding:.18rem .45rem;margin:.12rem;background:rgba(65,215,255,.1);color:var(--cyan);font-size:.72rem;font-family:var(--mono)}
+.tag.g{background:rgba(166,206,57,.12);color:var(--green)}
+.tag.y{background:rgba(255,212,0,.1);color:var(--yellow)}
+pre{margin:.5rem 0 0;padding:.75rem .85rem;background:var(--code-bg);color:var(--code-fg);overflow:auto;font:.78rem/1.55 var(--mono);tab-size:4}
+pre .pr{color:var(--green);user-select:none}
+pre .cm{color:#7fb3c2;font-style:italic}
+pre .out{color:rgba(234,255,255,.62)}
+code{font-family:var(--mono);color:var(--code-hl);font-size:.92em}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem}
+th{text-align:left;color:var(--cyan);padding:.45rem;border-bottom:1px solid var(--line);font-weight:700}
+td{padding:.45rem;border-bottom:1px solid rgba(255,255,255,.06);vertical-align:top;overflow-wrap:anywhere}
+.perms{font-family:var(--mono);font-size:1rem;color:var(--yellow)}
+.callout{border-left:4px solid var(--yellow);background:rgba(255,212,0,.07);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.callout.warn{border-color:var(--red);background:rgba(255,122,107,.08)}
+.callout.ok{border-color:var(--green);background:rgba(166,206,57,.08)}
+.syntax{font-family:var(--mono);font-size:1rem;background:var(--panel-2);padding:.7rem .85rem;border-left:3px solid var(--cyan);overflow-x:auto;white-space:nowrap}
+.syntax b{color:#fff}.syntax i{color:var(--cyan);font-style:normal}.syntax em{color:var(--yellow);font-style:normal}
+.arch{display:grid;gap:.35rem}.layer{padding:.55rem .75rem;background:var(--panel-2);border-left:3px solid var(--cyan)}
+.layer:nth-child(2){border-color:var(--blue)}.layer:nth-child(3){border-color:var(--green)}.layer:nth-child(4){border-color:var(--yellow)}.layer:nth-child(5){border-color:var(--muted)}
+.layer b{display:block;font-size:.82rem}.layer span{font-size:.74rem;color:var(--muted)}
+.timeline{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}.time{background:var(--panel-2);padding:.65rem}.time b{color:var(--yellow);font-size:.78rem}.time div{font-size:.78rem;margin-top:.25rem}
+.steps{list-style:none;padding:0;margin:0;display:grid;gap:.45rem;counter-reset:s}
+.steps li{counter-increment:s;display:grid;grid-template-columns:2rem 1fr;gap:.6rem;align-items:start;margin:0;background:var(--panel-2);padding:.55rem .65rem;font-size:.84rem}
+.steps li:before{content:counter(s);font-weight:800;color:var(--bg1);background:var(--cyan);width:1.6rem;height:1.6rem;display:grid;place-items:center;font-size:.8rem}
+.kbd{font-family:var(--mono);font-size:.78rem;background:rgba(255,255,255,.1);border-bottom:2px solid rgba(255,255,255,.25);padding:.05rem .35rem;color:#fff;white-space:nowrap}
+.modes{display:grid;grid-template-columns:repeat(2,1fr);gap:.5rem}
+.mode{background:var(--panel-2);padding:.65rem;border-top:3px solid var(--cyan)}
+.mode:nth-child(2){border-color:var(--green)}.mode:nth-child(3){border-color:var(--yellow)}.mode:nth-child(4){border-color:var(--blue)}
+.mode b{display:block;font-size:.85rem}.mode span{font-size:.76rem;color:var(--muted)}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-family:var(--mono);font-size:.8rem;margin:.4rem 0}
+.flow span{background:var(--panel-2);padding:.35rem .55rem;border:1px solid var(--line)}
+.flow i{color:var(--yellow);font-style:normal;font-weight:700}
+
+/* dashboard */
+.dash-meta{display:flex;flex-wrap:wrap;gap:1.5rem;margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+.dash-meta b{display:block;color:#fff;font-size:1.5rem;font-weight:800;line-height:1.1;font-variant-numeric:tabular-nums}
+.part{margin-top:1.6rem}
+.part-h{display:flex;align-items:baseline;gap:.8rem;margin:0 0 .7rem;flex-wrap:wrap}
+.part-h h2{margin:0;font-size:.82rem;letter-spacing:.16em;text-transform:uppercase;color:var(--yellow)}
+.part-h span{color:var(--muted);font-size:.8rem}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.tile{display:flex;flex-direction:column;gap:.45rem;text-decoration:none;color:#fff;background:var(--panel);backdrop-filter:blur(12px);
+  padding:1.1rem 1.2rem 1rem;border-bottom:3px solid transparent;transition:background .15s,border-color .15s,transform .15s}
+.tile:hover{background:rgba(0,27,34,.7);border-color:var(--cyan);transform:translateY(-2px)}
+.tile .n{font-size:2.2rem;font-weight:200;color:var(--cyan);line-height:1;font-variant-numeric:tabular-nums}
+.tile .t{font-weight:700;font-size:1rem;line-height:1.25;text-wrap:balance}
+.tile .d{font-size:.8rem;color:var(--muted);flex:1}
+.tile .k{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.2rem}
+.tile .k span{font-family:var(--mono);font-size:.68rem;color:var(--code-hl);background:rgba(0,0,0,.25);padding:.12rem .38rem}
+.p2 .tile .n{color:var(--green)} .p2 .tile:hover{border-color:var(--green)}
+.p3 .tile .n{color:var(--yellow)} .p3 .tile:hover{border-color:var(--yellow)}
+.hint{margin-top:1.4rem;font-size:.8rem;color:var(--muted)}
+
+/* kapitola */
+.ch-head{padding-block:2.4rem 1.3rem}
+.ch-head h1{font-size:clamp(2rem,4.4vw,3.8rem)}
+.pager{display:flex;justify-content:space-between;gap:.6rem;flex-wrap:wrap;padding-block:.6rem 2.5rem}
+.pager a{max-width:48%}
+.pager .next{margin-left:auto;text-align:right}
+.pager small{display:block;color:var(--muted);font-weight:400;letter-spacing:0;font-size:.7rem}
+footer{position:relative;z-index:1;max-width:1450px;margin:auto;padding:0 5vw 2rem;color:var(--muted);font-size:.7rem}
+
+@media(max-width:950px){
+  .c3,.c4,.c5,.c6,.c7,.c8{grid-column:span 6}
+}
+@media(max-width:720px){
+  .c3,.c4,.c5,.c6,.c7,.c8,.c12{grid-column:span 12}
+  .modes,.timeline{grid-template-columns:1fr}
+  .grid{gap:.75rem}.card{padding:1rem}
+  .bar-ch{display:none}
+  .pager a{max-width:100%;flex:1 1 100%}.pager .next{text-align:left}
+}
+@media print{.bar,.pager{display:none}}
+
+/* ---- doplňky pro navazující prezentace ---- */
+.bar-nav .btn.kurz{color:var(--yellow)}
+pre.php,pre.sh,pre.res{position:relative}
+pre.php{border-left:3px solid var(--cyan)}
+pre.res{margin-top:0;background:rgba(0,0,0,.32);color:rgba(234,255,255,.78);border-left:3px solid var(--green);padding-top:1.35rem}
+pre.res:before{content:"výstup";position:absolute;top:.3rem;left:.85rem;font:700 .58rem/1 var(--font);letter-spacing:.14em;text-transform:uppercase;color:var(--green)}
+pre.php + pre.res{margin-top:2px}
+pre.sh{border-left:3px solid var(--muted)}
+pre .k{color:#41d7ff}
+pre .t{color:#7ee0c3}
+pre .v{color:#ffd76a}
+pre .s{color:#b8e986}
+pre .n{color:#ffa77a}
+pre .c{color:#7fb3c2;font-style:italic}
+pre .f{color:#9fd8ff}
+pre .tg{color:#ff8f80;font-weight:700}
+pre .a{color:#d7a6ff}
+pre .co{color:#ffc7f0}
+pre .hl{background:rgba(255,212,0,.16);display:inline-block;width:100%}
+.copy{position:absolute;top:.3rem;right:.3rem;opacity:0;transition:opacity .15s;font:600 .62rem/1 var(--font);letter-spacing:.06em;
+  background:rgba(65,215,255,.15);color:var(--cyan);border:0;padding:.35rem .5rem;cursor:pointer}
+pre:hover .copy,.copy:focus-visible{opacity:1}
+.v8{display:inline-block;font:700 .62rem/1 var(--font);letter-spacing:.06em;padding:.22rem .4rem;background:var(--yellow);color:#00222c;vertical-align:middle;margin-left:.35rem}
+.v8.g{background:var(--green)}
+.v8.r{background:var(--red)}
+.task{border-left:4px solid var(--green);background:rgba(166,206,57,.08);padding:.7rem .85rem;font-size:.84rem;margin-top:.75rem}
+.task b:first-child{color:var(--green);letter-spacing:.08em;text-transform:uppercase;font-size:.72rem;display:block;margin-bottom:.2rem}
+.task details{margin-top:.4rem}
+.task summary{cursor:pointer;color:var(--cyan);font-size:.78rem;font-weight:600}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+.cols2 > div{min-width:0}
+.big{font-size:1.05rem}
+.yes{color:var(--green);font-weight:700}.no{color:var(--red);font-weight:700}
+td code,th code{white-space:nowrap}
+.prev-deck{color:var(--muted);font-size:.8rem;margin-top:1rem}
+.prev-deck a{color:var(--cyan)}
+@media(max-width:720px){.cols2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="bar"><div class="bar-in">
+  <a class="brand" href="#prehled">Pole v <span>PHP</span></a>
+  <div class="bar-ch" id="barTitle">Přehled kapitol</div>
+  <div class="bar-nav">
+    <a class="btn kurz" href="index.html" title="Přehled všech prezentací kurzu">Kurz</a>
+    <a class="btn" id="barPrev" href="#prehled" aria-label="Předchozí kapitola">←</a>
+    <a class="btn" href="#prehled">Přehled</a>
+    <a class="btn" id="barNext" href="#k1" aria-label="Další kapitola">→</a>
+  </div>
+</div></div>
+
+<section id="prehled" class="view wrap" data-title="Přehled kapitol">
+  <header class="hero">
+    <div class="kicker">Prezentace 4 · Programování webových aplikací</div>
+    <h1>Pole a asociativní pole</h1>
+    <p class="lead">Pole je v PHP univerzální datová struktura: seznam, slovník, tabulka, zásobník i fronta. Jak pole vytvořit, procházet, třídit, filtrovat a převádět a které funkce se vyplatí znát.</p>
+    <div class="dash-meta"><div><b>11</b>kapitol</div><div><b>57</b>ukázek kódu</div><div><b>80+</b>funkcí pro pole</div><div><b>8.2+</b>cílová verze PHP</div></div>
+  </header>
+<div class="part p1"><div class="part-h"><h2>Základy</h2><span>vytvoření, přístup, procházení</span></div><div class="tiles"><a class="tile" href="#k1"><span class="n">01</span><span class="t">Co je pole v PHP</span><span class="d">Uspořádaná mapa klíč → hodnota. Indexovaná a asociativní pole, automatické klíče, pravidla pro klíče.</span><span class="k"><span>[]</span><span>=&gt;</span><span>klíč</span><span>print_r</span></span></a><a class="tile" href="#k2"><span class="n">02</span><span class="t">Přístup a úpravy</span><span class="d">Čtení prvků, chybějící klíče, test existence, mazání a přidávání na začátek a konec.</span><span class="k"><span>isset</span><span>array_key_exists</span><span>unset</span><span>count</span></span></a><a class="tile" href="#k3"><span class="n">03</span><span class="t">Procházení polí</span><span class="d">foreach s klíčem i bez, úprava přes referenci a její past, for s indexem, vnořené procházení.</span><span class="k"><span>foreach</span><span>as $k =&gt; $v</span><span>&amp;$v</span><span>for</span></span></a></div></div>
+<div class="part p2"><div class="part-h"><h2>Struktury</h2><span>vnořená pole, rozbalování, slučování</span></div><div class="tiles"><a class="tile" href="#k4"><span class="n">04</span><span class="t">Vícerozměrná pole</span><span class="d">Matice, seznam záznamů (tabulka), výběr sloupce, indexace podle klíče a seskupování.</span><span class="k"><span>$a[i][j]</span><span>array_column</span><span>záznamy</span><span>seskupení</span></span></a><a class="tile" href="#k5"><span class="n">05</span><span class="t">Destrukturace, spread a slučování</span><span class="d">Rozbalení pole do proměnných, operátor ... a rozdíly mezi array_merge a operátorem +.</span><span class="k"><span>[$a, $b] =</span><span>...</span><span>array_merge</span><span>+</span></span></a></div></div>
+<div class="part p3"><div class="part-h"><h2>Funkce pro pole</h2><span>hledání, transformace, řazení, množiny</span></div><div class="tiles"><a class="tile" href="#k6"><span class="n">06</span><span class="t">Hledání a testy</span><span class="d">Je hodnota v poli? Na jakém klíči? Splňuje některý nebo každý prvek podmínku?</span><span class="k"><span>in_array</span><span>array_search</span><span>array_keys</span><span>array_find</span></span></a><a class="tile" href="#k7"><span class="n">07</span><span class="t">Transformace: map, filter, reduce</span><span class="d">Převod každého prvku, výběr prvků podle podmínky a sloučení pole do jedné hodnoty.</span><span class="k"><span>array_map</span><span>array_filter</span><span>array_reduce</span><span>array_sum</span></span></a><a class="tile" href="#k8"><span class="n">08</span><span class="t">Výřezy, generování a převody</span><span class="d">Části pole, rozdělení na kousky, generování polí a převody mezi poli a řetězci.</span><span class="k"><span>array_slice</span><span>range</span><span>explode</span><span>array_combine</span></span></a><a class="tile" href="#k9"><span class="n">09</span><span class="t">Řazení</span><span class="d">Rodina funkcí sort, zachování klíčů, vlastní porovnání přes <=>, řazení podle více sloupců a česká abeceda.</span><span class="k"><span>sort</span><span>asort</span><span>ksort</span><span>usort</span></span></a><a class="tile" href="#k10"><span class="n">10</span><span class="t">Množinové operace a porovnání</span><span class="d">Rozdíl, průnik a sjednocení polí, varianty podle klíčů a porovnání dvou polí.</span><span class="k"><span>array_diff</span><span>array_intersect</span><span>==</span><span>===</span></span></a></div></div>
+<div class="part p1"><div class="part-h"><h2>V praxi</h2><span>typické vzory a úlohy</span></div><div class="tiles"><a class="tile" href="#k11"><span class="n">11</span><span class="t">Pole v praxi a úlohy</span><span class="d">Pole jako zásobník a fronta, konfigurační soubor, uložení pole do JSON, výkon a závěrečné úlohy.</span><span class="k"><span>zásobník</span><span>fronta</span><span>config</span><span>úlohy</span></span></a></div></div>
+
+  <p class="hint">Při promítání se mezi kapitolami posouváte šipkami <span class="kbd">←</span> <span class="kbd">→</span>, klávesa <span class="kbd">Esc</span> vrací na přehled. Ukázky kódu jdou zkopírovat tlačítkem v rohu, výstupy pod nimi jsou z reálného běhu PHP.</p>
+  <p class="prev-deck">Navazuje na <a href="01-zaklady-syntaxe.html">Základy syntaxe</a> a <a href="03-datove-typy.html">Datové typy</a>. Čtení polí ze souborů CSV a JSON ukazuje <a href="02-vstup-vystup-soubory.html">prezentace 2</a>.</p>
+</section>
+
+<!-- ============ 1 ============ -->
+<section id="k1" class="view wrap chapter" data-title="Co je pole v PHP">
+<header class="ch-head">
+  <div class="kicker">Kapitola 1 / 11 · Základy</div>
+  <h1>Co je pole v PHP</h1>
+  <p class="lead">Pole v PHP je <b>uspořádaná mapa</b>: každá hodnota má klíč a pole si pamatuje pořadí vložení. Klíčem je celé číslo (indexované pole) nebo řetězec (asociativní pole). Obojí lze v jednom poli kombinovat.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Indexované pole (seznam)</h2>
+<pre class="php">$ovoce = ['jablko', 'hruška', 'švestka'];   // klíče 0, 1, 2
+echo $ovoce[0], "\n";
+echo count($ovoce), " položky\n";
+
+$ovoce[] = 'meruňka';        // přidání na konec → klíč 3
+print_r($ovoce);
+
+$stary = array(1, 2, 3);     // starší zápis, funguje dál</pre>
+<pre class="res">jablko
+3 položky
+Array
+(
+    [0] =&gt; jablko
+    [1] =&gt; hruška
+    [2] =&gt; švestka
+    [3] =&gt; meruňka
+)</pre>
+</article>
+<article class="card c6"><h2>Asociativní pole (slovník)</h2>
+<pre class="php">$zak = [
+    'jmeno'  =&gt; 'Eva',
+    'trida'  =&gt; 'IT3',
+    'prumer' =&gt; 1.42,
+    'jazyky' =&gt; ['cs', 'en'],    // hodnotou může být i pole
+];
+echo $zak['jmeno'], ' z ', $zak['trida'], "\n";
+echo $zak['jazyky'][1], "\n";
+
+$zak['email'] = 'eva@skola.cz';  // nový klíč
+var_dump($zak['prumer']);</pre>
+<pre class="res">Eva z IT3
+en
+float(1.42)</pre>
+</article>
+
+<article class="card c6"><h2>Automatické klíče</h2>
+<pre class="php">$a = [5 =&gt; 'pět', 'x' =&gt; 'iks', 'další'];
+$a[] = 'ještě';                 // největší int klíč + 1
+print_r($a);
+
+$b = [-5 =&gt; 'a'];
+$b[] = 'b';                     // od 8.3: -4 (dříve 0)
+print_r($b);</pre>
+<pre class="res">Array
+(
+    [5] =&gt; pět
+    [x] =&gt; iks
+    [6] =&gt; další
+    [7] =&gt; ještě
+)
+Array
+(
+    [-5] =&gt; a
+    [-4] =&gt; b
+)</pre>
+  <p class="muted">Nový klíč je vždy o jedna větší než největší dosavadní celočíselný klíč, i když mezitím prvky smažete.</p>
+</article>
+<article class="card c6"><h2>Pravidla pro klíče</h2>
+<div class="tbl"><table>
+  <tr><th>Zapsaný klíč</th><th>Uloží se jako</th></tr>
+  <tr><td><code>'8'</code></td><td><code>8</code> (desítkové číslo v řetězci)</td></tr>
+  <tr><td><code>'08'</code>, <code>'8.0'</code>, <code>' 8'</code></td><td>řetězec beze změny</td></tr>
+  <tr><td><code>8.7</code></td><td><code>8</code> (useknuto, Deprecated od 8.1)</td></tr>
+  <tr><td><code>true</code> / <code>false</code></td><td><code>1</code> / <code>0</code></td></tr>
+  <tr><td><code>null</code></td><td><code>''</code> (Deprecated od 8.5)</td></tr>
+  <tr><td>pole, objekt</td><td>chyba</td></tr>
+</table></div>
+<pre class="php">$p = ['1' =&gt; 'a', 1 =&gt; 'b', 1.5 =&gt; 'c', true =&gt; 'd'];
+print_r($p);          // stejný klíč 1 → přepisuje se</pre>
+<pre class="res">Deprecated: Implicit conversion from float 1.5 to int loses precision in ukazka.php on line 1
+Array
+(
+    [1] =&gt; d
+)</pre>
+</article>
+
+<article class="card c12"><h2>Výpis pole</h2>
+<div class="cols2"><div>
+<pre class="php">$z = ['Eva', 'aktivni' =&gt; true, 'pozn' =&gt; null];
+print_r($z);
+var_dump($z);</pre>
+<pre class="res">Array
+(
+    [0] =&gt; Eva
+    [aktivni] =&gt; 1
+    [pozn] =&gt; 
+)
+array(3) {
+  [0]=&gt;
+  string(3) "Eva"
+  ["aktivni"]=&gt;
+  bool(true)
+  ["pozn"]=&gt;
+  NULL
+}</pre>
+</div><div>
+<pre class="php">$z = ['Eva', 'aktivni' =&gt; true, 'pozn' =&gt; null];
+echo json_encode($z), "\n";
+var_export($z);
+echo "\n", implode(', ', ['a', 'b', 'c']);</pre>
+<pre class="res">{"0":"Eva","aktivni":true,"pozn":null}
+array (
+  0 =&gt; 'Eva',
+  'aktivni' =&gt; true,
+  'pozn' =&gt; NULL,
+)
+a, b, c</pre>
+  <div class="callout warn"><code>echo $pole;</code> vypíše jen slovo <code>Array</code> a Warning „Array to string conversion“.</div>
+  <div class="task"><b>Zkuste si</b>Vytvořte asociativní pole s rozvrhem jednoho dne (klíč = číslo hodiny, hodnota = předmět) a vypište ho přes <code>print_r</code> i <code>json_encode</code>.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section id="k2" class="view wrap chapter" data-title="Přístup a úpravy">
+<header class="ch-head">
+  <div class="kicker">Kapitola 2 / 11 · Základy</div>
+  <h1>Přístup a úpravy</h1>
+  <p class="lead">K prvku se přistupuje přes hranaté závorky s klíčem. Čtení neexistujícího klíče vyvolá Warning, proto existenci ověřujte, nebo použijte <code>??</code>.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Chybějící klíč</h2>
+<pre class="php">$zak = ['jmeno' =&gt; 'Eva', 'email' =&gt; null];
+
+echo $zak['telefon'];                   // Warning: Undefined array key
+echo "\n", $zak['telefon'] ?? 'neuvedeno', "\n";
+var_dump(isset($zak['email']));          // false: hodnota je null
+var_dump(array_key_exists('email', $zak)); // true: klíč existuje</pre>
+<pre class="res">Warning: Undefined array key "telefon" in ukazka.php on line 3
+
+neuvedeno
+bool(false)
+bool(true)</pre>
+  <p class="muted"><code>isset</code> je rychlejší, ale null bere jako „neexistuje“. Kde na null záleží, použijte <code>array_key_exists</code>.</p>
+</article>
+<article class="card c6"><h2>Mazání: unset</h2>
+<pre class="php">$a = ['a', 'b', 'c', 'd'];
+unset($a[1]);
+print_r($a);                  // klíč 1 chybí, nic se neposunulo
+
+$a = array_values($a);        // přečíslování 0..n-1
+print_r($a);
+var_dump(array_is_list($a));  // 8.1: klíče 0, 1, 2…?</pre>
+<pre class="res">Array
+(
+    [0] =&gt; a
+    [2] =&gt; c
+    [3] =&gt; d
+)
+Array
+(
+    [0] =&gt; a
+    [1] =&gt; c
+    [2] =&gt; d
+)
+bool(true)</pre>
+</article>
+
+<article class="card c6"><h2>Začátek a konec</h2>
+<pre class="php">$fronta = ['B', 'C'];
+array_push($fronta, 'D', 'E');    // na konec (jako $fronta[] = …)
+array_unshift($fronta, 'A');      // na začátek, přečísluje
+echo implode(' ', $fronta), "\n";
+
+$posledni = array_pop($fronta);   // odebere z konce
+$prvni = array_shift($fronta);    // odebere ze začátku
+echo "$prvni … $posledni | ", implode(' ', $fronta), "\n";</pre>
+<pre class="res">A B C D E
+A … E | B C D</pre>
+</article>
+<article class="card c6"><h2>První a poslední prvek</h2>
+<pre class="php">$z = ['x' =&gt; 10, 'y' =&gt; 20, 'z' =&gt; 30];
+echo array_key_first($z), ' ', array_key_last($z), "\n";   // 7.3
+echo $z[array_key_last($z)], "\n";
+echo count($z), ' ', empty($z) ? 'prázdné' : 'neprázdné', "\n";</pre>
+<pre class="res">x z
+30
+3 neprázdné</pre>
+<pre class="php">// PHP 8.5+
+echo array_first($z), ' ', array_last($z);   // 10 30, u prázdného pole null</pre>
+  <div class="callout">Starší <code>reset($pole)</code> a <code>end($pole)</code> také vrátí první a poslední hodnotu, ale posouvají vnitřní ukazatel pole a potřebují proměnnou.</div>
+</article>
+
+<article class="card c6"><h2>Vnořený přístup</h2>
+<pre class="php">$skola = [
+    'IT3' =&gt; ['tridni' =&gt; 'Novák', 'zaci' =&gt; ['Eva', 'Petr']],
+];
+echo $skola['IT3']['zaci'][0], "\n";
+$skola['IT3']['zaci'][] = 'Jana';              // přidání do vnořeného
+$skola['IT4']['zaci'][] = 'Adam';              // mezilehlá pole vzniknou samy
+echo $skola['IT5']['tridni'] ?? 'neznámý', "\n";   // ?? funguje do hloubky
+echo count($skola['IT3']['zaci']), "\n";</pre>
+<pre class="res">Eva
+neznámý
+3</pre>
+</article>
+<article class="card c6"><h2>Řetězec jako pole znaků</h2>
+<pre class="php">$s = 'PHP';
+echo $s[0], $s[-1], "\n";          // první a poslední bajt
+$s[1] = 'X';
+echo $s, "\n";
+print_r(str_split('abcdef', 2));
+print_r(mb_str_split('čaj'));</pre>
+<pre class="res">PP
+PXP
+Array
+(
+    [0] =&gt; ab
+    [1] =&gt; cd
+    [2] =&gt; ef
+)
+Array
+(
+    [0] =&gt; č
+    [1] =&gt; a
+    [2] =&gt; j
+)</pre>
+  <div class="task"><b>Zkuste si</b>Napište funkci, která z pole odstraní první výskyt dané hodnoty (pomocí <code>array_search</code> a <code>unset</code>) a vrátí pole přečíslované.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section id="k3" class="view wrap chapter" data-title="Procházení polí">
+<header class="ch-head">
+  <div class="kicker">Kapitola 3 / 11 · Základy</div>
+  <h1>Procházení polí</h1>
+  <p class="lead"><code>foreach</code> projde všechny prvky v pořadí, v jakém byly vloženy, a funguje pro indexovaná i asociativní pole. Cyklus <code>for</code> se hodí, jen když je potřeba index a pole je seznam.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>foreach</h2>
+<pre class="php">$znamky = ['Anna' =&gt; 1, 'Petr' =&gt; 3, 'Eva' =&gt; 2];
+
+foreach ($znamky as $z) {
+    echo $z, ' ';
+}
+echo "\n";
+foreach ($znamky as $jmeno =&gt; $z) {
+    echo "$jmeno má $z\n";
+}
+foreach (array_keys($znamky) as $i =&gt; $jmeno) {
+    echo $i + 1, ". $jmeno\n";
+}</pre>
+<pre class="res">1 3 2 
+Anna má 1
+Petr má 3
+Eva má 2
+1. Anna
+2. Petr
+3. Eva</pre>
+</article>
+<article class="card c6"><h2>Úprava prvků v cyklu</h2>
+<pre class="php">$ceny = [100, 250, 80];
+
+foreach ($ceny as $c) {
+    $c *= 1.21;              // mění jen kopii
+}
+echo implode(' ', $ceny), "\n";
+
+foreach ($ceny as $k =&gt; $c) {
+    $ceny[$k] = $c * 1.21;   // ✓ přes klíč
+}
+echo implode(' ', $ceny), "\n";
+
+$nove = array_map(fn($c) =&gt; round($c), $ceny);   // ✓ nové pole
+echo implode(' ', $nove), "\n";</pre>
+<pre class="res">100 250 80
+121 302.5 96.8
+121 303 97</pre>
+</article>
+
+<article class="card c6"><h2>Reference a její past</h2>
+<pre class="php">$a = [1, 2, 3];
+foreach ($a as &amp;$v) {
+    $v *= 10;
+}
+// chybí unset($v)!
+foreach ($a as $v) {}        // $v je pořád reference na $a[2]
+print_r($a);</pre>
+<pre class="res">Array
+(
+    [0] =&gt; 10
+    [1] =&gt; 20
+    [2] =&gt; 20
+)</pre>
+<pre class="php">$a = [1, 2, 3];
+foreach ($a as &amp;$v) {
+    $v *= 10;
+}
+unset($v);                   // ✓ zrušit referenci hned po cyklu
+foreach ($a as $v) {}
+print_r($a);</pre>
+<pre class="res">Array
+(
+    [0] =&gt; 10
+    [1] =&gt; 20
+    [2] =&gt; 30
+)</pre>
+</article>
+<article class="card c6"><h2>for a while</h2>
+<pre class="php">$dny = ['po', 'út', 'st', 'čt', 'pá'];
+for ($i = 0, $n = count($dny); $i &lt; $n; $i++) {
+    echo $i % 2 === 0 ? mb_strtoupper($dny[$i]) : $dny[$i], ' ';
+}
+echo "\n";
+
+for ($i = count($dny) - 1; $i &gt;= 0; $i--) {   // pozpátku
+    echo $dny[$i], ' ';
+}
+echo "\n", implode(' ', array_reverse($dny)), "\n";
+
+$zasobnik = [1, 2, 3];
+while (($x = array_pop($zasobnik)) !== null) {
+    echo $x;
+}</pre>
+<pre class="res">PO út ST čt PÁ 
+pá čt st út po 
+pá čt st út po
+321</pre>
+  <p class="muted"><code>count()</code> uložte do proměnné, ať se nepočítá při každém průchodu.</p>
+</article>
+
+<article class="card c12"><h2>Procházení v šabloně</h2>
+<div class="cols2"><div>
+<pre class="php">&lt;?php $zaci = ['Anna' =&gt; 1.2, 'Bořek' =&gt; 2.8, 'Cyril' =&gt; 1.9]; ?&gt;
+&lt;table&gt;
+&lt;?php foreach ($zaci as $jmeno =&gt; $prumer): ?&gt;
+  &lt;tr class="&lt;?= $prumer &lt; 1.5 ? 'vyznamenani' : '' ?&gt;"&gt;
+    &lt;td&gt;&lt;?= htmlspecialchars($jmeno) ?&gt;&lt;/td&gt;
+    &lt;td&gt;&lt;?= number_format($prumer, 1, ',') ?&gt;&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;?php endforeach; ?&gt;
+&lt;/table&gt;</pre>
+<pre class="res">&lt;table&gt;
+  &lt;tr class="vyznamenani"&gt;
+    &lt;td&gt;Anna&lt;/td&gt;
+    &lt;td&gt;1,2&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr class=""&gt;
+    &lt;td&gt;Bořek&lt;/td&gt;
+    &lt;td&gt;2,8&lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr class=""&gt;
+    &lt;td&gt;Cyril&lt;/td&gt;
+    &lt;td&gt;1,9&lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/table&gt;</pre>
+</div><div>
+  <div class="task"><b>Zkuste si</b>Projděte pole teplot za týden <code>['po' => 12, 'út' => 15, …]</code> a vypište nejteplejší den, nejchladnější den a průměr, aniž byste použili <code>max</code>, <code>min</code> a <code>array_sum</code>. Pak totéž s nimi.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section id="k4" class="view wrap chapter" data-title="Vícerozměrná pole">
+<header class="ch-head">
+  <div class="kicker">Kapitola 4 / 11 · Struktury</div>
+  <h1>Vícerozměrná pole</h1>
+  <p class="lead">Hodnotou prvku může být další pole. Nejčastější podoba dat v praxi je <b>seznam záznamů</b>: indexované pole asociativních polí. Stejně vypadá výsledek dotazu do databáze i načtený JSON.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Matice</h2>
+<pre class="php">$m = [
+    [1, 2, 3],
+    [4, 5, 6],
+];
+echo $m[1][2], "\n";             // řádek 1, sloupec 2
+
+foreach ($m as $radek) {
+    echo implode("\t", $radek), "\n";
+}
+
+// transpozice
+$t = array_map(null, ...$m);
+foreach ($t as $radek) { echo implode(' ', $radek), "\n"; }</pre>
+<pre class="res">6
+1	2	3
+4	5	6
+1 4
+2 5
+3 6</pre>
+</article>
+<article class="card c6"><h2>Seznam záznamů</h2>
+<pre class="php">$zaci = [
+    ['id' =&gt; 7,  'jmeno' =&gt; 'Anna', 'trida' =&gt; 'IT3', 'body' =&gt; 91],
+    ['id' =&gt; 12, 'jmeno' =&gt; 'Petr', 'trida' =&gt; 'IT4', 'body' =&gt; 64],
+    ['id' =&gt; 15, 'jmeno' =&gt; 'Eva',  'trida' =&gt; 'IT3', 'body' =&gt; 78],
+];
+foreach ($zaci as $z) {
+    printf("%-5s %s %3d\n", $z['jmeno'], $z['trida'], $z['body']);
+}
+echo $zaci[2]['jmeno'], "\n";</pre>
+<pre class="res">Anna  IT3  91
+Petr  IT4  64
+Eva   IT3  78
+Eva</pre>
+</article>
+
+<article class="card c6"><h2>array_column</h2>
+<pre class="php">$zaci = [
+    ['id' =&gt; 7,  'jmeno' =&gt; 'Anna', 'body' =&gt; 91],
+    ['id' =&gt; 12, 'jmeno' =&gt; 'Petr', 'body' =&gt; 64],
+    ['id' =&gt; 15, 'jmeno' =&gt; 'Eva',  'body' =&gt; 78],
+];
+print_r(array_column($zaci, 'jmeno'));           // jeden sloupec
+print_r(array_column($zaci, 'body', 'jmeno'));   // klíč → hodnota
+$podleId = array_column($zaci, null, 'id');      // celé záznamy podle id
+echo $podleId[12]['jmeno'], "\n";
+echo max(array_column($zaci, 'body')), "\n";</pre>
+<pre class="res">Array
+(
+    [0] =&gt; Anna
+    [1] =&gt; Petr
+    [2] =&gt; Eva
+)
+Array
+(
+    [Anna] =&gt; 91
+    [Petr] =&gt; 64
+    [Eva] =&gt; 78
+)
+Petr
+91</pre>
+</article>
+<article class="card c6"><h2>Seskupení podle hodnoty</h2>
+<pre class="php">$zaci = [
+    ['jmeno' =&gt; 'Anna', 'trida' =&gt; 'IT3'],
+    ['jmeno' =&gt; 'Petr', 'trida' =&gt; 'IT4'],
+    ['jmeno' =&gt; 'Eva',  'trida' =&gt; 'IT3'],
+    ['jmeno' =&gt; 'Jan',  'trida' =&gt; 'IT4'],
+    ['jmeno' =&gt; 'Ida',  'trida' =&gt; 'IT3'],
+];
+$tridy = [];
+foreach ($zaci as $z) {
+    $tridy[$z['trida']][] = $z['jmeno'];
+}
+foreach ($tridy as $t =&gt; $jmena) {
+    echo "$t (", count($jmena), '): ', implode(', ', $jmena), "\n";
+}
+print_r(array_count_values(array_column($zaci, 'trida')));</pre>
+<pre class="res">IT3 (3): Anna, Eva, Ida
+IT4 (2): Petr, Jan
+Array
+(
+    [IT3] =&gt; 3
+    [IT4] =&gt; 2
+)</pre>
+</article>
+
+<article class="card c12"><h2>Tabulka do HTML</h2>
+<div class="cols2"><div>
+<pre class="php">&lt;?php
+$data = [
+    ['Předmět' =&gt; 'PRG', 'Hodin' =&gt; 4, 'Učitel' =&gt; 'Novák'],
+    ['Předmět' =&gt; 'WEB', 'Hodin' =&gt; 3, 'Učitel' =&gt; 'Malá'],
+];
+?&gt;
+&lt;table&gt;
+  &lt;tr&gt;&lt;?php foreach (array_keys($data[0]) as $h): ?&gt;&lt;th&gt;&lt;?= $h ?&gt;&lt;/th&gt;&lt;?php endforeach ?&gt;&lt;/tr&gt;
+&lt;?php foreach ($data as $r): ?&gt;
+  &lt;tr&gt;&lt;?php foreach ($r as $bunka): ?&gt;&lt;td&gt;&lt;?= htmlspecialchars((string) $bunka) ?&gt;&lt;/td&gt;&lt;?php endforeach ?&gt;&lt;/tr&gt;
+&lt;?php endforeach ?&gt;
+&lt;/table&gt;</pre>
+<pre class="res">&lt;table&gt;
+  &lt;tr&gt;&lt;th&gt;Předmět&lt;/th&gt;&lt;th&gt;Hodin&lt;/th&gt;&lt;th&gt;Učitel&lt;/th&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;PRG&lt;/td&gt;&lt;td&gt;4&lt;/td&gt;&lt;td&gt;Novák&lt;/td&gt;&lt;/tr&gt;
+  &lt;tr&gt;&lt;td&gt;WEB&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;Malá&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;</pre>
+</div><div>
+  <p>Záhlaví se vezme z klíčů prvního záznamu, řádky z hodnot. Funguje pro libovolná data se stejnými klíči, například pro výsledek databázového dotazu.</p>
+  <div class="task"><b>Zkuste si</b>Ze seznamu žáků s body vytvořte pole <code>třída → průměr bodů</code> a vypište třídy seřazené od nejlepší.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section id="k5" class="view wrap chapter" data-title="Destrukturace, spread a slučování">
+<header class="ch-head">
+  <div class="kicker">Kapitola 5 / 11 · Struktury</div>
+  <h1>Destrukturace, spread a slučování</h1>
+  <p class="lead">Destrukturace přiřadí prvky pole do proměnných jedním příkazem. Spread <code>...</code> naopak pole rozbalí. Pro slučování polí existují dva způsoby s rozdílným chováním.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Destrukturace seznamu</h2>
+<pre class="php">$bod = [3, 7];
+[$x, $y] = $bod;
+echo "x=$x y=$y\n";
+
+[$x, $y] = [$y, $x];               // prohození
+echo "x=$x y=$y\n";
+
+[, $druhy, , $ctvrty] = [1, 2, 3, 4];   // přeskočení
+echo "$druhy $ctvrty\n";
+
+[$a, [$b, $c]] = [1, [2, 3]];     // vnořené
+echo "$a $b $c\n";
+
+[$den, $mesic, $rok] = explode('.', '16.10.2026');
+echo "$rok-$mesic-$den\n";</pre>
+<pre class="res">x=3 y=7
+x=7 y=3
+2 4
+1 2 3
+2026-10-16</pre>
+</article>
+<article class="card c6"><h2>Destrukturace podle klíčů</h2>
+<pre class="php">$zak = ['jmeno' =&gt; 'Eva', 'trida' =&gt; 'IT3', 'body' =&gt; 78];
+['jmeno' =&gt; $j, 'body' =&gt; $b] = $zak;
+echo "$j: $b\n";
+
+$zaci = [['jmeno' =&gt; 'Anna', 'body' =&gt; 91], ['jmeno' =&gt; 'Petr', 'body' =&gt; 64]];
+foreach ($zaci as ['jmeno' =&gt; $jmeno, 'body' =&gt; $body]) {
+    echo "$jmeno $body\n";
+}
+
+function minMax(array $c): array { return [min($c), max($c)]; }
+[$min, $max] = minMax([4, 9, 1]);    // více návratových hodnot
+echo "{$min}–{$max}\n";</pre>
+<pre class="res">Eva: 78
+Anna 91
+Petr 64
+1–9</pre>
+</article>
+
+<article class="card c6"><h2>Spread operátor ...</h2>
+<pre class="php">$zaklad = ['PRG', 'WEB'];
+$volitelne = ['ROB', 'GRA'];
+$vse = [...$zaklad, 'DBS', ...$volitelne];
+echo implode(' ', $vse), "\n";
+
+$vychozi = ['jazyk' =&gt; 'cs', 'motiv' =&gt; 'světlý'];
+$uzivatel = ['motiv' =&gt; 'tmavý'];
+print_r([...$vychozi, ...$uzivatel]);   // 8.1: i řetězcové klíče
+
+echo max(...[3, 9, 2]), "\n";           // do argumentů funkce</pre>
+<pre class="res">PRG WEB DBS ROB GRA
+Array
+(
+    [jazyk] =&gt; cs
+    [motiv] =&gt; tmavý
+)
+9</pre>
+</article>
+<article class="card c6"><h2>array_merge × +</h2>
+<pre class="php">$a = ['x' =&gt; 1, 'y' =&gt; 2, 0 =&gt; 'a'];
+$b = ['y' =&gt; 20, 'z' =&gt; 30, 0 =&gt; 'b'];
+
+print_r(array_merge($a, $b));   // řetězcové klíče: vyhraje $b; čísla se přidají
+print_r($a + $b);               // vyhraje $a; chybějící klíče z $b doplní</pre>
+<pre class="res">Array
+(
+    [x] =&gt; 1
+    [y] =&gt; 20
+    [0] =&gt; a
+    [z] =&gt; 30
+    [1] =&gt; b
+)
+Array
+(
+    [x] =&gt; 1
+    [y] =&gt; 2
+    [0] =&gt; a
+    [z] =&gt; 30
+)</pre>
+  <div class="tbl"><table>
+    <tr><th></th><th>shodný řetězcový klíč</th><th>číselné klíče</th></tr>
+    <tr><td><code>array_merge</code>, <code>[...$a, ...$b]</code></td><td>přepíše druhé pole</td><td>přečísluje a připojí</td></tr>
+    <tr><td><code>$a + $b</code></td><td>zůstane první pole</td><td>shodné klíče zahodí</td></tr>
+  </table></div>
+</article>
+
+<article class="card c12"><h2>array_replace a výchozí nastavení</h2>
+<div class="cols2"><div>
+<pre class="php">$vychozi = ['strana' =&gt; 1, 'naStranu' =&gt; 20, 'razeni' =&gt; 'jmeno'];
+$zadane  = ['strana' =&gt; 3, 'neznamy' =&gt; 'x'];
+
+$nastaveni = array_replace($vychozi, array_intersect_key($zadane, $vychozi));
+print_r($nastaveni);
+
+print_r(array_replace([10, 20, 30], [1 =&gt; 'b']));   // zachová číselné klíče</pre>
+<pre class="res">Array
+(
+    [strana] =&gt; 3
+    [naStranu] =&gt; 20
+    [razeni] =&gt; jmeno
+)
+Array
+(
+    [0] =&gt; 10
+    [1] =&gt; b
+    [2] =&gt; 30
+)</pre>
+</div><div>
+  <p>Vzor „výchozí hodnoty + to, co zadal uživatel“: <code>array_intersect_key</code> propustí jen známé klíče a <code>array_replace</code> je přepíše.</p>
+  <div class="callout"><code>compact('a', 'b')</code> vytvoří <code>['a' => $a, 'b' => $b]</code>. Opak, <code>extract()</code>, vytváří proměnné z klíčů. S daty od uživatele ho nikdy nepoužívejte, přepsal by libovolnou proměnnou.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section id="k6" class="view wrap chapter" data-title="Hledání a testy">
+<header class="ch-head">
+  <div class="kicker">Kapitola 6 / 11 · Funkce</div>
+  <h1>Hledání a testy</h1>
+  <p class="lead">Hledání v poli má dvě pasti: <b>volné porovnání</b> (bez třetího parametru <code>true</code>) a výsledek <b>0</b>, který podmínka bere jako nepravdu. Obě řeší striktní porovnání.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>in_array a striktní režim</h2>
+<pre class="php">$povolene = ['1', '2', '3'];
+
+var_dump(in_array(1, $povolene));          // true (volně)
+var_dump(in_array(1, $povolene, true));    // false (typ int ≠ string)
+var_dump(in_array('1e0', $povolene));      // true! '1e0' == '1'
+var_dump(in_array('abc', [0]));            // false (od PHP 8)
+var_dump(in_array(null, ['']));            // true (volně)</pre>
+<pre class="res">bool(true)
+bool(false)
+bool(true)
+bool(false)
+bool(true)</pre>
+  <div class="callout">Vždy předávejte třetí argument <code>true</code>. Volné porovnání má pravidla, která si nikdo nepamatuje.</div>
+</article>
+<article class="card c6"><h2>array_search: kde to je</h2>
+<pre class="php">$poradi = ['Anna', 'Petr', 'Eva'];
+$i = array_search('Anna', $poradi, true);
+var_dump($i);                         // 0
+
+if ($i) { echo "if: nalezeno\n"; }    // neproběhne, 0 je falsy!
+if ($i !== false) { echo "!== false: nalezeno na pozici $i\n"; }
+
+print_r(array_keys(['a' =&gt; 1, 'b' =&gt; 2, 'c' =&gt; 1], 1));   // všechny klíče s hodnotou</pre>
+<pre class="res">int(0)
+!== false: nalezeno na pozici 0
+Array
+(
+    [0] =&gt; a
+    [1] =&gt; c
+)</pre>
+</article>
+
+<article class="card c6"><h2>Existence klíče a tvar pole</h2>
+<pre class="php">$z = ['jmeno' =&gt; 'Eva', 'email' =&gt; null];
+var_dump(array_key_exists('email', $z), isset($z['email']));
+var_dump(array_is_list([1, 2]), array_is_list([1 =&gt; 'a']));
+var_dump(empty([]), count([[1, 2], [3]], COUNT_RECURSIVE));</pre>
+<pre class="res">bool(true)
+bool(false)
+bool(true)
+bool(false)
+bool(true)
+int(5)</pre>
+</article>
+<article class="card c6"><h2>Hledání podle podmínky</h2>
+<pre class="php">$zaci = [['jmeno' =&gt; 'Anna', 'body' =&gt; 91], ['jmeno' =&gt; 'Petr', 'body' =&gt; 44]];
+
+// klasicky
+$prvniNeprospel = null;
+foreach ($zaci as $z) {
+    if ($z['body'] &lt; 50) { $prvniNeprospel = $z; break; }
+}
+echo $prvniNeprospel['jmeno'] ?? 'nikdo', "\n";
+
+// přes array_filter (projde vše, vrátí všechny shody)
+$neprospeli = array_filter($zaci, fn($z) =&gt; $z['body'] &lt; 50);
+echo count($neprospeli), "\n";</pre>
+<pre class="res">Petr
+1</pre>
+<pre class="php">// PHP 8.4+: zastaví se na první shodě
+$z = array_find($zaci, fn($z) =&gt; $z['body'] &lt; 50);        // záznam nebo null
+$k = array_find_key($zaci, fn($z) =&gt; $z['body'] &lt; 50);    // 1
+$nekdo = array_any($zaci, fn($z) =&gt; $z['body'] &lt; 50);     // true
+$vsichni = array_all($zaci, fn($z) =&gt; $z['body'] &gt;= 40);  // true</pre>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section id="k7" class="view wrap chapter" data-title="Transformace: map, filter, reduce">
+<header class="ch-head">
+  <div class="kicker">Kapitola 7 / 11 · Funkce</div>
+  <h1>Transformace: map, filter, reduce</h1>
+  <p class="lead">Tři funkce nahradí většinu cyklů: <code>array_map</code> každý prvek převede, <code>array_filter</code> vybere prvky splňující podmínku a <code>array_reduce</code> spočítá z pole jednu hodnotu.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>array_map</h2>
+<pre class="php">$ceny = [100, 250, 80];
+$sDph = array_map(fn($c) =&gt; $c * 1.21, $ceny);
+print_r($sDph);
+
+$jmena = array_map('mb_strtoupper', ['eva', 'šimon']);
+echo implode(', ', $jmena), "\n";
+
+// dvě pole současně
+$soucty = array_map(fn($a, $b) =&gt; $a + $b, [1, 2, 3], [10, 20, 30]);
+echo implode(' ', $soucty), "\n";
+
+// zachová klíče (u jednoho pole)
+print_r(array_map(fn($b) =&gt; $b &gt;= 50, ['Anna' =&gt; 91, 'Petr' =&gt; 44]));</pre>
+<pre class="res">Array
+(
+    [0] =&gt; 121
+    [1] =&gt; 302.5
+    [2] =&gt; 96.8
+)
+EVA, ŠIMON
+11 22 33
+Array
+(
+    [Anna] =&gt; 1
+    [Petr] =&gt; 
+)</pre>
+</article>
+<article class="card c6"><h2>array_filter</h2>
+<pre class="php">$cisla = [5, 12, 8, 21, 3];
+$velka = array_filter($cisla, fn($n) =&gt; $n &gt; 7);
+print_r($velka);                     // klíče zůstaly: 1, 2, 3
+print_r(array_values($velka));       // přečíslovat
+
+print_r(array_filter(['a', '', null, 0, 'b']));   // bez callbacku: pryč falsy
+
+$body = ['Anna' =&gt; 91, 'Petr' =&gt; 44, 'Eva' =&gt; 78];
+print_r(array_filter($body, fn($j) =&gt; $j !== 'Petr', ARRAY_FILTER_USE_KEY));</pre>
+<pre class="res">Array
+(
+    [1] =&gt; 12
+    [2] =&gt; 8
+    [3] =&gt; 21
+)
+Array
+(
+    [0] =&gt; 12
+    [1] =&gt; 8
+    [2] =&gt; 21
+)
+Array
+(
+    [0] =&gt; a
+    [4] =&gt; b
+)
+Array
+(
+    [Anna] =&gt; 91
+    [Eva] =&gt; 78
+)</pre>
+</article>
+
+<article class="card c6"><h2>array_reduce</h2>
+<pre class="php">$kosik = [
+    ['nazev' =&gt; 'sešit', 'cena' =&gt; 25, 'ks' =&gt; 4],
+    ['nazev' =&gt; 'pero',  'cena' =&gt; 18, 'ks' =&gt; 2],
+];
+$celkem = array_reduce($kosik, fn($soucet, $p) =&gt; $soucet + $p['cena'] * $p['ks'], 0);
+echo "Celkem: $celkem Kč\n";
+
+$nejdelsi = array_reduce(['PHP', 'JavaScript', 'SQL'],
+    fn($max, $s) =&gt; strlen($s) &gt; strlen($max) ? $s : $max, '');
+echo $nejdelsi, "\n";</pre>
+<pre class="res">Celkem: 136 Kč
+JavaScript</pre>
+</article>
+<article class="card c6"><h2>Agregace hotovými funkcemi</h2>
+<pre class="php">$b = [91, 64, 78, 55];
+echo array_sum($b), ' ', array_product([2, 3, 4]), "\n";
+echo min($b), ' ', max($b), ' ', round(array_sum($b) / count($b), 1), "\n";
+print_r(array_count_values(['a', 'b', 'a', 'c', 'a']));
+print_r(array_unique([3, 1, 3, 2, 1]));</pre>
+<pre class="res">288 24
+55 91 72
+Array
+(
+    [a] =&gt; 3
+    [b] =&gt; 1
+    [c] =&gt; 1
+)
+Array
+(
+    [0] =&gt; 3
+    [1] =&gt; 1
+    [3] =&gt; 2
+)</pre>
+</article>
+
+<article class="card c12"><h2>Řetězení kroků</h2>
+<div class="cols2"><div>
+<pre class="php">$zaci = [
+    ['jmeno' =&gt; 'anna', 'body' =&gt; 91], ['jmeno' =&gt; 'petr', 'body' =&gt; 44],
+    ['jmeno' =&gt; 'eva', 'body' =&gt; 78],  ['jmeno' =&gt; 'jan', 'body' =&gt; 66],
+];
+$prospeli = array_filter($zaci, fn($z) =&gt; $z['body'] &gt;= 50);
+$jmena = array_map(fn($z) =&gt; ucfirst($z['jmeno']), $prospeli);
+sort($jmena);
+echo implode(', ', $jmena), "\n";</pre>
+<pre class="res">Anna, Eva, Jan</pre>
+</div><div>
+<pre class="php">// PHP 8.5+: totéž pipe operátorem
+$jmena = $zaci
+    |&gt; (fn($a) =&gt; array_filter($a, fn($z) =&gt; $z['body'] &gt;= 50))
+    |&gt; (fn($a) =&gt; array_map(fn($z) =&gt; ucfirst($z['jmeno']), $a))
+    |&gt; array_values(...);</pre>
+  <div class="task"><b>Zkuste si</b>Z pole slov vyberte ta delší než 4 znaky, převeďte je na velká písmena a spojte čárkou. Nejdřív cyklem <code>foreach</code>, pak přes <code>array_filter</code> a <code>array_map</code>.</div>
+</div></div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section id="k8" class="view wrap chapter" data-title="Výřezy, generování a převody">
+<header class="ch-head">
+  <div class="kicker">Kapitola 8 / 11 · Funkce</div>
+  <h1>Výřezy, generování a převody</h1>
+  <p class="lead">Funkce pro výřezy pole nemění (kromě <code>array_splice</code>), vrací nové. Generující funkce vytvoří pole z rozsahu nebo z jiných polí.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Výřezy</h2>
+<pre class="php">$a = ['a', 'b', 'c', 'd', 'e', 'f'];
+echo implode(' ', array_slice($a, 1, 3)), "\n";     // od 1, tři prvky
+echo implode(' ', array_slice($a, -2)), "\n";       // poslední dva
+
+$odebrane = array_splice($a, 1, 2, ['X', 'Y', 'Z']); // mění $a!
+echo implode(' ', $a), ' | odebráno: ', implode(' ', $odebrane), "\n";
+
+print_r(array_chunk([1, 2, 3, 4, 5], 2));            // stránkování, sloupce</pre>
+<pre class="res">b c d
+e f
+a X Y Z d e f | odebráno: b c
+Array
+(
+    [0] =&gt; Array
+        (
+            [0] =&gt; 1
+            [1] =&gt; 2
+        )
+
+    [1] =&gt; Array
+        (
+            [0] =&gt; 3
+            [1] =&gt; 4
+        )
+
+    [2] =&gt; Array
+        (
+            [0] =&gt; 5
+        )
+
+)</pre>
+</article>
+<article class="card c6"><h2>Generování</h2>
+<pre class="php">echo implode(' ', range(1, 10, 3)), "\n";
+echo implode('', range('a', 'e')), "\n";
+echo implode(' ', range(10, 0, 5)), "\n";
+print_r(array_fill(5, 3, 0));                       // od klíče 5, 3× nula
+print_r(array_fill_keys(['po', 'út', 'st'], []));
+print_r(array_pad([1, 2], 4, null));</pre>
+<pre class="res">1 4 7 10
+abcde
+10 5 0
+Array
+(
+    [5] =&gt; 0
+    [6] =&gt; 0
+    [7] =&gt; 0
+)
+Array
+(
+    [po] =&gt; Array
+        (
+        )
+
+    [út] =&gt; Array
+        (
+        )
+
+    [st] =&gt; Array
+        (
+        )
+
+)
+Array
+(
+    [0] =&gt; 1
+    [1] =&gt; 2
+    [2] =&gt; 
+    [3] =&gt; 
+)</pre>
+</article>
+
+<article class="card c6"><h2>Klíče a hodnoty</h2>
+<pre class="php">$dny = ['po', 'út', 'st'];
+$hodin = [6, 7, 5];
+$rozvrh = array_combine($dny, $hodin);
+print_r($rozvrh);
+print_r(array_keys($rozvrh));
+print_r(array_flip($rozvrh));                 // hodnoty ↔ klíče
+var_dump(isset(array_flip($dny)['út']));       // rychlé hledání</pre>
+<pre class="res">Array
+(
+    [po] =&gt; 6
+    [út] =&gt; 7
+    [st] =&gt; 5
+)
+Array
+(
+    [0] =&gt; po
+    [1] =&gt; út
+    [2] =&gt; st
+)
+Array
+(
+    [6] =&gt; po
+    [7] =&gt; út
+    [5] =&gt; st
+)
+bool(true)</pre>
+</article>
+<article class="card c6"><h2>Pole ↔ řetězec</h2>
+<pre class="php">$csv = 'Anna;Petr;;Eva';
+print_r(explode(';', $csv));
+print_r(explode(';', $csv, 2));               // max. 2 části
+print_r(array_filter(explode(';', $csv)));    // bez prázdných
+echo implode(', ', ['PHP', 'SQL']), "\n";
+print_r(preg_split('/[\s,]+/', 'a, b  c,d'));
+print_r(str_word_count('Ahoj světe a vesmíre', 1));</pre>
+<pre class="res">Array
+(
+    [0] =&gt; Anna
+    [1] =&gt; Petr
+    [2] =&gt; 
+    [3] =&gt; Eva
+)
+Array
+(
+    [0] =&gt; Anna
+    [1] =&gt; Petr;;Eva
+)
+Array
+(
+    [0] =&gt; Anna
+    [1] =&gt; Petr
+    [3] =&gt; Eva
+)
+PHP, SQL
+Array
+(
+    [0] =&gt; a
+    [1] =&gt; b
+    [2] =&gt; c
+    [3] =&gt; d
+)
+Array
+(
+    [0] =&gt; Ahoj
+    [1] =&gt; sv
+    [2] =&gt; te
+    [3] =&gt; a
+    [4] =&gt; vesm
+    [5] =&gt; re
+)</pre>
+  <p class="muted"><code>str_word_count</code> nezná diakritiku. Pro češtinu použijte <code>preg_split('/\s+/u', …)</code>.</p>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section id="k9" class="view wrap chapter" data-title="Řazení">
+<header class="ch-head">
+  <div class="kicker">Kapitola 9 / 11 · Funkce</div>
+  <h1>Řazení</h1>
+  <p class="lead">Řadicí funkce <b>mění pole na místě</b> a vrací <code>true</code>. Liší se tím, podle čeho řadí (hodnota, klíč, vlastní funkce) a zda zachovají klíče. Od PHP 8.0 je řazení stabilní.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Přehled</h2>
+<div class="tbl"><table>
+  <tr><th>Funkce</th><th>Řadí podle</th><th>Klíče</th><th>Směr</th></tr>
+  <tr><td><code>sort</code> / <code>rsort</code></td><td>hodnoty</td><td>přečísluje</td><td>↑ / ↓</td></tr>
+  <tr><td><code>asort</code> / <code>arsort</code></td><td>hodnoty</td><td>zachová</td><td>↑ / ↓</td></tr>
+  <tr><td><code>ksort</code> / <code>krsort</code></td><td>klíče</td><td>zachová</td><td>↑ / ↓</td></tr>
+  <tr><td><code>usort</code></td><td>vlastní funkce</td><td>přečísluje</td><td></td></tr>
+  <tr><td><code>uasort</code></td><td>vlastní funkce</td><td>zachová</td><td></td></tr>
+  <tr><td><code>uksort</code></td><td>vlastní funkce na klíčích</td><td>zachová</td><td></td></tr>
+  <tr><td><code>shuffle</code></td><td>náhodně</td><td>přečísluje</td><td></td></tr>
+</table></div>
+</article>
+<article class="card c6"><h2>sort × asort × ksort</h2>
+<pre class="php">$body = ['Petr' =&gt; 64, 'Anna' =&gt; 91, 'Eva' =&gt; 78];
+
+$a = $body; sort($a);   print_r($a);     // jména zmizela!
+$a = $body; arsort($a); print_r($a);     // žebříček
+$a = $body; ksort($a);  print_r($a);     // abecedně podle jména</pre>
+<pre class="res">Array
+(
+    [0] =&gt; 64
+    [1] =&gt; 78
+    [2] =&gt; 91
+)
+Array
+(
+    [Anna] =&gt; 91
+    [Eva] =&gt; 78
+    [Petr] =&gt; 64
+)
+Array
+(
+    [Anna] =&gt; 91
+    [Eva] =&gt; 78
+    [Petr] =&gt; 64
+)</pre>
+</article>
+
+<article class="card c6"><h2>Vlastní porovnání: usort a &lt;=&gt;</h2>
+<pre class="php">$zaci = [
+    ['jmeno' =&gt; 'Petr', 'trida' =&gt; 'IT4', 'body' =&gt; 64],
+    ['jmeno' =&gt; 'Anna', 'trida' =&gt; 'IT3', 'body' =&gt; 91],
+    ['jmeno' =&gt; 'Eva',  'trida' =&gt; 'IT3', 'body' =&gt; 78],
+    ['jmeno' =&gt; 'Jan',  'trida' =&gt; 'IT4', 'body' =&gt; 78],
+];
+usort($zaci, fn($a, $b) =&gt; $b['body'] &lt;=&gt; $a['body']);   // sestupně
+echo implode(' ', array_column($zaci, 'jmeno')), "\n";
+
+// podle třídy ↑, pak bodů ↓, pak jména ↑
+usort($zaci, fn($a, $b) =&gt; [$a['trida'], $b['body'], $a['jmeno']]
+                       &lt;=&gt; [$b['trida'], $a['body'], $b['jmeno']]);
+foreach ($zaci as $z) { echo "$z[trida] $z[body] $z[jmeno]\n"; }</pre>
+<pre class="res">Anna Eva Jan Petr
+IT3 91 Anna
+IT3 78 Eva
+IT4 78 Jan
+IT4 64 Petr</pre>
+  <p class="muted">Funkce vrací záporné číslo, 0, nebo kladné. Operátor <code>&lt;=&gt;</code> (spaceship) to udělá sám, porovná i pole prvek po prvku.</p>
+</article>
+<article class="card c6"><h2>Příznaky a čísla v textu</h2>
+<pre class="php">$soubory = ['foto10.jpg', 'foto2.jpg', 'Foto1.jpg'];
+$a = $soubory; sort($a);                                   print_r($a);
+$a = $soubory; sort($a, SORT_NATURAL | SORT_FLAG_CASE);    print_r($a);
+natcasesort($soubory);                                     // totéž, zachová klíče
+
+$c = ['10', '9', '100'];
+sort($c, SORT_STRING); echo implode(' ', $c), "\n";
+sort($c, SORT_NUMERIC); echo implode(' ', $c), "\n";</pre>
+<pre class="res">Array
+(
+    [0] =&gt; Foto1.jpg
+    [1] =&gt; foto10.jpg
+    [2] =&gt; foto2.jpg
+)
+Array
+(
+    [0] =&gt; Foto1.jpg
+    [1] =&gt; foto2.jpg
+    [2] =&gt; foto10.jpg
+)
+10 100 9
+9 10 100</pre>
+</article>
+
+<article class="card c6"><h2>Česká abeceda</h2>
+<pre class="php">$jmena = ['Čermák', 'Chalupa', 'Cibulka', 'Šimek', 'Svoboda', 'Hora', 'Zeman'];
+$a = $jmena; sort($a);
+echo implode(', ', $a), "\n";                 // podle bajtů: špatně
+
+$coll = new Collator('cs_CZ');                // rozšíření intl
+$coll-&gt;sort($jmena);
+echo implode(', ', $jmena), "\n";             // CH za H, Č za C</pre>
+<pre class="res">Chalupa, Cibulka, Hora, Svoboda, Zeman, Čermák, Šimek
+Cibulka, Čermák, Hora, Chalupa, Svoboda, Šimek, Zeman</pre>
+</article>
+<article class="card c6"><h2>Bez změny původního pole</h2>
+<pre class="php">function serazene(array $a, ?callable $cmp = null): array
+{
+    $cmp ? usort($a, $cmp) : sort($a);      // pracuje s kopií
+    return $a;
+}
+
+$puvodni = [3, 1, 2];
+print_r(serazene($puvodni));
+print_r($puvodni);                           // beze změny
+echo implode(' ', array_reverse([1, 2, 3])), "\n";</pre>
+<pre class="res">Array
+(
+    [0] =&gt; 1
+    [1] =&gt; 2
+    [2] =&gt; 3
+)
+Array
+(
+    [0] =&gt; 3
+    [1] =&gt; 1
+    [2] =&gt; 2
+)
+3 2 1</pre>
+  <div class="task"><b>Zkuste si</b>Seřaďte pole měst podle počtu obyvatel sestupně, při shodě abecedně podle <code>Collator</code>. Zachovejte klíče.</div>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section id="k10" class="view wrap chapter" data-title="Množinové operace a porovnání">
+<header class="ch-head">
+  <div class="kicker">Kapitola 10 / 11 · Funkce</div>
+  <h1>Množinové operace a porovnání</h1>
+  <p class="lead">S poli lze pracovat jako s množinami: co je v jednom a ne ve druhém, co mají společné. Varianty s příponou <code>_key</code> a <code>_assoc</code> porovnávají klíče nebo klíče i hodnoty.</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Rozdíl a průnik hodnot</h2>
+<pre class="php">$prihlaseni = ['Anna', 'Petr', 'Eva', 'Jan'];
+$odevzdali  = ['Eva', 'Anna', 'Ida'];
+
+echo implode(', ', array_diff($prihlaseni, $odevzdali)), "\n";   // neodevzdali
+echo implode(', ', array_intersect($prihlaseni, $odevzdali)), "\n"; // obojí
+echo implode(', ', array_unique([...$prihlaseni, ...$odevzdali])), "\n"; // sjednocení
+echo implode(', ', array_values(array_diff($odevzdali, $prihlaseni))), "\n"; // navíc</pre>
+<pre class="res">Petr, Jan
+Anna, Eva
+Anna, Petr, Eva, Jan, Ida
+Ida</pre>
+  <p class="muted">Výsledky zachovávají původní klíče, proto případně <code>array_values</code>.</p>
+</article>
+<article class="card c6"><h2>Podle klíčů</h2>
+<pre class="php">$a = ['jmeno' =&gt; 'Eva', 'trida' =&gt; 'IT3', 'heslo' =&gt; 'x'];
+$b = ['jmeno' =&gt; 'Eva', 'trida' =&gt; 'IT4'];
+
+print_r(array_diff_key($a, $b));            // klíče jen v $a
+print_r(array_diff_assoc($a, $b));          // klíč i hodnota se liší
+print_r(array_intersect_key($a, ['jmeno' =&gt; 0, 'trida' =&gt; 0]));   // whitelist</pre>
+<pre class="res">Array
+(
+    [heslo] =&gt; x
+)
+Array
+(
+    [trida] =&gt; IT3
+    [heslo] =&gt; x
+)
+Array
+(
+    [jmeno] =&gt; Eva
+    [trida] =&gt; IT3
+)</pre>
+</article>
+
+<article class="card c6"><h2>Porovnání polí</h2>
+<pre class="php">$a = ['x' =&gt; 1, 'y' =&gt; 2];
+$b = ['y' =&gt; 2, 'x' =&gt; 1];
+$c = ['x' =&gt; '1', 'y' =&gt; '2'];
+
+var_dump($a == $b);    // stejné páry klíč–hodnota
+var_dump($a === $b);   // i stejné pořadí a typy
+var_dump($a == $c);    // volné: '1' == 1
+var_dump($a === $c);
+var_dump([1, 2, 3] &lt;=&gt; [1, 2, 4]);</pre>
+<pre class="res">bool(true)
+bool(false)
+bool(true)
+bool(false)
+int(-1)</pre>
+</article>
+<article class="card c6"><h2>Změny mezi dvěma verzemi</h2>
+<pre class="php">$puvodni = ['jmeno' =&gt; 'Eva', 'email' =&gt; 'eva@a.cz', 'trida' =&gt; 'IT3'];
+$nove    = ['jmeno' =&gt; 'Eva', 'email' =&gt; 'eva@b.cz', 'mobil' =&gt; '777'];
+
+$pridano  = array_diff_key($nove, $puvodni);
+$odebrano = array_diff_key($puvodni, $nove);
+$zmeneno  = array_diff_assoc(array_intersect_key($nove, $puvodni), $puvodni);
+
+echo 'přidáno: ', json_encode($pridano), "\n";
+echo 'odebráno: ', json_encode($odebrano), "\n";
+echo 'změněno: ', json_encode($zmeneno), "\n";</pre>
+<pre class="res">přidáno: {"mobil":"777"}
+odebráno: {"trida":"IT3"}
+změněno: {"email":"eva@b.cz"}</pre>
+</article>
+
+</div>
+</section>
+
+<!-- ============ 11 ============ -->
+<section id="k11" class="view wrap chapter" data-title="Pole v praxi a úlohy">
+<header class="ch-head">
+  <div class="kicker">Kapitola 11 / 11 · Praxe</div>
+  <h1>Pole v praxi a úlohy</h1>
+  <p class="lead">Pole stačí na většinu běžných struktur. Pro velmi velká data nebo speciální potřeby existují třídy SPL (<code>SplQueue</code>, <code>SplStack</code>, <code>SplFixedArray</code>).</p>
+</header>
+<div class="grid">
+
+<article class="card c6"><h2>Zásobník a fronta</h2>
+<pre class="php">// zásobník (LIFO): kontrola závorek
+function zavorkyOk(string $s): bool
+{
+    $par = [')' =&gt; '(', ']' =&gt; '[', '}' =&gt; '{'];
+    $zasobnik = [];
+    foreach (str_split($s) as $z) {
+        if (in_array($z, $par, true)) {
+            $zasobnik[] = $z;
+        } elseif (isset($par[$z]) &amp;&amp; array_pop($zasobnik) !== $par[$z]) {
+            return false;
+        }
+    }
+    return $zasobnik === [];
+}
+var_dump(zavorkyOk('{[()()]}'), zavorkyOk('([)]'));
+
+// fronta (FIFO)
+$fronta = ['úloha1', 'úloha2'];
+$fronta[] = 'úloha3';
+echo array_shift($fronta), "\n";</pre>
+<pre class="res">bool(true)
+bool(false)
+úloha1</pre>
+</article>
+<article class="card c6"><h2>Konfigurace v poli</h2>
+<pre class="php">$config = [
+    'db'    =&gt; ['host' =&gt; 'localhost', 'name' =&gt; 'skola'],
+    'debug' =&gt; true,
+];
+file_put_contents('config.php', '&lt;?php return ' . var_export($config, true) . ";\n");
+
+$nactena = require 'config.php';
+echo $nactena['db']['name'], "\n";
+
+file_put_contents('config.json', json_encode($config, JSON_PRETTY_PRINT));
+$zJson = json_decode(file_get_contents('config.json'), true);
+var_dump($zJson === $config);</pre>
+<pre class="res">skola
+bool(true)</pre>
+</article>
+
+<article class="card c6"><h2>Superglobální pole jsou pole</h2>
+<pre class="php">// ?filtr[trida]=IT3&amp;filtr[rok]=2026&amp;id[]=4&amp;id[]=9
+$filtr = $_GET['filtr'] ?? [];       // ['trida' =&gt; 'IT3', 'rok' =&gt; '2026']
+$id = array_map('intval', (array) ($_GET['id'] ?? []));   // [4, 9]
+
+$povolene = ['trida', 'rok'];
+$filtr = array_intersect_key($filtr, array_flip($povolene));</pre>
+  <p class="muted">Vstupy z formulářů mohou být pole i tam, kde čekáte řetězec (<code>?q[]=x</code>). Typ ověřujte.</p>
+</article>
+<article class="card c6"><h2>Výkon</h2>
+<pre class="php">$n = 200_000;
+$seznam = range(1, $n);
+$mnozina = array_flip($seznam);
+
+$t = hrtime(true);
+for ($i = 0; $i &lt; 500; $i++) { in_array($n, $seznam, true); }
+$a = (hrtime(true) - $t) / 1e6;
+
+$t = hrtime(true);
+for ($i = 0; $i &lt; 500; $i++) { isset($mnozina[$n]); }
+$b = (hrtime(true) - $t) / 1e6;
+
+echo $a &gt; 10 * $b ? "isset je mnohonásobně rychlejší\n" : "srovnatelné\n";</pre>
+<pre class="res">isset je mnohonásobně rychlejší</pre>
+  <p class="muted"><code>in_array</code> prochází pole prvek po prvku. Hledání podle klíče (<code>isset</code>) je okamžité. Pro časté hledání si vytvořte pole s hodnotami v klíčích.</p>
+</article>
+
+<article class="card c4"><h2>Úloha 1: Statistika třídy</h2>
+  <p>Ze <code>znamky.csv</code> (jméno; předmět; známka) vytvořte pole <code>žák → [předmět → známka]</code>. Vypište tabulku žák × předmět, průměr každého žáka i předmětu a žáky seřazené podle průměru.</p>
+</article>
+<article class="card c4"><h2>Úloha 2: Nákupní košík</h2>
+  <p>Košík uložený v <code>$_SESSION['kosik']</code> jako pole <code>id → počet</code>. Funkce pro přidání, odebrání, změnu počtu a výpočet ceny podle katalogu (pole produktů). Použijte <code>array_map</code> a <code>array_sum</code>.</p>
+</article>
+<article class="card c4"><h2>Úloha 3: Frekvence slov</h2>
+  <p>Načtěte delší český text, rozdělte ho na slova (<code>preg_split('/\W+/u', …)</code>), převeďte na malá písmena a vypište 10 nejčastějších slov delších než 3 znaky s počtem výskytů.</p>
+</article>
+
+</div>
+</section>
+
+<div class="wrap"><nav class="pager" id="pager" hidden></nav></div>
+<footer>Výuková prezentace 4 · Pole a asociativní pole · vizuální styl vychází z design systému VOŠ, SPŠ a SOŠ Varnsdorf. Výstupy ukázek vygenerovalo PHP 8.3.6; ukázky označené 8.4+ a 8.5+ vyžadují novější verzi.</footer>
+<script>
+function hlPHP(src){
+  var KW = ('abstract and as break callable case catch class clone const continue declare default do echo else elseif empty enddeclare endfor endforeach endif endswitch endwhile enum exit extends final finally fn for foreach function global goto if implements include include_once instanceof insteadof interface isset list match namespace new or print private protected public readonly require require_once return static switch throw trait try unset use var while xor yield from parent self').split(' ');
+  var TY = ('int float string bool array object mixed void never null true false iterable callable').split(' ');
+  var re = /(\/\*[\s\S]*?\*\/|\/\/[^\n]*|#(?!\[)[^\n]*)|(<<<[ \t]*(['"]?)([A-Za-z_]\w*)\3\n[\s\S]*?\n[ \t]*\4\b)|('(?:\\[\s\S]|[^'\\])*'|"(?:\\[\s\S]|[^"\\])*")|(<\?php|<\?=|\?>)|(#\[[^\]\n]*\])|(\$[A-Za-z_\u00C0-\u024F][\w\u00C0-\u024F]*)|(\b(?:0[xX][\da-fA-F_]+|0[bB][01_]+|0[oO][0-7_]+|\d[\d_]*(?:\.\d+)?(?:[eE][+-]?\d+)?)\b)|([A-Za-z_\\][\w\\]*)/g;
+  var out = '', last = 0, m;
+  function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function w(cls, s){ return '<span class="'+cls+'">'+esc(s)+'</span>'; }
+  while ((m = re.exec(src))){
+    out += esc(src.slice(last, m.index));
+    var t = m[0];
+    if (m[1]) out += w('c', t);
+    else if (m[2] || m[5]) out += w('s', t);
+    else if (m[6]) out += w('tg', t);
+    else if (m[7]) out += w('a', t);
+    else if (m[8]) out += w('v', t);
+    else if (m[9]) out += w('n', t);
+    else {
+      var low = t.toLowerCase(), rest = src.slice(re.lastIndex);
+      var prev = src.slice(0, m.index).replace(/\s+$/,'');
+      if (/(->|\?->|::)$/.test(prev)) out += /^\s*\(/.test(rest) ? w('f', t) : esc(t);
+      else if (KW.indexOf(low) > -1) out += w('k', t);
+      else if (TY.indexOf(low) > -1) out += w('t', t);
+      else if (/^\s*\(/.test(rest)) out += w('f', t);
+      else if (/^[A-Z][A-Z0-9_]+$/.test(t) || /^__[A-Z]+__$/.test(t)) out += w('co', t);
+      else out += esc(t);
+    }
+    last = re.lastIndex;
+  }
+  return out + esc(src.slice(last));
+}
+document.querySelectorAll('pre.php').forEach(function(pre){
+  var src = pre.textContent;
+  pre.innerHTML = hlPHP(src);
+  var b = document.createElement('button'); b.className = 'copy'; b.type = 'button'; b.textContent = 'kopírovat';
+  b.addEventListener('click', function(){
+    try { navigator.clipboard.writeText(src).then(function(){ b.textContent = 'zkopírováno'; setTimeout(function(){ b.textContent = 'kopírovat'; }, 1200); }); } catch(e){}
+  });
+  pre.appendChild(b);
+});
+document.querySelectorAll('pre.sh').forEach(function(pre){
+  pre.innerHTML = pre.innerHTML.split('\n').map(function(l){
+    var cm = l.match(/^(.*?)(\s#\s.*)$/);
+    var tail = '';
+    if (cm && /^(\$|PS&gt;) /.test(l)) { l = cm[1]; tail = '<span class="cm">'+cm[2]+'</span>'; }
+    else if (/^\s*#/.test(l)) return '<span class="cm">'+l+'</span>';
+    if (/^\$ /.test(l)) return '<span class="pr">$</span>'+l.slice(1)+tail;
+    if (/^PS&gt; /.test(l)) return '<span class="pr">PS&gt;</span>'+l.slice(5)+tail;
+    if (/^&gt; /.test(l)) return '<span class="pr">&gt;</span>'+l.slice(4)+tail;
+    return '<span class="out">'+l+'</span>'+tail;
+  }).join('\n');
+});
+
+
+(function(){
+  var DECK = "Pole a asociativní pole";
+  var NEXT_DECK = {"href": "05-vyrazy-operatory.html", "title": "Výrazy a operátory"};
+  var views = Array.prototype.slice.call(document.querySelectorAll('.view'));
+  var chapters = views.filter(function(v){ return v.classList.contains('chapter'); });
+  var pager = document.getElementById('pager');
+  var barTitle = document.getElementById('barTitle');
+  var barPrev = document.getElementById('barPrev');
+  var barNext = document.getElementById('barNext');
+  function setLink(a, target){
+    if (target){ a.href = '#'+target.id; a.removeAttribute('aria-disabled'); }
+    else { a.href = '#prehled'; a.setAttribute('aria-disabled','true'); }
+  }
+  function show(){
+    var id = (location.hash || '').replace('#','') || 'prehled';
+    var current = document.getElementById(id);
+    if (!current || !current.classList.contains('view')) current = document.getElementById('prehled');
+    views.forEach(function(v){ v.hidden = (v !== current); });
+    var i = chapters.indexOf(current);
+    if (i === -1){
+      barTitle.textContent = 'Přehled kapitol';
+      setLink(barPrev, null); setLink(barNext, chapters[0]);
+      pager.hidden = true;
+    } else {
+      barTitle.textContent = (i+1) + ' / ' + chapters.length + ' · ' + current.dataset.title;
+      var prev = chapters[i-1], next = chapters[i+1];
+      setLink(barPrev, prev || document.getElementById('prehled'));
+      setLink(barNext, next);
+      var nextHtml;
+      if (next) nextHtml = '<a class="btn next" href="#'+next.id+'"><span><small>Kapitola '+(i+2)+'</small>'+next.dataset.title+' →</span></a>';
+      else if (NEXT_DECK) nextHtml = '<a class="btn next" href="'+NEXT_DECK.href+'"><span><small>Další prezentace</small>'+NEXT_DECK.title+' →</span></a>';
+      else nextHtml = '<a class="btn next" href="index.html"><span><small>Konec</small>Přehled kurzu →</span></a>';
+      pager.innerHTML =
+        (prev ? '<a class="btn" href="#'+prev.id+'"><span>← <small>Kapitola '+i+'</small>'+prev.dataset.title+'</span></a>'
+              : '<a class="btn" href="#prehled"><span>← <small>Zpět</small>Přehled kapitol</span></a>') + nextHtml;
+      pager.hidden = false;
+    }
+    document.title = (i === -1 ? '' : current.dataset.title + ' · ') + DECK;
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange', show);
+  document.addEventListener('keydown', function(e){
+    if (e.target.closest('input,textarea,select,summary') || e.altKey || e.ctrlKey || e.metaKey) return;
+    var cur = document.getElementById((location.hash || '#prehled').slice(1));
+    var i = chapters.indexOf(cur);
+    if (e.key === 'ArrowRight'){ var n = i === -1 ? chapters[0] : chapters[i+1]; if (n) location.hash = n.id; }
+    else if (e.key === 'ArrowLeft'){ if (i > 0) location.hash = chapters[i-1].id; else if (i === 0) location.hash = 'prehled'; }
+    else if (e.key === 'Escape'){ location.hash = 'prehled'; }
+  });
+  show();
+})();
+</script>
+</body>
+</html>
